@@ -1,1 +1,1 @@
-from . import const, dataset, log, persist
+from . import const, dataset, funcs, log, persist

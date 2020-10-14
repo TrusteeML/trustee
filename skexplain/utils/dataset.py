@@ -6,7 +6,7 @@ import pandas
 import rootpath
 from pandas.api.types import CategoricalDtype
 from skexplain.enums.feature_type import FeatureType
-from skexplain.utils.const import IOT_DATASET_META
+from skexplain.utils.const import CIC_IDS_2017_DATASET_META, IOT_DATASET_META
 
 
 def read(path, metadata={}, verbose=False, logger=None, as_df=False, resampler=None):
@@ -30,7 +30,7 @@ def read(path, metadata={}, verbose=False, logger=None, as_df=False, resampler=N
     X = []
     y = []
 
-    idx = 0  # cant use enumerate because of skipping ID features
+    idx_offset = 0  # cant use enumerate because of skipping ID features
     names = []
     numerical = []
     categorical = []
@@ -38,23 +38,23 @@ def read(path, metadata={}, verbose=False, logger=None, as_df=False, resampler=N
     use_cols = []
     result = []
 
-    for (name, type, is_result) in metadata['fields']:
+    for idx, (name, type, is_result) in enumerate(metadata['fields']):
         if (type != FeatureType.IDENTIFIER):
             use_cols.append(idx)
 
             if name:
                 names.append(name)
 
-            if type == FeatureType.NUMERICAL:
-                numerical.append(idx)
+            if type == FeatureType.NUMERICAL and not is_result:
+                numerical.append(idx - idx_offset)
 
             if type == FeatureType.CATEGORICAL and not is_result:
-                dummies.append(idx)
+                dummies.append(idx - idx_offset)
 
             if is_result:
-                result.append(idx)
-
-            idx += 1
+                result.append(idx - idx_offset)
+        else:
+            idx_offset += 1
 
     if verbose:
         log(10 * "=", "Metadata start.", 10 * "=")
@@ -111,7 +111,7 @@ def read(path, metadata={}, verbose=False, logger=None, as_df=False, resampler=N
     if dummies:
         dummy_cols = [names[i] for i in dummies]
         categorical = [[] for i in dummy_cols]
-        X = pandas.get_dummies(X, columns=dummy_cols, sparse=True)
+        X = pandas.get_dummies(X, columns=dummy_cols)
         for i in range(len(X.columns)):
             for j in range(len(dummy_cols)):
                 cat_feat = dummy_cols[j]
@@ -132,7 +132,27 @@ def read(path, metadata={}, verbose=False, logger=None, as_df=False, resampler=N
         log("Features Shape after resample:", X.shape)
         log("Targets shape after resample::", y.shape, y.columns)
 
-    return X if as_df else X.to_numpy(), y if as_df else y.to_numpy(), X.columns, numerical, categorical
+    for col in X.columns:
+        if X[col].dtype == np.float64:
+            X[col] = X[col].astype(np.float32)
+        elif X[col].dtype == np.int64:
+            X[col] = X[col].astype(np.int32)
+
+    for col in y.columns:
+        if y[col].dtype == np.float64:
+            y[col] = y[col].astype(np.float32)
+        elif y[col].dtype == np.int64:
+            y[col] = y[col].astype(np.int32)
+
+    X = X.replace([np.inf, -np.inf], np.nan).fillna(-1)
+
+    # if (X < 0).values.any():
+    #     log("NEGATIVE VALUES DETECTED")
+    #     X[X < 0] = 0
+    #     if (X < 0).values.any():
+    #         log("NEGATIVE VALUES STILL DETECTED")
+
+    return X if as_df else np.nan_to_num(X.to_numpy()), y if as_df else y.to_numpy(), X.columns, numerical, categorical
 
 
 def read_all_categories(datasets_dir, metadata={}):
@@ -184,4 +204,5 @@ def read_all_categories(datasets_dir, metadata={}):
 
 
 if __name__ == "__main__":
-    read_all_categories("{}/res/dataset/iot/csv_files/".format(rootpath.detect()), IOT_DATASET_META)
+    read_all_categories("{}/res/dataset/CIC-IDS-2017/MachineLearningCVE/".format(rootpath.detect()),
+                        CIC_IDS_2017_DATASET_META)

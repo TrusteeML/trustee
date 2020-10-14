@@ -134,13 +134,45 @@ BOSTON_DATASET_META = {
     "type": "regression"
 }
 
+
+def cic_ids_2017_label_converter(label):
+    # print(label)
+
+    value = -1
+    labels = {
+        'BENIGN': 0,
+        'Bot': 1,
+        'DDoS': 2,
+        'DoS GoldenEye': 3,
+        'DoS Hulk': 4,
+        'DoS Slowhttptest': 5,
+        'DoS slowloris': 6,
+        'FTP-Patator': 7,
+        'Heartbleed': 8,
+        'Infiltration': 9,
+        'PortScan': 10,
+        'SSH-Patator': 11,
+        'Web Attack Brute Force': 12,
+        'Web Attack Sql Injection': 13,
+        'Web Attack XSS': 14
+    }
+
+    try:
+        value = labels.get(label)
+    except Exception as err:
+        print('Exception', err, label)
+
+    return value
+
+
 CIC_IDS_2017_DATASET_META = {
     "name": "cic_ids_2017",
+    # "path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE/Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv".format(rootpath.detect()),
     "path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE/".format(rootpath.detect()),
     "is_dir": True,
     "has_header": True,
     "fields": [
-        ("Destination Port", FeatureType.CATEGORICAL, False),
+        ("Destination Port", FeatureType.NUMERICAL, False),
         ("Flow Duration", FeatureType.NUMERICAL, False),
         ("Total Fwd Packets", FeatureType.NUMERICAL, False),
         ("Total Backward Packets", FeatureType.NUMERICAL, False),
@@ -220,5 +252,7 @@ CIC_IDS_2017_DATASET_META = {
         ("Idle Min", FeatureType.NUMERICAL, False),
         ("Label", FeatureType.CATEGORICAL, True)
     ],
+    "classes": ['BENIGN', 'Bot', 'DDoS', 'DoS GoldenEye', 'DoS Hulk', 'DoS Slowhttptest', 'DoS slowloris', 'FTP-Patator', 'Heartbleed', 'Infiltration', 'PortScan', 'SSH-Patator', 'Web Attack Brute Force', 'Web Attack Sql Injection', 'Web Attack XSS'],
+    "converters": {"Label": lambda x: cic_ids_2017_label_converter(x)},
     "type": "classification"
 }

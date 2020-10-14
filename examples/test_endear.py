@@ -8,9 +8,8 @@ import rootpath
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
 from skexplain.enums.feature_type import FeatureType
-from skexplain.imitation import (ClassificationDagger,
-                                 IncrementalClassificationDagger,
-                                 RegressionDagger)
+from skexplain.imitation import (ClassificationDagger, ClassificationEndear,
+                                 RegressionDagger, RegressionEndear)
 from skexplain.utils import dataset, log, persist
 from skexplain.utils.const import (BOSTON_DATASET_META,
                                    CIC_IDS_2017_DATASET_META,
@@ -23,13 +22,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.svm import LinearSVC
 
-RESULTS_FILE_NAME = "{}/res/results/dagger_test.csv"
+RESULTS_FILE_NAME = "{}/res/results/endear_test.csv"
 
 
-def dagger_test(dataset_meta, validate_dataset_path="", model=RandomForestClassifier, resampler=None, num_leaves=None, num_samples=2000, as_df=False):
+def endear_test(dataset_meta, validate_dataset_path="", model=RandomForestClassifier, resampler=None, num_leaves=None, num_samples=2000, as_df=False):
     """ Test using Reinforcement Learning to extract Decision Tree from a generic Blackbox model """
     logger = log.Logger(
-        "{}/res/log/{}/dagger_test_{}_{}.log".format(rootpath.detect(),
+        "{}/res/log/{}/endear_test_{}_{}.log".format(rootpath.detect(),
                                                      dataset_meta['name'],
                                                      model.__name__,
                                                      resampler.__name__ if resampler else "Raw")
@@ -38,7 +37,7 @@ def dagger_test(dataset_meta, validate_dataset_path="", model=RandomForestClassi
     # Step 1: Load training dataset
     logger.log("#" * 10, "Dataset init", "#" * 10)
     logger.log("Reading dataset fromn CSV...")
-    X, y, feature_names, _, _ = dataset.read(
+    X, y, feature_names, numerical, categorical = dataset.read(
         dataset_meta['path'], metadata=dataset_meta, verbose=True, logger=logger, resampler=resampler, as_df=as_df)
     logger.log("Done!")
 
@@ -102,18 +101,20 @@ def dagger_test(dataset_meta, validate_dataset_path="", model=RandomForestClassi
         logger.log("#" * 10, "Done", "#" * 10)
 
     if dataset_meta['type'] == 'classification':
-        logger.log("Using Classification Dagger algorithm...")
-        dagger = ClassificationDagger(expert=blackbox, logger=logger)
+        logger.log("Using Classification Endear algorithm...")
+        endear = ClassificationEndear(expert=blackbox, logger=logger)
     else:
-        logger.log("Using Regression Dagger algorithm...")
-        dagger = RegressionDagger(expert=blackbox, logger=logger)
+        logger.log("Using Regression Endear algorithm...")
+        endear = RegressionEndear(expert=blackbox, logger=logger)
 
-    dagger.fit(X, y, max_iter=100, max_leaf_nodes=num_leaves, num_samples=num_samples, verbose=True)
+    n_components = len(dataset_meta['classes']) if 'classes' in dataset_meta else 10
+    endear.fit(X, y, numeric_feat_inds=numerical, cat_feat_inds=categorical, max_iter=100, n_components=n_components,
+               max_leaf_nodes=num_leaves, num_samples=num_samples, verbose=True)
 
     with open(RESULTS_FILE_NAME.format(rootpath.detect()), "a") as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=",")
         logger.log("#" * 10, "Explanation validation", "#" * 10)
-        (dt, reward, idx) = dagger.explain()
+        (dt, reward, idx) = endear.explain()
         logger.log("Model explanation {} local fidelity: {}".format(idx, reward))
         dt_y_pred = dt.predict(X_test)
 
@@ -157,7 +158,7 @@ def dagger_test(dataset_meta, validate_dataset_path="", model=RandomForestClassi
         graph = graphviz.Source(dot_data)
         graph.render("{}/res/img/{}/{}/dt_{}_{}".format(rootpath.detect(),
                                                         dataset_meta['name'],
-                                                        "dagger",
+                                                        "endear",
                                                         resampler.__name__ if resampler else "Raw",
                                                         num_leaves))
         logger.log("#" * 10, "Done", "#" * 10)
@@ -167,66 +168,64 @@ def main():
     """ Main block """
 
     # overwrites current results to start new tests, and writes first row
-    with open(RESULTS_FILE_NAME.format(rootpath.detect()), "w") as csv_file:
-        csv_writer = csv.writer(csv_file, delimiter=",")
-        csv_writer.writerow(['dataset', 'dataset size', 'model', 'resampler',
-                             'num leaves', 'blackbox f1/r2', 'DT f1/r2', 'fidelity'])
+    # with open(RESULTS_FILE_NAME.format(rootpath.detect()), "w") as csv_file:
+    #     csv_writer = csv.writer(csv_file, delimiter=",")
+    #     csv_writer.writerow(['dataset', 'dataset size', 'model', 'resampler',
+    #                          'num leaves', 'blackbox f1/r2', 'DT f1/r2', 'fidelity'])
 
-    dagger_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=None, num_samples=10000)
-    dagger_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=RandomOverSampler, num_samples=100000)
-    dagger_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=RandomUnderSampler, num_samples=1000)
+    # endear_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=None, num_samples=10000)
+    # endear_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=RandomOverSampler, num_samples=100000)
+    # endear_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=RandomUnderSampler, num_samples=1000)
+    #
+    # endear_test(IOT_DATASET_META, model=MLPClassifier, resampler=None, num_samples=100000)
+    # endear_test(IOT_DATASET_META, model=MLPClassifier, resampler=RandomOverSampler, num_samples=100000)
+    # endear_test(IOT_DATASET_META, model=MLPClassifier, resampler=RandomUnderSampler, num_samples=1000)
 
-    dagger_test(IOT_DATASET_META, model=MLPClassifier, resampler=None, num_samples=100000)
-    dagger_test(IOT_DATASET_META, model=MLPClassifier, resampler=RandomOverSampler, num_samples=100000)
-    dagger_test(IOT_DATASET_META, model=MLPClassifier, resampler=RandomUnderSampler, num_samples=1000)
+    # endear_test(WINE_DATASET_META, model=RandomForestRegressor, num_samples=1000)
+    # endear_test(WINE_DATASET_META, model=RandomForestRegressor, resampler=RandomOverSampler, num_samples=3000)
+    # endear_test(WINE_DATASET_META, model=RandomForestRegressor, resampler=RandomUnderSampler, num_samples=10)
+    #
+    # endear_test(WINE_DATASET_META, model=MLPRegressor, num_samples=1000)
+    # endear_test(WINE_DATASET_META, model=MLPRegressor, resampler=RandomOverSampler, num_samples=3000)
+    # endear_test(WINE_DATASET_META, model=MLPRegressor, resampler=RandomUnderSampler, num_samples=10)
+    #
+    # endear_test(BOSTON_DATASET_META, model=RandomForestRegressor, num_samples=500)
+    # endear_test(BOSTON_DATASET_META, model=MLPRegressor, num_samples=500)
 
-    dagger_test(WINE_DATASET_META, model=RandomForestRegressor, num_samples=1000)
-    dagger_test(WINE_DATASET_META, model=RandomForestRegressor, resampler=RandomOverSampler, num_samples=3000)
-    dagger_test(WINE_DATASET_META, model=RandomForestRegressor, resampler=RandomUnderSampler, num_samples=10)
-
-    dagger_test(WINE_DATASET_META, model=MLPRegressor, num_samples=1000)
-    dagger_test(WINE_DATASET_META, model=MLPRegressor, resampler=RandomOverSampler, num_samples=3000)
-    dagger_test(WINE_DATASET_META, model=MLPRegressor, resampler=RandomUnderSampler, num_samples=10)
-
-    dagger_test(BOSTON_DATASET_META, model=RandomForestRegressor, num_samples=500)
-    dagger_test(BOSTON_DATASET_META, model=MLPRegressor, num_samples=500)
-
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_leaves=50, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_leaves=50, num_samples=100000)
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
                 num_leaves=50, resampler=RandomOverSampler, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
                 num_leaves=50, resampler=RandomUnderSampler, num_samples=100)
 
-    dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=50, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=50,
+    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=50, num_samples=100000)
+    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=50,
                 resampler=RandomOverSampler, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=50,
+    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier,
+                num_leaves=50, resampler=RandomUnderSampler, num_samples=100)
+
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_leaves=100, num_samples=100000)
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+                num_leaves=100, resampler=RandomOverSampler, num_samples=100000)
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+                num_leaves=100, resampler=RandomUnderSampler, num_samples=100)
+
+    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=100, num_samples=100000)
+    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=100,
+                resampler=RandomOverSampler, num_samples=100000)
+    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=100,
                 resampler=RandomUnderSampler, num_samples=100)
 
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_leaves=100, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_leaves=100,
-                resampler=RandomOverSampler, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_leaves=100,
-                resampler=RandomUnderSampler, num_samples=100)
-
-    dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=100, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=100,
-                resampler=RandomOverSampler, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=100,
-                resampler=RandomUnderSampler, num_samples=100)
-
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_leaves=200, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_leaves=200, num_samples=100000)
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
                 num_leaves=200, resampler=RandomOverSampler, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
                 num_leaves=200, resampler=RandomUnderSampler, num_samples=100)
 
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_samples=100000)
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
                 resampler=RandomOverSampler, num_samples=100000)
-    dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, resampler=RandomUnderSampler, num_samples=100)
-
-    # dagger_leaves_eval(IOT_DATASET_META, model=MLPClassifier, resampler=None, num_samples=10000)
+    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, resampler=RandomUnderSampler, num_samples=100)
 
 
 if __name__ == "__main__":

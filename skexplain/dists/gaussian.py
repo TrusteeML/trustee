@@ -1,98 +1,74 @@
 import numpy as np
 
+from scipy.stats import truncnorm
+from skexplain.utils.funcs import integrate_truncated
+from sklearn.metrics import classification_report, f1_score, r2_score
 from sklearn.mixture import GaussianMixture
+from sklearn.model_selection import train_test_split
 
 # Fits a Gaussian mixture model with the given number of components.
 #
 # fields:
-#  X : np.array([nRows, num_cols]) (the example points)
-#  num_components : int, number of components to fit
+#  X : np.array([nRows, n_cols]) (the example points)
+#  n_components : int, number of components to fit
 
 
 class GaussianMixtureDist:
-    def __init__(self, X, num_components, logger=None):
+    def __init__(self, logger=None):
         self.log = logger.log if logger else print
-        self.gmm = GaussianMixture(n_components=num_components, covariance_type='diag', reg_covar=1e-1)
-        self.num_cols = np.shape(X)[1]
-        self.num_components = num_components
+        self.gmm = None
+        self.gmms = []
+        self.n_cols = 0
+        self.n_components = 1
         # fit a Gaussian mixture model
+
+    def fit(self, X, y, n_components=1, is_cls=False):
+        self.n_components = n_components
+        self.n_cols = np.shape(X)[1]
         self.log('Fitting Gaussian mixture with {} components and {} columns ...'.format(
-            str(num_components), str(self.num_cols)), INFO)
-        self.gmm.fit(X)
-        self.log('Done!', INFO)
+            str(self.n_components), str(self.n_cols)))
+        self.X = X
+        self.y = y
 
-    # Compute the probability of each component in the mixture
-    def _compute_probs(self, limits):
-        probabilities = np.zeros(self.num_components)
-        for component in range(self.num_components):
-            mean = self.gmm.means_[component]
-            cov = self.gmm.covariances_[component]
-            weight = self.gmm.weights_[component]
-            probabilities[component] = constrained_gaussian_density(mean, cov, limits) * weight
-        return probabilities
+        X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.7)
 
-    # Integrate the probability density given the constraints.
-    def mass(self, limits):
-        probabilities = self._compute_probs(limits)
+        reg_covars = {
+            'spherical': 1e-6,
+            'diag': 1e-1,
+            'tied': 10,
+            'full': 100
+        }
+
+        # fitting different covariances types to find out best
+        self.gmms = [GaussianMixture(n_components=self.n_components, covariance_type=cov_type, reg_covar=reg_covars[cov_type])
+                     for cov_type in ['spherical', 'diag', 'tied', 'full']]
+
+        highest_score = np.NINF
+        for gmm in self.gmms:
+            gmm.fit(X_train, y_train)
+
+            y_pred = gmm.predict(X_test)
+            model_score = f1_score(y_test, y_pred, average="macro") if is_cls else r2_score(y_test, y_pred)
+            self.log("covariances_ shape", gmm.covariances_.shape)
+            self.log("covariance_type", gmm.covariance_type, "score", model_score)
+            self.log("BIC", gmm.bic(X))
+            if model_score > highest_score:
+                highest_score = model_score
+                self.gmm = gmm
+
+        self.log("covariance_type", self.gmm.covariance_type)
+        self.log("covariances_", self.gmm.covariances_)
+        self.log("converged_", self.gmm.converged_)
+        self.log("BIC", self.gmm.bic(X))
+        self.log('Done!')
+
+        # Integrate the probability density
+
+    def mass(self):
+        probabilities = self.predict_proba(self.X)
         return np.sum(probabilities)
 
     # Samples a random point from the fitted mixture model
-    # given the constraints
-    #
-    # returns: np.array([nPts, self.num_cols])
-    def sample(self, limits, nPts):
-        # consolidate constraints
-        #limits = consolidateConstraints(cons, self.num_cols)
-
-        # compute probabilities
-        probabilities = self._compute_probs(limits)
-
-        # compute mass
-        s = np.sum(probabilities)
-
-        self.log(("probabilities per component:", probabilities), DEBUG)
-        self.log(("limits:", limits), DEBUG)
-
-        # density is zero (up to rounding) within these constraints
-        xs = np.zeros((nPts, self.num_cols))
-        if s == 0:
-            return xs
-
-        # normalize
-        probabilities = probabilities / s
-
-        # Count of how many points to sample
-        chosenComponents = np.random.choice(self.num_components, size=nPts, p=probabilities)
-
-        # Sample the points
-        curIndex = 0
-        for component in range(self.num_components):
-            curCount = np.sum(chosenComponents == component)
-            nextIndex = curIndex + curCount
-            xs[curIndex:nextIndex, :] = sample_trunc_gaussian(
-                self.gmm.means_[component], self.gmm.covariances_[component], limits, curCount)
-            curIndex = nextIndex
-
-        return xs
-
-    # samples from a multidimensional truncated diagonal-covariance gaussian
-    #
-    # params/returns:
-    #  mean: np.array([num_cols]), mean of Gaussian
-    #  cov: np.array([num_cols]), diaganal elements of (assume diagonal) covariance matrix
-    #    of Gaussian
-    #  limits: [[float | np.inf | -np.inf]], a list of lists, each (sub)list specifies the two (upper and lower)
-    #    bounds of the constraints
-    #  nPts: number of points to sample
-    #  returns: np.array([nPts, num_cols]), samples from the multivariate Gaussian
-    @staticmethod
-    def sample_trunc_gaussian(mean, cov, limits, nPts):
-        num_cols = len(limits)
-        samples = np.zeros((num_cols, nPts))
-        for i in range(num_cols):
-            limit = limits[i]
-            mu = mean[i]
-            std = np.sqrt(cov[i])
-            a, b = (limit[0] - mu) / std, (limit[1] - mu) / std
-            samples[i, :] = truncnorm.rvs(a, b, loc=mu, scale=std, size=nPts)
-        return samples.transpose()
+    # returns: np.array([n_points, self.n_cols])
+    def sample(self, n_points):
+        return self.gmm.sample(n_points)
