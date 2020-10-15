@@ -20,7 +20,8 @@ WINE_DATASET_META = {
         ("alcohol", FeatureType.NUMERICAL, False),
         ("quality", FeatureType.NUMERICAL, True)
     ],
-    "type": "regression"
+    "type": "regression",
+    "url": "https://archive.ics.uci.edu/ml/datasets/wine"
 }
 
 DIABETES_DATASET_META = {
@@ -80,7 +81,8 @@ DIABETES_DATASET_META = {
         ("diabetesMed", FeatureType.CATEGORICAL, False),
         ("readmitted", FeatureType.CATEGORICAL, True)
     ],
-    "type": "classification"
+    "type": "classification",
+    "url": "https://www.kaggle.com/brandao/diabetes?select=diabetic_data.csv"
 }
 
 IOT_DATASET_META = {
@@ -108,7 +110,8 @@ IOT_DATASET_META = {
         "IPv6 Next Header": [-1, 0, 6, 17, 44, 58],
         "IPv6 Option": [-1, 1],
         "TCP Flags": [-1, 1, 2, 4, 16, 17, 18, 20, 24, 25, 28, 47, 49, 56, 82, 144, 152, 153, 168, 194, 210, 1041, 2050, 2051, 2513, 3345, 3610]
-    }
+    },
+    "url": "https://iotanalytics.unsw.edu.au/iottraces.html"
 }
 
 BOSTON_DATASET_META = {
@@ -131,13 +134,12 @@ BOSTON_DATASET_META = {
         ("LSTAT", FeatureType.NUMERICAL, False),
         ("MEDV", FeatureType.CATEGORICAL, True)
     ],
-    "type": "regression"
+    "type": "regression",
+    "url": "https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html"
 }
 
 
 def cic_ids_2017_label_converter(label):
-    # print(label)
-
     value = -1
     labels = {
         'BENIGN': 0,
@@ -254,5 +256,6 @@ CIC_IDS_2017_DATASET_META = {
     ],
     "classes": ['BENIGN', 'Bot', 'DDoS', 'DoS GoldenEye', 'DoS Hulk', 'DoS Slowhttptest', 'DoS slowloris', 'FTP-Patator', 'Heartbleed', 'Infiltration', 'PortScan', 'SSH-Patator', 'Web Attack Brute Force', 'Web Attack Sql Injection', 'Web Attack XSS'],
     "converters": {"Label": lambda x: cic_ids_2017_label_converter(x)},
-    "type": "classification"
+    "type": "classification",
+    "url": "https://www.unb.ca/cic/datasets/ids-2017.html"
 }
