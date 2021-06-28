@@ -1,5 +1,6 @@
 import os
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 
 def read(fname):
@@ -16,7 +17,7 @@ setup(
     long_description=read('README.md'),
     keywords="skexplain xai explainable ai machine-learning ml sklearn",
     license="BSD",
-    python_requires=">=3.7",
+    python_requires=">=3.6.1",
     classifiers=[
         'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',

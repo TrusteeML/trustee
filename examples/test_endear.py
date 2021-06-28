@@ -25,7 +25,7 @@ from sklearn.svm import LinearSVC
 RESULTS_FILE_NAME = "{}/res/results/endear_test.csv"
 
 
-def endear_test(dataset_meta, validate_dataset_path="", model=RandomForestClassifier, resampler=None, num_leaves=None, num_samples=2000, as_df=False):
+def endear_test(dataset_meta, validate_dataset_path="", model=RandomForestClassifier, resampler=None, max_leaves=None, ccp_alpha=0.0, num_samples=2000, as_df=False):
     """ Test using Reinforcement Learning to extract Decision Tree from a generic Blackbox model """
     logger = log.Logger(
         "{}/res/log/{}/endear_test_{}_{}.log".format(rootpath.detect(),
@@ -42,7 +42,10 @@ def endear_test(dataset_meta, validate_dataset_path="", model=RandomForestClassi
     logger.log("Done!")
 
     logger.log("Splitting dataset into training and test...")
-    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.7)
+    X_indexes = np.arange(0, X.shape[0])
+    X_train, X_test, y_train, y_test = train_test_split(X_indexes, y, train_size=0.7, stratify=y)
+    X_train = X.iloc[X_train] if isinstance(X, pd.DataFrame) else X[X_train]
+    X_test = X.iloc[X_test] if isinstance(X, pd.DataFrame) else X[X_test]
     logger.log("Done!")
     logger.log("#" * 10, "Done", "#" * 10)
 
@@ -109,7 +112,7 @@ def endear_test(dataset_meta, validate_dataset_path="", model=RandomForestClassi
 
     n_components = len(dataset_meta['classes']) if 'classes' in dataset_meta else 10
     endear.fit(X, y, numeric_feat_inds=numerical, cat_feat_inds=categorical, max_iter=100, n_components=n_components,
-               max_leaf_nodes=num_leaves, num_samples=num_samples, verbose=True)
+               max_leaf_nodes=max_leaves, num_samples=num_samples, verbose=True)
 
     with open(RESULTS_FILE_NAME.format(rootpath.detect()), "a") as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=",")
@@ -147,7 +150,7 @@ def endear_test(dataset_meta, validate_dataset_path="", model=RandomForestClassi
                     r2_score(y_validate, y_validation_pred)))
 
         csv_writer.writerow([dataset_meta['name'], len(X), model.__name__, resampler.__name__ if resampler else "None",
-                             dt.get_n_leaves(), blackbox_score, dt_score, fidelity])
+                             dt.get_n_leaves(), ccp_alpha, blackbox_score, dt_score, fidelity])
 
         dot_data = tree.export_graphviz(dt,
                                         feature_names=feature_names,
@@ -160,7 +163,7 @@ def endear_test(dataset_meta, validate_dataset_path="", model=RandomForestClassi
                                                         dataset_meta['name'],
                                                         "endear",
                                                         resampler.__name__ if resampler else "Raw",
-                                                        num_leaves))
+                                                        dt.get_n_leaves()))
         logger.log("#" * 10, "Done", "#" * 10)
 
 
@@ -171,7 +174,7 @@ def main():
     # with open(RESULTS_FILE_NAME.format(rootpath.detect()), "w") as csv_file:
     #     csv_writer = csv.writer(csv_file, delimiter=",")
     #     csv_writer.writerow(['dataset', 'dataset size', 'model', 'resampler',
-    #                          'num leaves', 'blackbox f1/r2', 'DT f1/r2', 'fidelity'])
+    #                          'num leaves', 'ccp alpha', 'blackbox f1/r2', 'DT f1/r2', 'fidelity'])
 
     # endear_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=None, num_samples=10000)
     # endear_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=RandomOverSampler, num_samples=100000)
@@ -192,40 +195,40 @@ def main():
     # endear_test(BOSTON_DATASET_META, model=RandomForestRegressor, num_samples=500)
     # endear_test(BOSTON_DATASET_META, model=MLPRegressor, num_samples=500)
 
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_leaves=50, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
-                num_leaves=50, resampler=RandomOverSampler, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
-                num_leaves=50, resampler=RandomUnderSampler, num_samples=100)
-
-    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=50, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=50,
-                resampler=RandomOverSampler, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier,
-                num_leaves=50, resampler=RandomUnderSampler, num_samples=100)
-
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_leaves=100, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
-                num_leaves=100, resampler=RandomOverSampler, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
-                num_leaves=100, resampler=RandomUnderSampler, num_samples=100)
-
-    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=100, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=100,
-                resampler=RandomOverSampler, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, num_leaves=100,
-                resampler=RandomUnderSampler, num_samples=100)
-
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_leaves=200, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
-                num_leaves=200, resampler=RandomOverSampler, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
-                num_leaves=200, resampler=RandomUnderSampler, num_samples=100)
-
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
-                resampler=RandomOverSampler, num_samples=100000)
-    endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, resampler=RandomUnderSampler, num_samples=100)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=50, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    #             max_leaves=50, resampler=RandomOverSampler, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    #             max_leaves=50, resampler=RandomUnderSampler, num_samples=100)
+    #
+    # endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=50, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=50,
+    #             resampler=RandomOverSampler, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier,
+    #             max_leaves=50, resampler=RandomUnderSampler, num_samples=100)
+    #
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=100, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    #             max_leaves=100, resampler=RandomOverSampler, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    #             max_leaves=100, resampler=RandomUnderSampler, num_samples=100)
+    #
+    # endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=100, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=100,
+    #             resampler=RandomOverSampler, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=100,
+    #             resampler=RandomUnderSampler, num_samples=100)
+    #
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=200, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    #             max_leaves=200, resampler=RandomOverSampler, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    #             max_leaves=200, resampler=RandomUnderSampler, num_samples=100)
+    #
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    #             resampler=RandomOverSampler, num_samples=100000)
+    # endear_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, resampler=RandomUnderSampler, num_samples=100)
 
 
 if __name__ == "__main__":

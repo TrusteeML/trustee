@@ -1,0 +1,2485 @@
+Fwd URG Flags_0              CWE Flag Count                 1.000000
+Fwd PSH Flags_0              SYN Flag Count                 1.000000
+Total Backward Packets       Subflow Bwd Packets            1.000000
+Total Fwd Packets            Subflow Fwd Packets            1.000000
+Fwd PSH Flags_1              SYN Flag Count                 1.000000
+ECE Flag Count               RST Flag Count                 1.000000
+Avg Fwd Segment Size         Fwd Packet Length Mean         1.000000
+Fwd URG Flags_1              CWE Flag Count                 1.000000
+Avg Bwd Segment Size         Bwd Packet Length Mean         1.000000
+Fwd PSH Flags_0              Fwd PSH Flags_1                1.000000
+Fwd URG Flags_0              Fwd URG Flags_1                1.000000
+Total Length of Bwd Packets  Subflow Bwd Bytes              1.000000
+Total Length of Fwd Packets  Subflow Fwd Bytes              1.000000
+Subflow Fwd Packets          Total Backward Packets         0.997923
+Total Fwd Packets            Subflow Bwd Packets            0.997923
+Subflow Fwd Packets          Subflow Bwd Packets            0.997923
+Total Fwd Packets            Total Backward Packets         0.997923
+Average Packet Size          Packet Length Mean             0.997752
+Subflow Fwd Packets          Total Length of Bwd Packets    0.994409
+Total Fwd Packets            Total Length of Bwd Packets    0.994409
+                             Subflow Bwd Bytes              0.994396
+Subflow Fwd Packets          Subflow Bwd Bytes              0.994396
+Idle Mean                    Idle Max                       0.990493
+Idle Min                     Idle Mean                      0.990338
+Subflow Bwd Packets          Total Length of Bwd Packets    0.989296
+Total Backward Packets       Total Length of Bwd Packets    0.989296
+                             Subflow Bwd Bytes              0.989289
+Subflow Bwd Packets          Subflow Bwd Bytes              0.989289
+Fwd IAT Max                  Idle Max                       0.988546
+Max Packet Length            Packet Length Std              0.984285
+Bwd Packet Length Max        Bwd Packet Length Std          0.982765
+Fwd IAT Max                  Idle Mean                      0.978419
+Fwd Packet Length Max        Fwd Packet Length Std          0.967476
+Idle Min                     Idle Max                       0.962268
+Avg Bwd Segment Size         Bwd Packet Length Max          0.959068
+Bwd Packet Length Mean       Bwd Packet Length Max          0.959068
+Idle Min                     Fwd IAT Max                    0.949784
+Bwd Packet Length Max        Max Packet Length              0.948672
+Packet Length Mean           Packet Length Std              0.943833
+Average Packet Size          Packet Length Std              0.943605
+Bwd Packet Length Std        Packet Length Std              0.942489
+Avg Bwd Segment Size         Bwd Packet Length Std          0.941681
+Bwd Packet Length Mean       Bwd Packet Length Std          0.941681
+Bwd Packet Length Max        Packet Length Std              0.939980
+Flow IAT Std                 Fwd IAT Max                    0.935870
+                             Idle Max                       0.935677
+Bwd IAT Mean                 Bwd IAT Min                    0.934934
+Bwd Packet Length Std        Max Packet Length              0.932936
+Flow IAT Std                 Idle Mean                      0.931520
+Packet Length Std            Packet Length Variance         0.924213
+Bwd Packet Length Mean       Packet Length Mean             0.921900
+Avg Bwd Segment Size         Packet Length Mean             0.921900
+Bwd Packet Length Mean       Packet Length Std              0.920173
+Avg Bwd Segment Size         Packet Length Std              0.920173
+Packet Length Mean           Max Packet Length              0.918195
+Fwd IAT Max                  Fwd IAT Std                    0.916829
+Avg Bwd Segment Size         Average Packet Size            0.915525
+Bwd Packet Length Mean       Average Packet Size            0.915525
+Idle Max                     Fwd IAT Std                    0.914072
+Average Packet Size          Max Packet Length              0.912786
+Flow IAT Std                 Idle Min                       0.909333
+Active Mean                  Active Min                     0.908144
+Avg Bwd Segment Size         Max Packet Length              0.905706
+Bwd Packet Length Mean       Max Packet Length              0.905706
+Idle Mean                    Fwd IAT Std                    0.903163
+Flow IAT Mean                Fwd IAT Mean                   0.900850
+Max Packet Length            Packet Length Variance         0.894700
+Fwd Packet Length Std        Avg Fwd Segment Size           0.894041
+                             Fwd Packet Length Mean         0.894041
+Bwd Packet Length Std        Packet Length Variance         0.891267
+Fwd Packet Length Max        Fwd Packet Length Mean         0.887159
+                             Avg Fwd Segment Size           0.887159
+Bwd Packet Length Max        Packet Length Mean             0.880684
+Fwd Header Length            Bwd Header Length              0.876416
+Bwd Packet Length Max        Average Packet Size            0.874817
+Idle Min                     Fwd IAT Std                    0.874472
+Flow Duration                Flow IAT Max                   0.857099
+Bwd Packet Length Max        Packet Length Variance         0.852806
+Fwd IAT Mean                 Bwd IAT Mean                   0.851459
+Bwd Packet Length Std        Packet Length Mean             0.851230
+                             Average Packet Size            0.850214
+Bwd IAT Max                  Bwd IAT Std                    0.846278
+Flow IAT Std                 Fwd IAT Mean                   0.828031
+Fwd IAT Total                Flow Duration                  0.826238
+Active Max                   Active Mean                    0.824474
+Fwd IAT Total                Bwd IAT Total                  0.818961
+Average Packet Size          Packet Length Variance         0.816001
+Packet Length Mean           Packet Length Variance         0.805735
+Fwd Packets/s                Bwd Packets/s                  0.802313
+Flow IAT Std                 Fwd IAT Std                    0.801758
+Fwd IAT Mean                 Bwd IAT Min                    0.800767
+Init_Win_bytes_forward       Min Packet Length              0.797407
+Bwd Packet Length Mean       Packet Length Variance         0.794704
+Avg Bwd Segment Size         Packet Length Variance         0.794704
+Active Max                   Active Std                     0.792591
+Fwd IAT Total                Fwd IAT Max                    0.786282
+                             Idle Max                       0.780009
+                             Idle Mean                      0.768641
+Init_Win_bytes_forward       Bwd Packet Length Min          0.761568
+Fwd IAT Total                Idle Min                       0.739228
+                             Flow IAT Std                   0.738832
+Fwd IAT Max                  Flow IAT Max                   0.729953
+Fwd IAT Total                Fwd IAT Std                    0.726691
+Init_Win_bytes_forward       Init_Win_bytes_backward        0.726503
+Idle Max                     Flow IAT Max                   0.723570
+Bwd IAT Total                Bwd IAT Max                    0.722341
+Idle Mean                    Flow IAT Max                   0.716712
+Bwd IAT Mean                 Bwd IAT Max                    0.710104
+Flow IAT Std                 Flow IAT Mean                  0.707286
+Bwd Packet Length Min        Min Packet Length              0.703930
+Idle Min                     Flow IAT Max                   0.696335
+Flow IAT Std                 Flow IAT Max                   0.685697
+Fwd IAT Mean                 Fwd IAT Min                    0.683690
+Flow IAT Std                 Bwd IAT Max                    0.682298
+Bwd IAT Min                  Fwd IAT Min                    0.681985
+Fwd IAT Max                  Fwd IAT Mean                   0.681864
+Flow Duration                Bwd IAT Total                  0.680195
+Flow IAT Std                 Bwd IAT Mean                   0.673683
+Fwd IAT Std                  Flow IAT Max                   0.668887
+Idle Mean                    Fwd IAT Mean                   0.660914
+Idle Max                     Fwd IAT Mean                   0.658001
+Fwd IAT Max                  Flow IAT Mean                  0.655648
+Idle Max                     Bwd IAT Max                    0.655213
+Idle Min                     Fwd IAT Mean                   0.650819
+Idle Mean                    Bwd IAT Max                    0.649540
+Flow Duration                Fwd IAT Max                    0.648524
+Fwd IAT Max                  Bwd IAT Max                    0.647685
+Flow Duration                Idle Max                       0.644982
+Bwd IAT Total                Bwd IAT Std                    0.641903
+Flow Duration                Idle Mean                      0.635503
+Bwd IAT Mean                 Fwd IAT Min                    0.633736
+Idle Min                     Bwd IAT Max                    0.632748
+Flow IAT Mean                Bwd IAT Mean                   0.632035
+Fwd IAT Std                  Bwd IAT Std                    0.629460
+Fwd IAT Mean                 Bwd IAT Max                    0.628495
+Max Packet Length            Fwd IAT Std                    0.627338
+act_data_pkt_fwd             Subflow Bwd Bytes              0.616898
+                             Total Length of Bwd Packets    0.616852
+                             Total Fwd Packets              0.614854
+                             Subflow Fwd Packets            0.614854
+Flow Duration                Flow IAT Std                   0.611380
+                             Idle Min                       0.611090
+Min Packet Length            Init_Win_bytes_backward        0.607606
+Idle Max                     Flow IAT Mean                  0.606371
+PSH Flag Count               Init_Win_bytes_backward        0.605626
+act_data_pkt_fwd             Subflow Bwd Packets            0.605537
+                             Total Backward Packets         0.605537
+Bwd Packet Length Max        Fwd IAT Std                    0.604983
+Idle Mean                    Flow IAT Mean                  0.604647
+Flow Duration                Fwd IAT Std                    0.599505
+Flow IAT Mean                Fwd IAT Min                    0.597469
+Max Packet Length            Idle Max                       0.596430
+Avg Bwd Segment Size         Fwd IAT Std                    0.594778
+Bwd Packet Length Mean       Fwd IAT Std                    0.594778
+Max Packet Length            Fwd IAT Max                    0.592307
+Idle Min                     Flow IAT Mean                  0.591281
+Packet Length Std            Fwd IAT Std                    0.591252
+Max Packet Length            Idle Mean                      0.584609
+Bwd Packet Length Max        Idle Max                       0.582253
+Fwd IAT Total                Bwd IAT Max                    0.581917
+Active Max                   Active Min                     0.581448
+Bwd Packet Length Std        Fwd IAT Std                    0.580396
+Avg Bwd Segment Size         Idle Max                       0.578853
+Bwd Packet Length Mean       Idle Max                       0.578853
+Bwd Packet Length Max        Idle Mean                      0.577388
+                             Fwd IAT Max                    0.575600
+Bwd Packet Length Mean       Idle Mean                      0.574056
+Avg Bwd Segment Size         Idle Mean                      0.574056
+Flow IAT Mean                Bwd IAT Min                    0.573211
+Fwd IAT Total                Flow IAT Max                   0.572831
+Bwd Packet Length Mean       Fwd IAT Max                    0.572254
+Avg Bwd Segment Size         Fwd IAT Max                    0.572254
+Bwd Packet Length Max        Idle Min                       0.559665
+Max Packet Length            Idle Min                       0.559508
+Packet Length Std            Idle Max                       0.556980
+Bwd Packet Length Mean       Idle Min                       0.556724
+Avg Bwd Segment Size         Idle Min                       0.556724
+Bwd Packet Length Std        Idle Max                       0.554799
+Idle Max                     Bwd IAT Std                    0.553283
+Packet Length Std            Fwd IAT Max                    0.552737
+Flow IAT Std                 Bwd IAT Min                    0.551071
+Fwd IAT Total                Fwd IAT Mean                   0.549336
+Bwd Packet Length Std        Fwd IAT Max                    0.548936
+                             Idle Mean                      0.548104
+Packet Length Std            Idle Mean                      0.546768
+Fwd IAT Max                  Bwd IAT Std                    0.546617
+Idle Mean                    Bwd IAT Std                    0.545931
+Fwd IAT Std                  Bwd IAT Max                    0.542829
+Bwd Packet Length Min        Init_Win_bytes_backward        0.542419
+Packet Length Mean           Fwd IAT Std                    0.537861
+Fwd IAT Total                Flow IAT Mean                  0.537226
+Bwd Packet Length Std        Idle Min                       0.529437
+Idle Min                     Bwd IAT Std                    0.529014
+ACK Flag Count               Destination Port               0.528873
+Packet Length Std            Idle Min                       0.524407
+Average Packet Size          Fwd IAT Std                    0.524265
+Fwd IAT Total                Bwd IAT Std                    0.517180
+Packet Length Mean           Idle Max                       0.513380
+Bwd IAT Total                Bwd IAT Mean                   0.511481
+Fwd IAT Total                Max Packet Length              0.509931
+Packet Length Mean           Fwd IAT Max                    0.508760
+                             Idle Mean                      0.508270
+URG Flag Count               Destination Port               0.505237
+Init_Win_bytes_forward       ACK Flag Count                 0.503359
+Average Packet Size          Idle Max                       0.499228
+Fwd IAT Mean                 Flow IAT Max                   0.497718
+Max Packet Length            Flow IAT Std                   0.494994
+Bwd Packet Length Max        Fwd IAT Total                  0.494893
+Average Packet Size          Fwd IAT Max                    0.494523
+                             Idle Mean                      0.494449
+Packet Length Mean           Idle Min                       0.492001
+Flow IAT Mean                Bwd IAT Max                    0.490269
+FIN Flag Count               Bwd IAT Std                    0.488288
+Bwd Packet Length Max        Flow IAT Std                   0.485251
+Flow Duration                Bwd IAT Max                    0.483577
+Init_Win_bytes_forward       PSH Flag Count                 0.481826
+Flow IAT Std                 Bwd IAT Std                    0.481674
+Flow IAT Mean                Flow IAT Max                   0.480419
+Average Packet Size          Idle Min                       0.478900
+Avg Bwd Segment Size         Flow IAT Std                   0.478038
+Bwd Packet Length Mean       Flow IAT Std                   0.478038
+URG Flag Count               ACK Flag Count                 0.475797
+Bwd IAT Max                  Bwd IAT Min                    0.474823
+Flow IAT Max                 Bwd IAT Max                    0.474778
+Bwd Packet Length Std        Flow IAT Std                   0.468626
+Packet Length Std            Flow IAT Std                   0.463984
+Idle Mean                    Bwd IAT Mean                   0.463361
+Flow IAT Std                 Bwd IAT Total                  0.462848
+Idle Max                     Bwd IAT Mean                   0.462543
+Bwd Packet Length Mean       Fwd IAT Total                  0.459398
+Avg Bwd Segment Size         Fwd IAT Total                  0.459398
+Idle Min                     Bwd IAT Mean                   0.457291
+Fwd IAT Max                  Bwd IAT Mean                   0.457100
+Fwd IAT Total                Packet Length Std              0.454506
+Flow Duration                Fwd IAT Mean                   0.452968
+Idle Max                     Bwd IAT Total                  0.448402
+Flow Duration                Flow IAT Mean                  0.444547
+Idle Mean                    Bwd IAT Total                  0.444211
+Bwd Packet Length Std        Fwd IAT Total                  0.442731
+Fwd IAT Max                  Bwd IAT Total                  0.441547
+PSH Flag Count               ACK Flag Count                 0.440260
+Fwd IAT Std                  Packet Length Variance         0.434248
+Min Packet Length            Fwd Packet Length Min          0.433891
+Max Packet Length            Flow IAT Max                   0.433802
+Init_Win_bytes_backward      Max Packet Length              0.433442
+Flow Duration                Bwd IAT Std                    0.430592
+Bwd IAT Total                Fwd IAT Mean                   0.430518
+Idle Min                     Bwd IAT Total                  0.427820
+Fwd IAT Total                Packet Length Mean             0.427718
+Init_Win_bytes_backward      Packet Length Std              0.426647
+Active Std                   Active Mean                    0.426411
+Flow Duration                Max Packet Length              0.424232
+Bwd Packet Length Max        Flow IAT Max                   0.423349
+Bwd Packet Length Mean       Flow IAT Max                   0.420888
+Avg Bwd Segment Size         Flow IAT Max                   0.420888
+Flow IAT Mean                Fwd IAT Std                    0.419451
+Packet Length Mean           Flow IAT Std                   0.419172
+Bwd IAT Max                  FIN Flag Count                 0.417912
+Min Packet Length            PSH Flag Count                 0.415189
+Bwd Packet Length Max        Init_Win_bytes_backward        0.413820
+Fwd IAT Total                Bwd IAT Mean                   0.412829
+Fwd IAT Std                  Fwd IAT Mean                   0.412515
+Bwd Packet Length Max        Flow Duration                  0.411804
+Average Packet Size          Flow IAT Std                   0.408715
+Fwd Header Length            min_seg_size_forward           0.405954
+Fwd IAT Total                Average Packet Size            0.405861
+Packet Length Std            Flow IAT Max                   0.405244
+Init_Win_bytes_backward      Bwd Packet Length Std          0.404788
+Bwd Packet Length Std        Flow IAT Max                   0.403766
+Idle Max                     Packet Length Variance         0.403730
+Flow IAT Std                 Fwd IAT Min                    0.401102
+Flow IAT Max                 Bwd IAT Std                    0.400999
+Fwd IAT Max                  Packet Length Variance         0.400000
+Init_Win_bytes_backward      Packet Length Mean             0.396003
+Idle Mean                    Packet Length Variance         0.393290
+Max Packet Length            Fwd Packet Length Max          0.387744
+Bwd Packet Length Mean       Init_Win_bytes_backward        0.382507
+Avg Bwd Segment Size         Init_Win_bytes_backward        0.382507
+Bwd Packet Length Mean       Flow Duration                  0.381999
+Avg Bwd Segment Size         Flow Duration                  0.381999
+Bwd IAT Total                Fwd IAT Std                    0.381911
+Max Packet Length            Fwd Packet Length Std          0.380679
+Flow Duration                Packet Length Std              0.378350
+Bwd Packet Length Min        PSH Flag Count                 0.375790
+                             ACK Flag Count                 0.375111
+Idle Min                     Packet Length Variance         0.374455
+Packet Length Mean           Flow IAT Max                   0.373734
+Init_Win_bytes_backward      Average Packet Size            0.373165
+Min Packet Length            ACK Flag Count                 0.370470
+Fwd IAT Std                  FIN Flag Count                 0.370461
+Bwd Packet Length Std        Flow Duration                  0.368410
+Average Packet Size          Flow IAT Max                   0.363175
+Packet Length Std            Fwd Packet Length Std          0.360918
+Init_Win_bytes_backward      Fwd IAT Total                  0.356572
+Packet Length Mean           Flow Duration                  0.356451
+Bwd IAT Total                Flow IAT Mean                  0.352737
+Packet Length Std            Fwd Packet Length Max          0.351776
+Max Packet Length            Bwd IAT Std                    0.343399
+Packet Length Mean           Fwd Packet Length Max          0.342719
+Flow Duration                Bwd IAT Mean                   0.341921
+Flow IAT Std                 Packet Length Variance         0.341681
+Average Packet Size          Flow Duration                  0.338070
+Packet Length Mean           Fwd Packet Length Std          0.336496
+Flow IAT Max                 Bwd IAT Mean                   0.334730
+Bwd Packets/s                URG Flag Count                 0.334689
+Average Packet Size          Fwd Packet Length Max          0.334582
+                             Fwd Packet Length Std          0.332269
+Fwd PSH Flags_0              ACK Flag Count                 0.323426
+SYN Flag Count               ACK Flag Count                 0.323426
+Fwd PSH Flags_1              ACK Flag Count                 0.323426
+Init_Win_bytes_forward       Destination Port               0.322238
+Bwd IAT Total                Flow IAT Max                   0.322179
+Bwd IAT Mean                 Bwd IAT Std                    0.321248
+Packet Length Std            Bwd IAT Std                    0.319095
+Bwd IAT Max                  Fwd IAT Min                    0.318076
+Idle Mean                    Bwd IAT Min                    0.316343
+Idle Min                     Bwd IAT Min                    0.316298
+                             FIN Flag Count                 0.313948
+Average Packet Size          Avg Fwd Segment Size           0.313417
+                             Fwd Packet Length Mean         0.313417
+Idle Max                     Bwd IAT Min                    0.312305
+Init_Win_bytes_forward       Fwd Packet Length Min          0.312036
+Idle Mean                    FIN Flag Count                 0.311155
+Packet Length Mean           Avg Fwd Segment Size           0.309887
+                             Fwd Packet Length Mean         0.309887
+Fwd IAT Max                  Bwd IAT Min                    0.309040
+Init_Win_bytes_backward      Fwd IAT Std                    0.308087
+                             Flow Duration                  0.304527
+Init_Win_bytes_forward       Max Packet Length              0.304206
+Init_Win_bytes_backward      URG Flag Count                 0.303063
+Idle Max                     FIN Flag Count                 0.302669
+Init_Win_bytes_forward       Packet Length Std              0.299097
+Init_Win_bytes_backward      Packet Length Variance         0.298138
+Fwd IAT Max                  FIN Flag Count                 0.298060
+Bwd IAT Total                Fwd Packet Length Max          0.296477
+Max Packet Length            Bwd IAT Max                    0.296365
+Packet Length Mean           Bwd IAT Std                    0.295631
+Max Packet Length            Fwd Packet Length Mean         0.294685
+                             Avg Fwd Segment Size           0.294685
+Init_Win_bytes_forward       Bwd Packet Length Std          0.293487
+Fwd IAT Total                Active Max                     0.293057
+Flow IAT Max                 Packet Length Variance         0.293049
+Bwd IAT Total                Active Max                     0.292831
+Bwd Packets/s                Destination Port               0.292534
+Bwd Packet Length Max        Bwd IAT Std                    0.289750
+Packet Length Std            Avg Fwd Segment Size           0.288020
+                             Fwd Packet Length Mean         0.288020
+Init_Win_bytes_forward       Bwd Packet Length Max          0.287290
+Bwd Packet Length Min        Fwd Packet Length Min          0.285993
+Fwd IAT Mean                 Bwd IAT Std                    0.285836
+Average Packet Size          Bwd IAT Std                    0.285588
+Fwd Packet Length Min        Down/Up Ratio                  0.285356
+Init_Win_bytes_backward      Bwd IAT Total                  0.284311
+Fwd IAT Max                  Idle Std                       0.283713
+Packet Length Variance       Fwd Packet Length Std          0.283455
+Down/Up Ratio                URG Flag Count                 0.282537
+Fwd Packets/s                Destination Port               0.282201
+Idle Max                     Idle Std                       0.281557
+Fwd IAT Total                Packet Length Variance         0.280507
+Fwd IAT Std                  Idle Std                       0.277742
+Bwd IAT Total                Active Std                     0.274877
+                             Bwd IAT Min                    0.274136
+Init_Win_bytes_forward       Down/Up Ratio                  0.272939
+Bwd IAT Std                  Fwd Packet Length Std          0.271327
+Init_Win_bytes_backward      Fwd IAT Max                    0.270618
+Packet Length Std            Bwd IAT Max                    0.270083
+Init_Win_bytes_backward      Idle Max                       0.268741
+Bwd IAT Std                  Fwd Packet Length Max          0.267720
+Fwd IAT Total                Fwd Packet Length Max          0.267385
+PSH Flag Count               Packet Length Mean             0.265360
+Packet Length Mean           Bwd IAT Max                    0.264700
+Init_Win_bytes_backward      Idle Mean                      0.264145
+Average Packet Size          Fwd Packets/s                  0.264046
+Fwd Packet Length Min        Avg Fwd Segment Size           0.263066
+                             Fwd Packet Length Mean         0.263066
+Max Packet Length            Bwd IAT Total                  0.263058
+Min Packet Length            Max Packet Length              0.262721
+Flow IAT Std                 FIN Flag Count                 0.262699
+Packet Length Mean           Fwd Packets/s                  0.261759
+Min Packet Length            Packet Length Std              0.261138
+Bwd Packet Length Std        Bwd IAT Std                    0.260305
+Packet Length Variance       Fwd Packet Length Max          0.259273
+PSH Flag Count               Bwd IAT Total                  0.258565
+Flow IAT Mean                Bwd IAT Std                    0.258486
+Min Packet Length            Bwd Packet Length Std          0.258226
+Init_Win_bytes_forward       Fwd IAT Total                  0.255744
+Bwd IAT Max                  Fwd Packet Length Max          0.255362
+Average Packet Size          Bwd IAT Max                    0.254240
+Fwd Packets/s                URG Flag Count                 0.253344
+Bwd IAT Max                  Fwd Packet Length Std          0.253286
+Init_Win_bytes_backward      Idle Min                       0.252961
+Min Packet Length            Bwd Packet Length Max          0.251550
+PSH Flag Count               Packet Length Std              0.249373
+                             Average Packet Size            0.248705
+Bwd Packet Length Min        Destination Port               0.248222
+Bwd IAT Total                Fwd Packet Length Std          0.247965
+Down/Up Ratio                Bwd Packets/s                  0.247274
+Flow Packets/s               ACK Flag Count                 0.247003
+Flow Duration                Active Max                     0.246343
+Init_Win_bytes_forward       Packet Length Mean             0.244951
+Fwd IAT Max                  Fwd IAT Min                    0.244493
+Fwd IAT Total                Active Std                     0.244347
+Bwd Packet Length Max        Bwd IAT Max                    0.243826
+Min Packet Length            Destination Port               0.243054
+Avg Bwd Segment Size         Fwd Packets/s                  0.242694
+Bwd Packet Length Mean       Fwd Packets/s                  0.242694
+Fwd IAT Total                Idle Std                       0.241653
+act_data_pkt_fwd             Subflow Fwd Bytes              0.241586
+                             Total Length of Fwd Packets    0.241289
+PSH Flag Count               Max Packet Length              0.241239
+Init_Win_bytes_backward      Fwd Packet Length Max          0.240982
+Init_Win_bytes_forward       URG Flag Count                 0.239867
+Average Packet Size          Bwd Packets/s                  0.237998
+Max Packet Length            Fwd Packets/s                  0.237848
+Bwd Packet Length Min        Bwd Packet Length Std          0.237324
+Init_Win_bytes_backward      Fwd Packet Length Std          0.236360
+Packet Length Mean           Bwd Packets/s                  0.236298
+Bwd Packet Length Mean       Bwd IAT Std                    0.236278
+Avg Bwd Segment Size         Bwd IAT Std                    0.236278
+Packet Length Std            Fwd Packets/s                  0.236116
+Idle Min                     Fwd IAT Min                    0.235988
+Init_Win_bytes_forward       Bwd Packet Length Mean         0.235696
+                             Avg Bwd Segment Size           0.235696
+Fwd IAT Std                  Fwd Packet Length Std          0.235435
+Bwd IAT Std                  Avg Fwd Segment Size           0.234312
+                             Fwd Packet Length Mean         0.234312
+Bwd Packet Length Max        PSH Flag Count                 0.233640
+Flow Duration                Packet Length Variance         0.232960
+Flow IAT Std                 Idle Std                       0.232878
+Idle Mean                    Fwd IAT Min                    0.232765
+Init_Win_bytes_forward       Fwd IAT Std                    0.231988
+Bwd Packet Length Min        Max Packet Length              0.231909
+Flow Packets/s               Destination Port               0.231797
+Flow Bytes/s                 Flow Packets/s                 0.230661
+Fwd IAT Total                Fwd Packet Length Std          0.229364
+                             Fwd Packets/s                  0.227828
+Bwd Packet Length Max        Fwd Packets/s                  0.227739
+Max Packet Length            Flow IAT Mean                  0.227198
+Bwd Packet Length Max        Bwd IAT Total                  0.226166
+Flow IAT Max                 Bwd IAT Min                    0.226137
+Idle Max                     Fwd IAT Min                    0.225263
+Bwd IAT Max                  Fwd Packet Length Mean         0.224966
+                             Avg Fwd Segment Size           0.224966
+Flow Duration                Fwd Packet Length Max          0.223892
+SYN Flag Count               Destination Port               0.223655
+Fwd PSH Flags_1              Destination Port               0.223655
+Fwd PSH Flags_0              Destination Port               0.223655
+Bwd Packet Length Max        Flow IAT Mean                  0.223091
+Max Packet Length            Idle Std                       0.222949
+Flow IAT Max                 FIN Flag Count                 0.222598
+Fwd IAT Std                  Fwd Packet Length Max          0.222275
+Max Packet Length            Fwd IAT Mean                   0.222213
+Init_Win_bytes_backward      Fwd Packet Length Min          0.222101
+Min Packet Length            Fwd IAT Total                  0.221702
+Packet Length Mean           Bwd IAT Total                  0.221187
+Init_Win_bytes_forward       Average Packet Size            0.220810
+Fwd IAT Total                Bwd IAT Min                    0.220620
+PSH Flag Count               Bwd Packet Length Std          0.219705
+Bwd Packet Length Min        Packet Length Std              0.219691
+                             Bwd Packet Length Max          0.218558
+                             Down/Up Ratio                  0.218386
+Init_Win_bytes_forward       Flow Duration                  0.218211
+Bwd Packet Length Std        Flow IAT Mean                  0.217670
+Packet Length Variance       Bwd IAT Std                    0.217583
+Init_Win_bytes_backward      Flow IAT Std                   0.217548
+Bwd Packet Length Mean       Bwd Packets/s                  0.217258
+Avg Bwd Segment Size         Bwd Packets/s                  0.217258
+Packet Length Std            Bwd IAT Total                  0.217209
+Packet Length Variance       Avg Fwd Segment Size           0.217020
+                             Fwd Packet Length Mean         0.217020
+Max Packet Length            Bwd Packets/s                  0.217011
+Init_Win_bytes_forward       Packet Length Variance         0.216756
+Avg Bwd Segment Size         Destination Port               0.216053
+Bwd Packet Length Mean       Destination Port               0.216053
+Bwd IAT Total                FIN Flag Count                 0.215964
+Packet Length Std            Bwd Packets/s                  0.215387
+Init_Win_bytes_backward      Bwd IAT Std                    0.213940
+Bwd Packet Length Max        FIN Flag Count                 0.213490
+                             Fwd IAT Mean                   0.212814
+Bwd Packet Length Min        Fwd IAT Total                  0.212763
+Fwd PSH Flags_0              Flow Packets/s                 0.212061
+Fwd PSH Flags_1              Flow Packets/s                 0.212061
+SYN Flag Count               Flow Packets/s                 0.212061
+Avg Bwd Segment Size         Flow IAT Mean                  0.211959
+Bwd Packet Length Mean       Flow IAT Mean                  0.211959
+Min Packet Length            Down/Up Ratio                  0.211912
+PSH Flag Count               Fwd Packet Length Max          0.211842
+Avg Bwd Segment Size         PSH Flag Count                 0.210546
+Bwd Packet Length Mean       PSH Flag Count                 0.210546
+PSH Flag Count               URG Flag Count                 0.210469
+Init_Win_bytes_backward      Bwd Packets/s                  0.210345
+Bwd Packet Length Std        Bwd IAT Max                    0.210006
+Packet Length Std            Flow IAT Mean                  0.209508
+Bwd Packet Length Std        Fwd Packets/s                  0.209270
+Fwd IAT Total                Bwd Packets/s                  0.208934
+Fwd IAT Max                  Fwd Packet Length Std          0.207953
+Bwd Packet Length Max        Bwd Packets/s                  0.206843
+Init_Win_bytes_backward      Flow IAT Max                   0.205911
+Packet Length Std            Fwd IAT Mean                   0.205682
+Flow Duration                Active Std                     0.205225
+Down/Up Ratio                ACK Flag Count                 0.204980
+Bwd Packet Length Mean       Fwd IAT Mean                   0.204550
+Avg Bwd Segment Size         Fwd IAT Mean                   0.204550
+Bwd Packet Length Std        Fwd IAT Mean                   0.203910
+Flow IAT Max                 Idle Std                       0.203594
+Min Packet Length            Bwd Packet Length Mean         0.203544
+                             Avg Bwd Segment Size           0.203544
+                             Fwd IAT Std                    0.203307
+Avg Bwd Segment Size         Bwd IAT Max                    0.203150
+Bwd Packet Length Mean       Bwd IAT Max                    0.203150
+Fwd IAT Max                  Fwd Packet Length Max          0.202904
+Packet Length Std            Idle Std                       0.202130
+Average Packet Size          Bwd IAT Total                  0.201894
+Idle Max                     Fwd Packet Length Std          0.200757
+Flow Duration                Idle Std                       0.200460
+Bwd Packet Length Std        FIN Flag Count                 0.199579
+Max Packet Length            FIN Flag Count                 0.197596
+PSH Flag Count               Fwd Packet Length Min          0.197529
+Idle Max                     Fwd Packet Length Max          0.196984
+Down/Up Ratio                Flow Packets/s                 0.196611
+Fwd IAT Std                  Bwd IAT Mean                   0.195942
+Fwd IAT Max                  Fwd Packets/s                  0.194707
+Flow Duration                Fwd Packets/s                  0.193873
+Packet Length Std            FIN Flag Count                 0.192560
+Flow Duration                Fwd Packet Length Std          0.191922
+Bwd Packet Length Max        Destination Port               0.191795
+Flow IAT Std                 Fwd Packets/s                  0.191388
+Bwd Packet Length Std        Bwd Packets/s                  0.191374
+Init_Win_bytes_forward       Fwd IAT Max                    0.191363
+Min Packet Length            Packet Length Variance         0.189565
+Idle Std                     Fwd Packet Length Std          0.189316
+Min Packet Length            Flow Duration                  0.188737
+Fwd IAT Total                FIN Flag Count                 0.188688
+Idle Max                     Fwd Packets/s                  0.188585
+PSH Flag Count               Fwd Packet Length Std          0.188299
+Min Packet Length            Packet Length Mean             0.186362
+Packet Length Mean           Fwd IAT Mean                   0.186299
+Bwd Packet Length Min        Fwd IAT Std                    0.186050
+Idle Mean                    Fwd Packets/s                  0.185995
+Fwd IAT Total                Active Mean                    0.185594
+Init_Win_bytes_forward       Bwd IAT Total                  0.185159
+Init_Win_bytes_backward      Flow Packets/s                 0.183818
+Bwd Packet Length Min        URG Flag Count                 0.183562
+Bwd Packet Length Mean       FIN Flag Count                 0.183001
+Avg Bwd Segment Size         FIN Flag Count                 0.183001
+Init_Win_bytes_forward       Idle Max                       0.182935
+Average Packet Size          Fwd IAT Mean                   0.182132
+Bwd IAT Total                Fwd Packets/s                  0.181865
+Flow Duration                Bwd IAT Min                    0.181546
+Packet Length Mean           Flow IAT Mean                  0.181417
+Bwd Packet Length Min        Flow Duration                  0.181154
+Idle Mean                    Fwd Packet Length Std          0.180888
+Init_Win_bytes_forward       Fwd Packet Length Std          0.180027
+Idle Min                     Fwd Packets/s                  0.179224
+PSH Flag Count               Destination Port               0.179204
+Packet Length Mean           FIN Flag Count                 0.179170
+Idle Mean                    Fwd Packet Length Max          0.178859
+Flow IAT Max                 Fwd IAT Min                    0.178763
+Init_Win_bytes_backward      Destination Port               0.178753
+Fwd IAT Std                  Fwd Packets/s                  0.178709
+Fwd IAT Max                  Bwd Packets/s                  0.178564
+Init_Win_bytes_forward       Idle Mean                      0.178464
+Bwd IAT Total                Fwd IAT Min                    0.178135
+Flow Duration                Bwd Packets/s                  0.177794
+Idle Std                     Fwd Packet Length Mean         0.177005
+                             Avg Fwd Segment Size           0.177005
+Average Packet Size          Flow IAT Mean                  0.176663
+Bwd Packet Length Std        Idle Std                       0.176553
+Idle Std                     Fwd Packet Length Max          0.176176
+Flow IAT Std                 Bwd Packets/s                  0.175521
+Packet Length Variance       Bwd IAT Max                    0.175439
+Average Packet Size          FIN Flag Count                 0.175319
+Fwd PSH Flags_0              Flow Bytes/s                   0.174074
+Flow Bytes/s                 Fwd PSH Flags_1                0.174074
+                             SYN Flag Count                 0.174074
+Bwd IAT Total                Avg Fwd Segment Size           0.174013
+                             Fwd Packet Length Mean         0.174013
+Idle Max                     Bwd Packets/s                  0.172949
+Subflow Fwd Packets          Subflow Fwd Bytes              0.171793
+Total Fwd Packets            Subflow Fwd Bytes              0.171793
+Bwd Packet Length Min        Packet Length Variance         0.171639
+Bwd Packet Length Std        Destination Port               0.171625
+Total Fwd Packets            Total Length of Fwd Packets    0.171490
+Subflow Fwd Packets          Total Length of Fwd Packets    0.171490
+Idle Mean                    Bwd Packets/s                  0.170573
+Init_Win_bytes_forward       Idle Min                       0.169577
+Bwd Packet Length Max        Idle Std                       0.169424
+Packet Length Variance       Idle Std                       0.169138
+Init_Win_bytes_backward      Bwd IAT Max                    0.168975
+Bwd IAT Max                  Idle Std                       0.168642
+Avg Bwd Segment Size         Idle Std                       0.168530
+Bwd Packet Length Mean       Idle Std                       0.168530
+Fwd IAT Std                  Fwd Packet Length Mean         0.168317
+                             Avg Fwd Segment Size           0.168317
+Bwd Packet Length Std        Bwd IAT Total                  0.168119
+Init_Win_bytes_forward       Flow Packets/s                 0.167878
+Fwd IAT Total                Fwd IAT Min                    0.167791
+Init_Win_bytes_forward       Fwd Packet Length Max          0.167142
+Bwd IAT Total                Bwd Packets/s                  0.166777
+Bwd Packet Length Min        Fwd IAT Max                    0.165836
+Flow IAT Min                 act_data_pkt_fwd               0.164621
+Idle Min                     Bwd Packets/s                  0.164364
+Fwd IAT Std                  Bwd Packets/s                  0.163894
+Avg Bwd Segment Size         Bwd IAT Total                  0.163774
+Bwd Packet Length Mean       Bwd IAT Total                  0.163774
+Init_Win_bytes_forward       SYN Flag Count                 0.163316
+                             Fwd PSH Flags_1                0.163316
+                             Fwd PSH Flags_0                0.163316
+Min Packet Length            Fwd IAT Max                    0.161870
+                             Bwd IAT Total                  0.161531
+Bwd Packet Length Mean       URG Flag Count                 0.161423
+Avg Bwd Segment Size         URG Flag Count                 0.161423
+Min Packet Length            URG Flag Count                 0.161275
+Flow IAT Std                 Fwd Packet Length Std          0.161033
+Fwd IAT Total                Down/Up Ratio                  0.160980
+Bwd Packet Length Min        Packet Length Mean             0.160742
+Bwd IAT Std                  Idle Std                       0.159840
+Bwd Packet Length Min        Idle Max                       0.159566
+Min Packet Length            Idle Max                       0.159354
+Total Backward Packets       Subflow Fwd Bytes              0.159224
+Subflow Bwd Packets          Subflow Fwd Bytes              0.159224
+                             Total Length of Fwd Packets    0.158923
+Total Backward Packets       Total Length of Fwd Packets    0.158923
+PSH Flag Count               Active Max                     0.158894
+Flow Duration                FIN Flag Count                 0.158434
+PSH Flag Count               Fwd IAT Total                  0.158200
+Flow Duration                Active Mean                    0.157896
+Min Packet Length            Average Packet Size            0.157073
+                             Fwd Packet Length Std          0.156809
+Bwd Packet Length Min        Idle Mean                      0.156532
+Idle Min                     Fwd Packet Length Std          0.155810
+Flow IAT Mean                Packet Length Variance         0.155780
+Min Packet Length            Idle Mean                      0.155280
+Idle Min                     Fwd Packet Length Max          0.155053
+Flow IAT Std                 Fwd Packet Length Max          0.154377
+Packet Length Variance       Fwd Packets/s                  0.154279
+Bwd Packet Length Min        Bwd IAT Total                  0.154228
+Packet Length Mean           Idle Std                       0.153978
+Fwd IAT Std                  ACK Flag Count                 0.153836
+Fwd IAT Mean                 FIN Flag Count                 0.153401
+Flow IAT Mean                Fwd Packets/s                  0.152388
+Fwd IAT Total                Destination Port               0.152187
+Bwd IAT Total                ACK Flag Count                 0.151638
+Fwd IAT Max                  Fwd Packet Length Mean         0.150993
+                             Avg Fwd Segment Size           0.150993
+Packet Length Variance       FIN Flag Count                 0.150975
+Subflow Bwd Bytes            Subflow Fwd Bytes              0.150270
+Total Length of Bwd Packets  Subflow Fwd Bytes              0.150262
+Average Packet Size          Destination Port               0.150054
+Flow IAT Min                 Subflow Bwd Packets            0.150047
+                             Total Backward Packets         0.150047
+Fwd IAT Mean                 Packet Length Variance         0.150042
+Subflow Bwd Bytes            Total Length of Fwd Packets    0.149972
+Total Length of Bwd Packets  Total Length of Fwd Packets    0.149964
+Bwd Packet Length Min        Idle Min                       0.149824
+Flow IAT Min                 Total Fwd Packets              0.149681
+                             Subflow Fwd Packets            0.149681
+Bwd IAT Total                Active Mean                    0.149319
+Bwd Packet Length Min        Flow Packets/s                 0.149237
+Idle Mean                    Idle Std                       0.149200
+Fwd IAT Max                  ACK Flag Count                 0.149165
+Packet Length Mean           Destination Port               0.148978
+Average Packet Size          Idle Std                       0.148611
+                             URG Flag Count                 0.148387
+Down/Up Ratio                Fwd PSH Flags_1                0.148008
+                             SYN Flag Count                 0.148008
+Fwd PSH Flags_0              Down/Up Ratio                  0.148008
+PSH Flag Count               Packet Length Variance         0.147910
+Flow IAT Max                 Fwd Packet Length Std          0.147731
+Min Packet Length            Idle Min                       0.147442
+Idle Max                     ACK Flag Count                 0.147421
+Flow IAT Max                 Fwd Packets/s                  0.147162
+Bwd Packet Length Min        Bwd Packet Length Mean         0.146966
+                             Avg Bwd Segment Size           0.146966
+Init_Win_bytes_forward       Bwd IAT Std                    0.146796
+Idle Max                     Fwd Packet Length Mean         0.146215
+                             Avg Fwd Segment Size           0.146215
+Init_Win_bytes_forward       Flow IAT Max                   0.145471
+Packet Length Mean           URG Flag Count                 0.144978
+Flow IAT Max                 Fwd Packet Length Max          0.144814
+Flow IAT Min                 Total Length of Bwd Packets    0.144731
+                             Subflow Bwd Bytes              0.144719
+Fwd IAT Mean                 Fwd Packets/s                  0.144464
+Bwd IAT Max                  Fwd Packets/s                  0.144167
+Bwd Packet Length Max        URG Flag Count                 0.143653
+PSH Flag Count               Fwd PSH Flags_1                0.143059
+Fwd PSH Flags_0              PSH Flag Count                 0.143059
+PSH Flag Count               SYN Flag Count                 0.143059
+Active Max                   Fwd Packet Length Max          0.142575
+Init_Win_bytes_forward       FIN Flag Count                 0.141709
+Bwd Packet Length Min        Fwd Packet Length Std          0.141595
+Flow IAT Mean                Idle Std                       0.141237
+Packet Length Variance       Bwd Packets/s                  0.141153
+Avg Fwd Segment Size         Destination Port               0.140798
+Fwd Packet Length Mean       Destination Port               0.140798
+Fwd Packet Length Max        Fwd Packets/s                  0.139863
+Flow IAT Mean                Bwd Packets/s                  0.139756
+Idle Mean                    ACK Flag Count                 0.139470
+Fwd IAT Total                Avg Fwd Segment Size           0.138299
+                             Fwd Packet Length Mean         0.138299
+Avg Bwd Segment Size         Flow Packets/s                 0.138259
+Bwd Packet Length Mean       Flow Packets/s                 0.138259
+Flow Duration                Fwd IAT Min                    0.138087
+PSH Flag Count               Flow Duration                  0.135953
+Flow IAT Max                 Bwd Packets/s                  0.134960
+Bwd Packet Length Min        Average Packet Size            0.134527
+Idle Max                     Active Mean                    0.134088
+Init_Win_bytes_forward       Flow IAT Std                   0.133381
+Packet Length Mean           Flow Packets/s                 0.132845
+Fwd IAT Mean                 Bwd Packets/s                  0.132489
+Min Packet Length            Fwd Packet Length Max          0.132462
+Bwd IAT Max                  Bwd Packets/s                  0.132210
+Min Packet Length            Bwd IAT Std                    0.130762
+Flow Duration                Flow IAT Min                   0.130568
+Init_Win_bytes_backward      Fwd Packet Length Mean         0.129824
+                             Avg Fwd Segment Size           0.129824
+Average Packet Size          Flow Packets/s                 0.129467
+Fwd Packet Length Std        Destination Port               0.129450
+Fwd Packet Length Max        Bwd Packets/s                  0.128980
+Bwd Packet Length Min        Fwd Packet Length Max          0.128962
+Idle Min                     ACK Flag Count                 0.128802
+Bwd Packet Length Std        URG Flag Count                 0.128264
+Bwd Packet Length Min        Flow IAT Std                   0.128183
+Fwd IAT Max                  Active Mean                    0.128150
+PSH Flag Count               Active Std                     0.127889
+Flow IAT Max                 Flow IAT Min                   0.127884
+Init_Win_bytes_forward       Fwd Packets/s                  0.126137
+Idle Mean                    Avg Fwd Segment Size           0.126016
+                             Fwd Packet Length Mean         0.126016
+Bwd Packet Length Min        Flow IAT Max                   0.125446
+Flow Duration                Destination Port               0.125408
+Avg Fwd Segment Size         Fwd Packets/s                  0.125017
+Fwd Packet Length Mean       Fwd Packets/s                  0.125017
+Max Packet Length            Flow Packets/s                 0.124870
+Bwd IAT Std                  Fwd Packets/s                  0.124741
+PSH Flag Count               FIN Flag Count                 0.124540
+Fwd Packet Length Std        Fwd Packets/s                  0.124462
+Flow IAT Mean                FIN Flag Count                 0.124324
+Max Packet Length            Destination Port               0.123742
+Bwd Packet Length Max        Flow Packets/s                 0.123495
+Active Mean                  Fwd Packet Length Max          0.123430
+Bwd IAT Max                  Active Mean                    0.123375
+Fwd IAT Mean                 Idle Std                       0.123320
+Idle Max                     Active Min                     0.123169
+Flow Duration                Flow Packets/s                 0.122829
+Fwd IAT Std                  Down/Up Ratio                  0.122716
+Min Packet Length            Flow IAT Max                   0.122564
+Bwd Packet Length Std        Fwd Packet Length Min          0.122084
+Flow Duration                Down/Up Ratio                  0.121999
+Packet Length Std            Flow Packets/s                 0.121525
+Idle Mean                    Active Mean                    0.121236
+Fwd Packets/s                ACK Flag Count                 0.120860
+Bwd Packet Length Max        Fwd Packet Length Min          0.120740
+Bwd Packet Length Min        Bwd IAT Std                    0.120608
+Active Max                   Bwd IAT Max                    0.120538
+Fwd IAT Max                  Down/Up Ratio                  0.120168
+Fwd IAT Total                Flow Packets/s                 0.119995
+Subflow Fwd Bytes            Fwd Packet Length Max          0.119870
+Packet Length Std            Destination Port               0.119652
+Total Length of Fwd Packets  Fwd Packet Length Max          0.119637
+Min Packet Length            Flow Packets/s                 0.118923
+Idle Mean                    Active Min                     0.118588
+Flow IAT Std                 Avg Fwd Segment Size           0.117795
+                             Fwd Packet Length Mean         0.117795
+Bwd Packet Length Min        Fwd Packets/s                  0.117680
+Fwd IAT Max                  Active Min                     0.117618
+Bwd IAT Mean                 FIN Flag Count                 0.117492
+Bwd IAT Total                Idle Std                       0.117130
+Subflow Fwd Bytes            Avg Fwd Segment Size           0.117008
+                             Fwd Packet Length Mean         0.117008
+Fwd IAT Total                Active Min                     0.116965
+Flow IAT Std                 Destination Port               0.116895
+Total Length of Fwd Packets  Fwd Packet Length Mean         0.116794
+                             Avg Fwd Segment Size           0.116794
+Fwd Packet Length Std        Bwd Packets/s                  0.116787
+Flow Duration                Avg Fwd Segment Size           0.116652
+                             Fwd Packet Length Mean         0.116652
+Active Max                   Fwd Packet Length Std          0.115672
+Idle Min                     Destination Port               0.115567
+Init_Win_bytes_backward      ACK Flag Count                 0.115287
+Fwd IAT Max                  Destination Port               0.114698
+Bwd IAT Std                  Bwd Packets/s                  0.114397
+PSH Flag Count               Active Mean                    0.114389
+Init_Win_bytes_backward      Active Max                     0.114206
+Min Packet Length            Flow IAT Std                   0.114184
+Flow IAT Max                 ACK Flag Count                 0.114017
+Idle Mean                    Destination Port               0.113614
+Idle Min                     Active Min                     0.113278
+Min Packet Length            FIN Flag Count                 0.112967
+Fwd Packet Length Mean       Bwd Packets/s                  0.112943
+Avg Fwd Segment Size         Bwd Packets/s                  0.112943
+Packet Length Std            URG Flag Count                 0.111473
+Init_Win_bytes_forward       Bwd IAT Min                    0.111050
+Bwd Packet Length Std        Flow Packets/s                 0.110717
+Idle Min                     Active Mean                    0.110694
+Bwd IAT Max                  Active Std                     0.110688
+Flow IAT Std                 ACK Flag Count                 0.110658
+Idle Max                     Destination Port               0.109288
+Max Packet Length            URG Flag Count                 0.108976
+Min Packet Length            Fwd Packets/s                  0.108906
+Fwd IAT Total                Fwd Packet Length Min          0.108128
+Fwd Packet Length Min        ACK Flag Count                 0.107794
+Flow IAT Max                 Fwd Packet Length Mean         0.107230
+                             Avg Fwd Segment Size           0.107230
+Bwd IAT Mean                 Fwd Packets/s                  0.107189
+Init_Win_bytes_backward      FIN Flag Count                 0.107127
+Active Mean                  Fwd Packet Length Std          0.106706
+Bwd Packet Length Min        FIN Flag Count                 0.106019
+Bwd IAT Total                Destination Port               0.105918
+Active Min                   Fwd Packet Length Max          0.105432
+PSH Flag Count               Flow Packets/s                 0.104440
+Fwd IAT Total                URG Flag Count                 0.104060
+Flow Bytes/s                 Avg Fwd Segment Size           0.103661
+                             Fwd Packet Length Mean         0.103661
+Idle Max                     Active Max                     0.103422
+Active Max                   Subflow Fwd Bytes              0.102982
+                             Total Length of Fwd Packets    0.102861
+Flow IAT Max                 Flow Packets/s                 0.102666
+Fwd IAT Max                  Flow Packets/s                 0.102547
+Idle Min                     Avg Fwd Segment Size           0.102534
+                             Fwd Packet Length Mean         0.102534
+Max Packet Length            Fwd Packet Length Min          0.101687
+Min Packet Length            Bwd IAT Min                    0.101504
+Avg Bwd Segment Size         Fwd Packet Length Min          0.101451
+Bwd Packet Length Mean       Fwd Packet Length Min          0.101451
+Flow IAT Mean                Destination Port               0.101447
+Active Max                   Bwd IAT Std                    0.101318
+Flow IAT Std                 Flow Packets/s                 0.100799
+Flow Duration                Active Min                     0.100342
+Fwd PSH Flags_0              Bwd Packet Length Mean         0.099948
+                             Avg Bwd Segment Size           0.099948
+Bwd Packet Length Mean       Fwd PSH Flags_1                0.099948
+Avg Bwd Segment Size         SYN Flag Count                 0.099948
+Bwd Packet Length Mean       SYN Flag Count                 0.099948
+Avg Bwd Segment Size         Fwd PSH Flags_1                0.099948
+Fwd Packet Length Min        SYN Flag Count                 0.099765
+                             Fwd PSH Flags_1                0.099765
+Fwd PSH Flags_0              Fwd Packet Length Min          0.099765
+FIN Flag Count               ACK Flag Count                 0.099600
+Idle Max                     Flow Packets/s                 0.099322
+Bwd IAT Max                  ACK Flag Count                 0.099312
+Packet Length Mean           Active Max                     0.099094
+Active Std                   Bwd IAT Std                    0.099061
+Fwd IAT Max                  Active Max                     0.098447
+Bwd IAT Mean                 Bwd Packets/s                  0.098302
+Fwd Packet Length Max        Destination Port               0.098135
+Idle Mean                    Flow Packets/s                 0.097957
+Bwd Packet Length Max        Fwd Packet Length Max          0.097781
+Fwd IAT Std                  Fwd Packet Length Min          0.097422
+                             Destination Port               0.097343
+Subflow Fwd Bytes            Fwd Packet Length Std          0.096705
+Max Packet Length            Active Mean                    0.096577
+Total Length of Fwd Packets  Fwd Packet Length Std          0.096516
+Fwd IAT Std                  Active Mean                    0.096439
+Active Std                   Subflow Fwd Bytes              0.096422
+                             Total Length of Fwd Packets    0.096324
+Init_Win_bytes_backward      Fwd Packets/s                  0.096195
+Idle Max                     Down/Up Ratio                  0.096097
+Fwd IAT Mean                 Destination Port               0.096049
+Max Packet Length            Active Max                     0.095922
+Flow IAT Max                 Active Mean                    0.095872
+Bwd IAT Total                Flow Packets/s                 0.095789
+Active Min                   Fwd Packet Length Std          0.094577
+Idle Min                     Flow Packets/s                 0.094391
+Min Packet Length            Fwd PSH Flags_1                0.094234
+                             SYN Flag Count                 0.094234
+                             Fwd PSH Flags_0                0.094234
+Fwd IAT Std                  Flow Packets/s                 0.094120
+Idle Std                     ACK Flag Count                 0.093896
+Init_Win_bytes_backward      Active Std                     0.093847
+Fwd IAT Std                  Active Min                     0.093370
+Max Packet Length            Active Min                     0.092993
+Active Max                   Avg Fwd Segment Size           0.092773
+                             Fwd Packet Length Mean         0.092773
+Active Mean                  Bwd IAT Std                    0.092454
+                             Avg Fwd Segment Size           0.092058
+                             Fwd Packet Length Mean         0.092058
+Active Std                   Fwd Packet Length Max          0.091964
+Init_Win_bytes_backward      Idle Std                       0.091533
+Idle Mean                    Down/Up Ratio                  0.091275
+Fwd PSH Flags_0              Bwd Packet Length Max          0.090991
+Bwd Packet Length Max        Fwd PSH Flags_1                0.090991
+                             SYN Flag Count                 0.090991
+Packet Length Mean           Active Mean                    0.090769
+Average Packet Size          Flow Bytes/s                   0.090272
+Init_Win_bytes_forward       Active Max                     0.090219
+Bwd Packet Length Min        Fwd PSH Flags_0                0.090210
+                             SYN Flag Count                 0.090210
+                             Fwd PSH Flags_1                0.090210
+Min Packet Length            Active Max                     0.090069
+Idle Mean                    Active Max                     0.089221
+Bwd IAT Max                  Active Min                     0.089092
+Flow IAT Std                 Active Mean                    0.088894
+Bwd IAT Total                Packet Length Variance         0.088736
+Bwd IAT Std                  ACK Flag Count                 0.088659
+Bwd Packet Length Max        Fwd Packet Length Std          0.088371
+Flow IAT Max                 Active Min                     0.088228
+Fwd IAT Mean                 Fwd Packet Length Std          0.087841
+Init_Win_bytes_forward       Bwd IAT Max                    0.087826
+Packet Length Std            Fwd Packet Length Min          0.087749
+Flow IAT Mean                ACK Flag Count                 0.087724
+Down/Up Ratio                Fwd Packets/s                  0.087393
+Flow Duration                Fwd Packet Length Min          0.087199
+Average Packet Size          ACK Flag Count                 0.087141
+                             Active Max                     0.086704
+Flow IAT Std                 Active Min                     0.086597
+Bwd Packet Length Min        Bwd IAT Max                    0.086555
+Flow Duration                URG Flag Count                 0.085832
+Active Std                   Idle Std                       0.085820
+Idle Min                     URG Flag Count                 0.085313
+PSH Flag Count               Active Min                     0.084675
+Idle Min                     Down/Up Ratio                  0.084359
+Fwd IAT Mean                 Fwd Packet Length Max          0.083596
+Fwd PSH Flags_0              Bwd Packet Length Std          0.083517
+Bwd Packet Length Std        SYN Flag Count                 0.083517
+                             Fwd PSH Flags_1                0.083517
+Flow IAT Max                 Destination Port               0.083377
+PSH Flag Count               Idle Max                       0.083098
+                             Idle Mean                      0.083083
+Bwd Packet Length Min        Active Max                     0.083031
+PSH Flag Count               Idle Min                       0.082573
+Flow IAT Std                 URG Flag Count                 0.082380
+Min Packet Length            Fwd IAT Min                    0.082278
+PSH Flag Count               Avg Fwd Segment Size           0.081602
+                             Fwd Packet Length Mean         0.081602
+Average Packet Size          Active Mean                    0.081542
+Idle Mean                    URG Flag Count                 0.081501
+Flow IAT Std                 Down/Up Ratio                  0.081399
+Bwd Packet Length Min        Flow IAT Mean                  0.081295
+PSH Flag Count               Flow IAT Std                   0.081222
+Fwd IAT Max                  Fwd Packet Length Min          0.081016
+Init_Win_bytes_backward      Active Mean                    0.080760
+Packet Length Mean           Active Min                     0.080688
+Flow IAT Mean                Flow Packets/s                 0.080263
+Packet Length Mean           ACK Flag Count                 0.080250
+Packet Length Variance       Flow Packets/s                 0.080192
+Active Min                   Avg Fwd Segment Size           0.080144
+                             Fwd Packet Length Mean         0.080144
+Active Max                   Fwd Packets/s                  0.079887
+Packet Length Variance       Fwd Packet Length Min          0.079506
+Packet Length Std            Active Mean                    0.079392
+Bwd Packet Length Std        Fwd Packet Length Std          0.079261
+Init_Win_bytes_forward       Fwd IAT Min                    0.079052
+Bwd Packet Length Max        Active Max                     0.078835
+Packet Length Std            Active Min                     0.078781
+Bwd Packet Length Mean       Fwd Packet Length Max          0.078629
+Avg Bwd Segment Size         Fwd Packet Length Max          0.078629
+Bwd Packet Length Std        Fwd Packet Length Max          0.078342
+Flow IAT Mean                Down/Up Ratio                  0.078318
+Active Min                   Total Backward Packets         0.077853
+                             Subflow Bwd Packets            0.077853
+FIN Flag Count               Flow Packets/s                 0.077348
+Idle Min                     Active Max                     0.077336
+Bwd IAT Mean                 Idle Std                       0.077181
+Min Packet Length            Bwd IAT Max                    0.076166
+Bwd IAT Total                URG Flag Count                 0.076139
+Fwd IAT Mean                 Flow Packets/s                 0.076085
+Idle Max                     URG Flag Count                 0.076069
+Flow IAT Max                 Down/Up Ratio                  0.076011
+PSH Flag Count               Fwd IAT Mean                   0.075939
+Bwd IAT Max                  Flow Packets/s                 0.075930
+Avg Bwd Segment Size         Active Mean                    0.075714
+Bwd Packet Length Mean       Active Mean                    0.075714
+Bwd IAT Mean                 ACK Flag Count                 0.075326
+Flow Bytes/s                 Fwd Packet Length Std          0.075282
+Bwd Packet Length Max        Active Mean                    0.074939
+Init_Win_bytes_forward       Active Mean                    0.074929
+Active Min                   Subflow Fwd Packets            0.074606
+                             Total Fwd Packets              0.074606
+Avg Bwd Segment Size         Active Min                     0.074548
+Bwd Packet Length Mean       Active Min                     0.074548
+Packet Length Std            Active Max                     0.074484
+Fwd PSH Flags_0              Max Packet Length              0.074313
+Max Packet Length            Fwd PSH Flags_1                0.074313
+                             SYN Flag Count                 0.074313
+PSH Flag Count               Fwd IAT Max                    0.074258
+Init_Win_bytes_forward       Flow IAT Mean                  0.073879
+Average Packet Size          Active Min                     0.073820
+Fwd IAT Std                  Active Max                     0.073622
+Init_Win_bytes_backward      Fwd IAT Min                    0.073419
+Bwd Packet Length Mean       Active Max                     0.073323
+Avg Bwd Segment Size         Active Max                     0.073323
+Active Max                   Bwd Packets/s                  0.073246
+Fwd PSH Flags_1              Bwd Packets/s                  0.073240
+SYN Flag Count               Bwd Packets/s                  0.073240
+Fwd PSH Flags_0              Bwd Packets/s                  0.073240
+Fwd Packet Length Min        Fwd Packet Length Std          0.073042
+Flow IAT Max                 Active Max                     0.073040
+Bwd IAT Mean                 Active Std                     0.072941
+Bwd IAT Total                Fwd Packet Length Min          0.072941
+Active Mean                  Idle Std                       0.072875
+                             Subflow Bwd Packets            0.072575
+                             Total Backward Packets         0.072575
+Idle Max                     Fwd Packet Length Min          0.072501
+Active Max                   Idle Std                       0.072039
+Flow IAT Mean                Fwd Packet Length Std          0.071851
+Bwd IAT Total                Active Min                     0.071833
+Min Packet Length            Active Mean                    0.071545
+Bwd Packet Length Max        Active Min                     0.071500
+Active Mean                  Total Fwd Packets              0.070896
+                             Subflow Fwd Packets            0.070896
+Fwd IAT Max                  URG Flag Count                 0.070896
+Idle Mean                    Fwd Packet Length Min          0.070397
+Init_Win_bytes_forward       Idle Std                       0.069940
+Active Mean                  Subflow Fwd Bytes              0.069910
+Avg Bwd Segment Size         Fwd Packet Length Std          0.069884
+Bwd Packet Length Mean       Fwd Packet Length Std          0.069884
+Active Mean                  Total Length of Fwd Packets    0.069804
+Init_Win_bytes_backward      Bwd IAT Min                    0.069653
+Flow IAT Mean                Fwd Packet Length Max          0.069550
+Active Std                   Fwd Packet Length Std          0.069043
+Init_Win_bytes_backward      Flow IAT Mean                  0.068913
+Fwd IAT Mean                 Avg Fwd Segment Size           0.068612
+                             Fwd Packet Length Mean         0.068612
+Fwd IAT Std                  URG Flag Count                 0.068560
+FIN Flag Count               Bwd Packets/s                  0.068210
+Bwd IAT Mean                 Destination Port               0.068092
+Bwd Packet Length Min        Active Mean                    0.067912
+Fwd PSH Flags_0              Packet Length Std              0.067573
+Packet Length Std            SYN Flag Count                 0.067573
+                             Fwd PSH Flags_1                0.067573
+PSH Flag Count               Bwd IAT Min                    0.067522
+Flow Bytes/s                 Destination Port               0.067202
+Active Mean                  Fwd Packets/s                  0.067196
+Flow IAT Std                 Active Max                     0.067125
+Bwd Packet Length Min        Bwd Packets/s                  0.066976
+Fwd Packet Length Max        Flow Packets/s                 0.066789
+Packet Length Variance       URG Flag Count                 0.066706
+Fwd Packet Length Mean       SYN Flag Count                 0.066605
+                             Fwd PSH Flags_1                0.066605
+Avg Fwd Segment Size         Fwd PSH Flags_1                0.066605
+                             SYN Flag Count                 0.066605
+Fwd PSH Flags_0              Fwd Packet Length Mean         0.066605
+                             Avg Fwd Segment Size           0.066605
+Idle Min                     Fwd Packet Length Min          0.066571
+Min Packet Length            Active Std                     0.066504
+Active Min                   Total Length of Bwd Packets    0.066324
+                             Subflow Bwd Bytes              0.066301
+Bwd IAT Std                  Flow Packets/s                 0.065697
+PSH Flag Count               Down/Up Ratio                  0.065627
+                             Fwd IAT Std                    0.065552
+Flow IAT Mean                Active Mean                    0.065545
+Packet Length Variance       Destination Port               0.065470
+Bwd IAT Mean                 Fwd Packet Length Max          0.065414
+Flow IAT Mean                Active Min                     0.065379
+Min Packet Length            Bwd Packets/s                  0.065245
+Init_Win_bytes_forward       Active Min                     0.063919
+PSH Flag Count               Flow IAT Mean                  0.063727
+Bwd IAT Mean                 Fwd Packet Length Mean         0.063045
+                             Avg Fwd Segment Size           0.063045
+Init_Win_bytes_forward       Active Std                     0.062898
+Bwd IAT Mean                 Fwd Packet Length Std          0.062846
+Init_Win_bytes_forward       Bwd Packets/s                  0.062686
+Bwd IAT Min                  Fwd Packets/s                  0.062084
+Bwd Packet Length Std        Active Min                     0.062020
+FIN Flag Count               URG Flag Count                 0.061999
+Bwd IAT Std                  Active Min                     0.061602
+Active Mean                  Bwd Packets/s                  0.061600
+Min Packet Length            Idle Std                       0.061384
+Packet Length Mean           Active Std                     0.061295
+Fwd PSH Flags_0              Packet Length Mean             0.060810
+Packet Length Mean           Fwd PSH Flags_1                0.060810
+                             SYN Flag Count                 0.060810
+Active Mean                  Total Length of Bwd Packets    0.060638
+                             Subflow Bwd Bytes              0.060617
+Bwd Packet Length Min        Active Std                     0.060487
+Fwd Packet Length Min        Flow Bytes/s                   0.060351
+                             Fwd Packets/s                  0.059811
+Bwd IAT Mean                 Active Max                     0.059421
+Bwd Packet Length Std        Active Mean                    0.059128
+Packet Length Mean           Flow IAT Min                   0.058727
+Down/Up Ratio                Fwd Packet Length Std          0.058685
+Bwd Packet Length Min        Bwd IAT Min                    0.058588
+Packet Length Mean           Flow Bytes/s                   0.058571
+Init_Win_bytes_backward      Active Min                     0.058544
+Max Packet Length            Bwd IAT Mean                   0.058477
+Init_Win_bytes_backward      Fwd IAT Mean                   0.058130
+Flow Packets/s               Fwd Packets/s                  0.057763
+Idle Std                     Fwd Packets/s                  0.057541
+Active Std                   Fwd Packets/s                  0.057140
+Idle Max                     Active Std                     0.057042
+PSH Flag Count               Fwd IAT Min                    0.057005
+Bwd IAT Min                  Bwd Packets/s                  0.056937
+Active Std                   Avg Fwd Segment Size           0.056769
+                             Fwd Packet Length Mean         0.056769
+Bwd IAT Mean                 Flow Packets/s                 0.056453
+Fwd PSH Flags_0              Flow IAT Mean                  0.056443
+Flow IAT Mean                Fwd PSH Flags_1                0.056443
+                             SYN Flag Count                 0.056443
+Avg Fwd Segment Size         Flow Packets/s                 0.055687
+Fwd Packet Length Mean       Flow Packets/s                 0.055687
+Average Packet Size          Down/Up Ratio                  0.055617
+Flow IAT Max                 Fwd Packet Length Min          0.055460
+Min Packet Length            Active Min                     0.055331
+Bwd Packet Length Min        Idle Std                       0.054830
+Active Max                   Flow IAT Min                   0.054819
+Fwd IAT Max                  Active Std                     0.054446
+Init_Win_bytes_forward       Fwd Packet Length Mean         0.053902
+                             Avg Fwd Segment Size           0.053902
+Fwd PSH Flags_0              Packet Length Variance         0.053843
+Packet Length Variance       SYN Flag Count                 0.053843
+                             Fwd PSH Flags_1                0.053843
+Fwd PSH Flags_0              Average Packet Size            0.053797
+Average Packet Size          Fwd PSH Flags_1                0.053797
+                             SYN Flag Count                 0.053797
+Active Min                   Fwd Packets/s                  0.053573
+Active Std                   ACK Flag Count                 0.053542
+PSH Flag Count               Flow IAT Max                   0.053407
+Fwd Packet Length Min        Flow Packets/s                 0.053383
+Flow Bytes/s                 ACK Flag Count                 0.053380
+Active Max                   ACK Flag Count                 0.053371
+Bwd Packet Length Min        Active Min                     0.053293
+Average Packet Size          Flow IAT Min                   0.053072
+Active Max                   Destination Port               0.052907
+Idle Std                     Bwd Packets/s                  0.052770
+Flow IAT Mean                Active Max                     0.052767
+Active Std                   Bwd Packets/s                  0.052400
+Bwd IAT Max                  Destination Port               0.052114
+Flow IAT Max                 URG Flag Count                 0.052050
+Fwd Packet Length Mean       URG Flag Count                 0.052014
+Avg Fwd Segment Size         URG Flag Count                 0.052014
+Init_Win_bytes_backward      Down/Up Ratio                  0.051879
+Average Packet Size          Active Std                     0.051682
+Bwd Packet Length Std        Active Max                     0.051625
+Fwd Packet Length Min        FIN Flag Count                 0.051466
+Flow IAT Mean                Fwd Packet Length Mean         0.051394
+                             Avg Fwd Segment Size           0.051394
+Active Max                   Total Fwd Packets              0.051350
+                             Subflow Fwd Packets            0.051350
+Idle Std                     Down/Up Ratio                  0.051271
+Packet Length Mean           Subflow Fwd Bytes              0.051134
+                             Total Length of Fwd Packets    0.051039
+Active Max                   Total Backward Packets         0.050898
+                             Subflow Bwd Packets            0.050898
+Bwd IAT Min                  Destination Port               0.050837
+Bwd Packets/s                ACK Flag Count                 0.050563
+Flow IAT Std                 Fwd Packet Length Min          0.050511
+Bwd IAT Mean                 URG Flag Count                 0.050378
+Bwd Packet Length Mean       Flow IAT Min                   0.049776
+Avg Bwd Segment Size         Flow IAT Min                   0.049776
+Fwd IAT Min                  Fwd Packets/s                  0.049522
+Active Max                   act_data_pkt_fwd               0.049308
+Packet Length Std            Bwd IAT Mean                   0.049154
+Bwd Packet Length Std        Down/Up Ratio                  0.049154
+Active Min                   Bwd Packets/s                  0.049103
+Bwd IAT Total                Subflow Fwd Bytes              0.048982
+                             Total Length of Fwd Packets    0.048894
+Fwd Packet Length Std        Flow Packets/s                 0.048892
+Fwd Packet Length Min        Bwd IAT Std                    0.048800
+Init_Win_bytes_backward      Flow Bytes/s                   0.048776
+Packet Length Variance       Active Min                     0.048659
+Max Packet Length            Bwd IAT Min                    0.047932
+Flow Packets/s               Bwd Packets/s                  0.047905
+Packet Length Std            Bwd IAT Min                    0.047894
+Average Packet Size          Subflow Fwd Bytes              0.047847
+Bwd IAT Total                Flow IAT Min                   0.047837
+Average Packet Size          Total Length of Fwd Packets    0.047757
+Active Mean                  act_data_pkt_fwd               0.047741
+Init_Win_bytes_forward       Bwd IAT Mean                   0.047602
+Active Mean                  Flow IAT Min                   0.047532
+Max Packet Length            Active Std                     0.047501
+Packet Length Mean           Down/Up Ratio                  0.046772
+Bwd IAT Mean                 Active Mean                    0.046732
+Bwd Packet Length Min        Fwd IAT Mean                   0.046672
+Bwd IAT Max                  Down/Up Ratio                  0.046357
+Bwd IAT Total                Down/Up Ratio                  0.046308
+Max Packet Length            Subflow Fwd Bytes              0.045977
+Bwd IAT Min                  Fwd PSH Flags_1                0.045909
+                             SYN Flag Count                 0.045909
+Fwd PSH Flags_0              Bwd IAT Min                    0.045909
+Max Packet Length            Total Length of Fwd Packets    0.045887
+Bwd Packet Length Max        Bwd IAT Min                    0.045573
+Fwd IAT Min                  Bwd Packets/s                  0.045417
+Fwd URG Flags_0              SYN Flag Count                 0.045414
+Fwd PSH Flags_0              Fwd URG Flags_0                0.045414
+Fwd URG Flags_0              Fwd PSH Flags_1                0.045414
+Fwd URG Flags_1              Fwd PSH Flags_1                0.045414
+                             SYN Flag Count                 0.045414
+Fwd PSH Flags_0              CWE Flag Count                 0.045414
+CWE Flag Count               SYN Flag Count                 0.045414
+                             Fwd PSH Flags_1                0.045414
+Fwd PSH Flags_0              Fwd URG Flags_1                0.045414
+Active Std                   Destination Port               0.045414
+PSH Flag Count               Bwd Packets/s                  0.045386
+Bwd Packet Length Max        Bwd IAT Mean                   0.045323
+Active Max                   Down/Up Ratio                  0.045316
+Fwd Packet Length Min        Destination Port               0.045232
+Fwd IAT Mean                 Active Min                     0.045086
+PSH Flag Count               Bwd IAT Std                    0.045037
+Min Packet Length            Bwd IAT Mean                   0.044795
+Packet Length Mean           Bwd IAT Mean                   0.044351
+FIN Flag Count               Fwd Packets/s                  0.044065
+Fwd IAT Mean                 Active Mean                    0.043922
+Down/Up Ratio                Fwd Packet Length Max          0.042975
+Bwd Packet Length Std        Bwd IAT Min                    0.042937
+Active Max                   Fwd Packet Length Min          0.042626
+Average Packet Size          Bwd IAT Mean                   0.042409
+Fwd IAT Total                Flow IAT Min                   0.042354
+Down/Up Ratio                Flow Bytes/s                   0.042269
+Fwd PSH Flags_0              FIN Flag Count                 0.042213
+FIN Flag Count               Fwd PSH Flags_1                0.042213
+                             SYN Flag Count                 0.042213
+Active Max                   Flow Packets/s                 0.042088
+Fwd PSH Flags_0              Bwd IAT Mean                   0.041947
+Bwd IAT Mean                 Fwd PSH Flags_1                0.041947
+                             SYN Flag Count                 0.041947
+Bwd Packet Length Max        Active Std                     0.041405
+Bwd IAT Total                act_data_pkt_fwd               0.041372
+Bwd Packet Length Max        Flow IAT Min                   0.041260
+FIN Flag Count               Destination Port               0.041158
+Bwd Packet Length Mean       Bwd IAT Min                    0.040913
+Avg Bwd Segment Size         Bwd IAT Min                    0.040913
+Max Packet Length            Flow IAT Min                   0.040845
+Fwd IAT Total                Subflow Fwd Bytes              0.040835
+                             Total Length of Fwd Packets    0.040761
+Packet Length Mean           act_data_pkt_fwd               0.040707
+Active Max                   Total Length of Bwd Packets    0.040630
+                             Subflow Bwd Bytes              0.040616
+Fwd IAT Min                  Destination Port               0.040186
+Flow Bytes/s                 Fwd Packet Length Max          0.040088
+Flow IAT Max                 Active Std                     0.040009
+Bwd IAT Min                  ACK Flag Count                 0.039997
+Packet Length Mean           Bwd IAT Min                    0.039981
+Packet Length Variance       Active Mean                    0.039901
+Active Min                   act_data_pkt_fwd               0.039768
+Active Std                   Flow IAT Min                   0.039532
+Fwd Packet Length Std        URG Flag Count                 0.039460
+Down/Up Ratio                Destination Port               0.039322
+Avg Bwd Segment Size         ACK Flag Count                 0.039140
+Bwd Packet Length Mean       ACK Flag Count                 0.039140
+Active Min                   Idle Std                       0.038997
+Down/Up Ratio                Fwd Packet Length Mean         0.038915
+                             Avg Fwd Segment Size           0.038915
+Active Min                   Flow IAT Min                   0.038769
+Bwd IAT Min                  Fwd Packet Length Min          0.038659
+Bwd Packet Length Std        Bwd IAT Mean                   0.038509
+Fwd IAT Mean                 URG Flag Count                 0.038385
+Average Packet Size          Bwd IAT Min                    0.038310
+Bwd IAT Min                  URG Flag Count                 0.038081
+Fwd Packet Length Min        Bwd Packets/s                  0.038074
+Active Min                   Subflow Fwd Bytes              0.037896
+                             Total Length of Fwd Packets    0.037821
+Idle Mean                    Active Std                     0.037527
+Active Max                   URG Flag Count                 0.037240
+Average Packet Size          act_data_pkt_fwd               0.036734
+Fwd IAT Min                  Flow IAT Min                   0.036665
+Fwd IAT Mean                 Down/Up Ratio                  0.036506
+Active Mean                  Destination Port               0.036306
+Packet Length Std            Subflow Fwd Bytes              0.036011
+                             Total Length of Fwd Packets    0.035941
+Max Packet Length            Down/Up Ratio                  0.035938
+Fwd IAT Mean                 Active Max                     0.035705
+Packet Length Mean           Fwd Packet Length Min          0.035618
+PSH Flag Count               Flow IAT Min                   0.035555
+Active Mean                  Flow Packets/s                 0.035410
+Bwd Packet Length Min        Fwd IAT Min                    0.035402
+Active Std                   URG Flag Count                 0.035096
+PSH Flag Count               Flow Bytes/s                   0.034928
+Fwd IAT Total                act_data_pkt_fwd               0.034748
+Max Packet Length            Fwd IAT Min                    0.034566
+Packet Length Variance       Bwd IAT Min                    0.034478
+Bwd Packet Length Mean       Active Std                     0.034403
+Avg Bwd Segment Size         Active Std                     0.034403
+Min Packet Length            Flow IAT Mean                  0.034361
+Flow Duration                Subflow Fwd Bytes              0.034192
+Packet Length Std            Fwd IAT Min                    0.034153
+Flow Duration                Total Length of Fwd Packets    0.034131
+Bwd Packet Length Mean       act_data_pkt_fwd               0.034073
+Avg Bwd Segment Size         act_data_pkt_fwd               0.034073
+Max Packet Length            act_data_pkt_fwd               0.033891
+Fwd Packet Length Min        Active Mean                    0.033799
+Bwd Packet Length Max        Down/Up Ratio                  0.033778
+                             act_data_pkt_fwd               0.033735
+Active Std                   act_data_pkt_fwd               0.033649
+Fwd IAT Std                  Active Std                     0.033527
+Bwd IAT Std                  Destination Port               0.033375
+Flow IAT Min                 Subflow Fwd Bytes              0.032834
+Packet Length Std            Active Std                     0.032818
+Flow IAT Min                 Total Length of Fwd Packets    0.032769
+Bwd IAT Min                  Flow Packets/s                 0.032697
+Bwd IAT Max                  URG Flag Count                 0.032602
+Bwd Packet Length Max        Fwd IAT Min                    0.032576
+Bwd IAT Min                  Down/Up Ratio                  0.032039
+Active Std                   Active Min                     0.032031
+                             Fwd Packet Length Min          0.031647
+                             Down/Up Ratio                  0.031519
+Fwd Packet Length Min        Fwd IAT Min                    0.031374
+CWE Flag Count               URG Flag Count                 0.030921
+Fwd URG Flags_1              URG Flag Count                 0.030921
+Fwd URG Flags_0              URG Flag Count                 0.030921
+Init_Win_bytes_backward      Flow IAT Min                   0.030801
+Idle Std                     Flow Packets/s                 0.030305
+Bwd IAT Max                  Fwd Packet Length Min          0.030293
+Active Std                   Flow Packets/s                 0.030097
+Init_Win_bytes_backward      Subflow Fwd Bytes              0.029888
+Packet Length Mean           Fwd IAT Min                    0.029868
+Active Min                   Bwd Header Length              0.029859
+Fwd IAT Total                ACK Flag Count                 0.029837
+Init_Win_bytes_backward      Total Length of Fwd Packets    0.029831
+Flow Duration                act_data_pkt_fwd               0.029810
+Fwd Packet Length Max        ACK Flag Count                 0.029799
+Packet Length Std            Flow IAT Min                   0.029771
+Active Mean                  Bwd Header Length              0.029742
+PSH Flag Count               Fwd Packets/s                  0.029735
+Fwd Packet Length Min        Idle Std                       0.029649
+Flow IAT Std                 Active Std                     0.029530
+Fwd IAT Mean                 ACK Flag Count                 0.029280
+Bwd Packet Length Std        Fwd IAT Min                    0.028919
+Bwd Packet Length Mean       Fwd IAT Min                    0.028756
+Avg Bwd Segment Size         Fwd IAT Min                    0.028756
+Active Mean                  Down/Up Ratio                  0.028642
+Fwd PSH Flags_1              Fwd Packets/s                  0.028640
+SYN Flag Count               Fwd Packets/s                  0.028640
+Fwd PSH Flags_0              Fwd Packets/s                  0.028640
+Fwd IAT Std                  Fwd IAT Min                    0.028282
+Active Min                   Flow Packets/s                 0.028236
+Average Packet Size          Fwd IAT Min                    0.028155
+Bwd IAT Mean                 Packet Length Variance         0.028121
+Flow Packets/s               URG Flag Count                 0.027987
+Active Max                   FIN Flag Count                 0.027795
+Bwd Packet Length Min        Avg Fwd Segment Size           0.027687
+                             Fwd Packet Length Mean         0.027687
+Active Mean                  Fwd Header Length              0.027532
+Packet Length Mean           Subflow Bwd Packets            0.027522
+                             Total Backward Packets         0.027522
+Active Mean                  ACK Flag Count                 0.027281
+Flow Duration                ACK Flag Count                 0.027197
+Fwd PSH Flags_0              Idle Min                       0.027039
+Idle Min                     Fwd PSH Flags_1                0.027039
+                             SYN Flag Count                 0.027039
+Bwd IAT Min                  Idle Std                       0.027025
+Packet Length Mean           Total Fwd Packets              0.026923
+                             Subflow Fwd Packets            0.026923
+Bwd IAT Max                  Subflow Fwd Bytes              0.026773
+Avg Bwd Segment Size         Flow Bytes/s                   0.026772
+Bwd Packet Length Mean       Flow Bytes/s                   0.026772
+Bwd IAT Max                  Total Length of Fwd Packets    0.026724
+Avg Bwd Segment Size         Bwd IAT Mean                   0.026217
+Bwd Packet Length Mean       Bwd IAT Mean                   0.026217
+Fwd IAT Min                  Flow Packets/s                 0.026082
+PSH Flag Count               Idle Std                       0.026049
+Fwd Packet Length Min        Active Min                     0.026035
+Active Min                   Fwd Header Length              0.026005
+Bwd Packet Length Max        Subflow Fwd Packets            0.025988
+                             Total Fwd Packets              0.025988
+PSH Flag Count               Subflow Fwd Bytes              0.025948
+Bwd IAT Std                  Down/Up Ratio                  0.025897
+PSH Flag Count               Total Length of Fwd Packets    0.025895
+Bwd Packet Length Max        Total Backward Packets         0.025783
+                             Subflow Bwd Packets            0.025783
+Fwd Packet Length Max        URG Flag Count                 0.025513
+Fwd IAT Total                Flow Bytes/s                   0.025166
+Packet Length Mean           Total Length of Bwd Packets    0.025127
+                             Subflow Bwd Bytes              0.025126
+Max Packet Length            Subflow Fwd Packets            0.025122
+                             Total Fwd Packets              0.025122
+Average Packet Size          Total Backward Packets         0.024937
+                             Subflow Bwd Packets            0.024937
+Bwd Header Length            min_seg_size_forward           0.024928
+Idle Std                     URG Flag Count                 0.024912
+Flow IAT Min                 Fwd Packet Length Max          0.024895
+Max Packet Length            Total Backward Packets         0.024853
+                             Subflow Bwd Packets            0.024853
+Bwd IAT Min                  Active Std                     0.024746
+Bwd Packet Length Max        Subflow Bwd Bytes              0.024704
+                             Total Length of Bwd Packets    0.024704
+Fwd IAT Min                  Fwd PSH Flags_1                0.024638
+                             SYN Flag Count                 0.024638
+Fwd PSH Flags_0              Fwd IAT Min                    0.024638
+Bwd IAT Min                  Fwd Packet Length Max          0.024607
+Bwd Packet Length Max        Flow Bytes/s                   0.024605
+Bwd IAT Min                  Fwd Packet Length Std          0.024516
+Average Packet Size          Total Fwd Packets              0.024340
+                             Subflow Fwd Packets            0.024340
+Fwd PSH Flags_0              Idle Mean                      0.024080
+Idle Mean                    Fwd PSH Flags_1                0.024080
+                             SYN Flag Count                 0.024080
+Avg Bwd Segment Size         Subflow Bwd Packets            0.024021
+Bwd Packet Length Mean       Subflow Bwd Packets            0.024021
+                             Total Backward Packets         0.024021
+Avg Bwd Segment Size         Total Backward Packets         0.024021
+Idle Min                     Active Std                     0.023939
+Init_Win_bytes_forward       Flow IAT Min                   0.023919
+PSH Flag Count               ECE Flag Count                 0.023821
+                             RST Flag Count                 0.023821
+Avg Bwd Segment Size         Total Fwd Packets              0.023769
+Bwd Packet Length Mean       Subflow Fwd Packets            0.023769
+Avg Bwd Segment Size         Subflow Fwd Packets            0.023769
+Bwd Packet Length Mean       Total Fwd Packets              0.023769
+PSH Flag Count               act_data_pkt_fwd               0.023623
+Active Min                   Destination Port               0.023497
+Max Packet Length            Subflow Bwd Bytes              0.023496
+                             Total Length of Bwd Packets    0.023495
+Bwd IAT Total                Total Fwd Packets              0.022943
+                             Subflow Fwd Packets            0.022943
+Average Packet Size          Total Length of Bwd Packets    0.022850
+                             Subflow Bwd Bytes              0.022849
+Bwd IAT Mean                 Down/Up Ratio                  0.022801
+FIN Flag Count               Active Mean                    0.022515
+Avg Bwd Segment Size         Total Length of Bwd Packets    0.022514
+Bwd Packet Length Mean       Total Length of Bwd Packets    0.022514
+                             Subflow Bwd Bytes              0.022513
+Avg Bwd Segment Size         Subflow Bwd Bytes              0.022513
+PSH Flag Count               Bwd IAT Max                    0.022509
+Bwd IAT Total                Subflow Bwd Packets            0.022474
+                             Total Backward Packets         0.022474
+Active Mean                  URG Flag Count                 0.022454
+Bwd Packet Length Std        Flow Bytes/s                   0.022299
+Flow Duration                Flow Bytes/s                   0.022197
+Fwd IAT Mean                 SYN Flag Count                 0.022133
+                             Fwd PSH Flags_1                0.022133
+Fwd PSH Flags_0              Fwd IAT Mean                   0.022133
+Bwd IAT Std                  Subflow Fwd Bytes              0.021865
+                             Total Length of Fwd Packets    0.021822
+PSH Flag Count               Bwd IAT Mean                   0.021689
+Bwd IAT Max                  Flow IAT Min                   0.021626
+Packet Length Std            act_data_pkt_fwd               0.021592
+Fwd IAT Max                  Flow Bytes/s                   0.021515
+Packet Length Variance       Fwd IAT Min                    0.021225
+Bwd Packet Length Min        Flow Bytes/s                   0.021216
+Flow IAT Std                 Flow Bytes/s                   0.021151
+Packet Length Variance       Subflow Fwd Bytes              0.021076
+Flow IAT Mean                Active Std                     0.021065
+Packet Length Variance       Total Length of Fwd Packets    0.021034
+Bwd IAT Min                  FIN Flag Count                 0.020947
+Active Max                   Fwd Header Length              0.020879
+Idle Max                     Flow Bytes/s                   0.020839
+Bwd Packet Length Max        ACK Flag Count                 0.020814
+Bwd IAT Mean                 Active Min                     0.020786
+Init_Win_bytes_forward       Subflow Fwd Bytes              0.020744
+                             Total Length of Fwd Packets    0.020705
+Active Std                   FIN Flag Count                 0.020664
+Bwd IAT Std                  URG Flag Count                 0.020658
+Active Min                   Down/Up Ratio                  0.020583
+Idle Mean                    Flow Bytes/s                   0.020553
+Active Max                   Bwd Header Length              0.020490
+Fwd PSH Flags_0              Idle Max                       0.020446
+Idle Max                     SYN Flag Count                 0.020446
+                             Fwd PSH Flags_1                0.020446
+Init_Win_bytes_backward      Fwd PSH Flags_1                0.020445
+                             SYN Flag Count                 0.020445
+Fwd PSH Flags_0              Init_Win_bytes_backward        0.020445
+Init_Win_bytes_backward      act_data_pkt_fwd               0.020430
+Packet Length Variance       Active Max                     0.020288
+Flow Bytes/s                 Fwd Packets/s                  0.020246
+Fwd IAT Min                  Fwd Packet Length Max          0.020243
+Bwd IAT Total                Flow Bytes/s                   0.020083
+Fwd IAT Min                  Fwd Packet Length Std          0.020064
+Idle Min                     Flow Bytes/s                   0.019804
+Fwd IAT Std                  Flow Bytes/s                   0.019749
+Min Packet Length            Flow IAT Min                   0.019662
+Fwd IAT Total                Total Fwd Packets              0.019393
+                             Subflow Fwd Packets            0.019393
+FIN Flag Count               Avg Fwd Segment Size           0.019371
+                             Fwd Packet Length Mean         0.019371
+Packet Length Variance       ACK Flag Count                 0.019080
+Bwd IAT Max                  Fwd PSH Flags_1                0.019020
+                             SYN Flag Count                 0.019020
+Fwd PSH Flags_0              Bwd IAT Max                    0.019020
+Subflow Fwd Bytes            Idle Std                       0.018804
+Total Length of Fwd Packets  Idle Std                       0.018773
+act_data_pkt_fwd             Fwd Packet Length Max          0.018728
+Fwd PSH Flags_0              Fwd IAT Std                    0.018655
+Fwd IAT Std                  SYN Flag Count                 0.018655
+                             Fwd PSH Flags_1                0.018655
+Bwd Packet Length Min        Flow IAT Min                   0.018605
+Fwd Packet Length Std        Fwd PSH Flags_1                0.018576
+                             SYN Flag Count                 0.018576
+Fwd PSH Flags_0              Fwd Packet Length Std          0.018576
+Idle Std                     SYN Flag Count                 0.018455
+                             Fwd PSH Flags_1                0.018455
+Fwd PSH Flags_0              Idle Std                       0.018455
+Fwd IAT Total                Subflow Bwd Packets            0.018158
+                             Total Backward Packets         0.018158
+FIN Flag Count               Fwd IAT Min                    0.017935
+Fwd URG Flags_1              Flow Packets/s                 0.017807
+CWE Flag Count               Flow Packets/s                 0.017807
+Fwd URG Flags_0              Flow Packets/s                 0.017807
+Fwd IAT Min                  Down/Up Ratio                  0.017778
+Init_Win_bytes_backward      Bwd IAT Mean                   0.017624
+ECE Flag Count               Fwd Packet Length Max          0.017427
+RST Flag Count               Fwd Packet Length Max          0.017427
+Fwd IAT Max                  Subflow Fwd Bytes              0.017389
+Bwd Packet Length Std        Flow IAT Min                   0.017384
+FIN Flag Count               Active Min                     0.017381
+Fwd IAT Max                  Total Length of Fwd Packets    0.017357
+Flow Bytes/s                 Bwd Packets/s                  0.017332
+Bwd Packet Length Std        Active Std                     0.017243
+Flow IAT Max                 Flow Bytes/s                   0.017211
+FIN Flag Count               Down/Up Ratio                  0.017043
+Flow IAT Mean                Flow Bytes/s                   0.016842
+Init_Win_bytes_forward       Fwd IAT Mean                   0.016789
+Flow IAT Mean                Fwd Packet Length Min          0.016782
+Idle Max                     Subflow Fwd Bytes              0.016703
+Init_Win_bytes_forward       Flow Bytes/s                   0.016676
+Idle Max                     Total Length of Fwd Packets    0.016672
+Flow Duration                Total Fwd Packets              0.016658
+                             Subflow Fwd Packets            0.016658
+Fwd IAT Max                  Flow IAT Min                   0.016653
+Bwd IAT Total                Total Length of Bwd Packets    0.016597
+                             Subflow Bwd Bytes              0.016595
+Bwd IAT Mean                 Fwd Packet Length Min          0.016595
+Fwd IAT Min                  ACK Flag Count                 0.016438
+Flow Bytes/s                 URG Flag Count                 0.016400
+Subflow Fwd Bytes            Fwd Packets/s                  0.016251
+Total Length of Fwd Packets  Fwd Packets/s                  0.016220
+Fwd IAT Min                  Bwd IAT Std                    0.016095
+Fwd IAT Mean                 Flow Bytes/s                   0.015966
+Bwd IAT Max                  Flow Bytes/s                   0.015928
+Min Packet Length            Subflow Fwd Bytes              0.015872
+Bwd Packet Length Min        Subflow Fwd Bytes              0.015863
+Min Packet Length            Total Length of Fwd Packets    0.015842
+Bwd Packet Length Min        Total Length of Fwd Packets    0.015833
+Init_Win_bytes_backward      ECE Flag Count                 0.015798
+                             RST Flag Count                 0.015798
+Flow Duration                Total Backward Packets         0.015689
+                             Subflow Bwd Packets            0.015689
+Bwd IAT Max                  act_data_pkt_fwd               0.015463
+Subflow Fwd Bytes            Bwd Packets/s                  0.015247
+Total Length of Fwd Packets  Bwd Packets/s                  0.015218
+FIN Flag Count               min_seg_size_forward           0.015207
+Idle Max                     Flow IAT Min                   0.015142
+Packet Length Std            Down/Up Ratio                  0.015134
+Bwd IAT Min                  Active Mean                    0.015129
+Flow IAT Min                 Fwd Packets/s                  0.015110
+Idle Mean                    Flow IAT Min                   0.015049
+RST Flag Count               Fwd Packet Length Std          0.015009
+ECE Flag Count               Fwd Packet Length Std          0.015009
+Average Packet Size          Fwd Packet Length Min          0.014852
+Idle Min                     Flow IAT Min                   0.014596
+Init_Win_bytes_forward       act_data_pkt_fwd               0.014531
+Fwd Packet Length Min        URG Flag Count                 0.014233
+Idle Mean                    Subflow Fwd Bytes              0.014117
+                             Total Length of Fwd Packets    0.014090
+Fwd IAT Max                  ECE Flag Count                 0.014064
+                             RST Flag Count                 0.014064
+Packet Length Std            Subflow Fwd Packets            0.013961
+                             Total Fwd Packets              0.013961
+                             Subflow Bwd Packets            0.013849
+                             Total Backward Packets         0.013849
+Fwd IAT Std                  Subflow Fwd Bytes              0.013797
+Packet Length Std            ACK Flag Count                 0.013793
+Bwd IAT Std                  Flow Bytes/s                   0.013784
+Fwd IAT Std                  Total Length of Fwd Packets    0.013769
+Min Packet Length            Flow Bytes/s                   0.013739
+Fwd IAT Total                Total Length of Bwd Packets    0.013498
+                             Subflow Bwd Bytes              0.013496
+Bwd Packet Length Max        Subflow Fwd Bytes              0.013389
+                             Total Length of Fwd Packets    0.013361
+Flow IAT Min                 Bwd Packets/s                  0.013313
+ECE Flag Count               Fwd Packet Length Mean         0.012967
+                             Avg Fwd Segment Size           0.012967
+RST Flag Count               Avg Fwd Segment Size           0.012967
+                             Fwd Packet Length Mean         0.012967
+Packet Length Std            Total Length of Bwd Packets    0.012826
+                             Subflow Bwd Bytes              0.012825
+Flow IAT Min                 Flow Packets/s                 0.012749
+Flow IAT Max                 Subflow Fwd Bytes              0.012631
+Fwd Packet Length Mean       ACK Flag Count                 0.012612
+Avg Fwd Segment Size         ACK Flag Count                 0.012612
+Flow IAT Max                 Total Length of Fwd Packets    0.012608
+Bwd Packet Length Std        act_data_pkt_fwd               0.012587
+Fwd IAT Mean                 Active Std                     0.012486
+Min Packet Length            act_data_pkt_fwd               0.012374
+act_data_pkt_fwd             Fwd Packets/s                  0.012123
+Bwd Packet Length Min        act_data_pkt_fwd               0.012036
+Bwd IAT Mean                 Flow Bytes/s                   0.011846
+Active Min                   URG Flag Count                 0.011834
+Flow Duration                Total Length of Bwd Packets    0.011713
+                             Subflow Bwd Bytes              0.011712
+Packet Length Variance       Flow IAT Min                   0.011503
+Init_Win_bytes_forward       RST Flag Count                 0.011477
+                             ECE Flag Count                 0.011477
+Idle Min                     Idle Std                       0.011442
+Packet Length Std            min_seg_size_forward           0.011346
+Idle Min                     Subflow Fwd Bytes              0.011320
+                             Total Length of Fwd Packets    0.011297
+Active Min                   ACK Flag Count                 0.011261
+Active Std                   Total Fwd Packets              0.011238
+                             Subflow Fwd Packets            0.011238
+Active Max                   Bwd IAT Min                    0.011188
+act_data_pkt_fwd             Bwd Packets/s                  0.011151
+Fwd IAT Std                  ECE Flag Count                 0.011029
+                             RST Flag Count                 0.011029
+Bwd IAT Max                  min_seg_size_forward           0.010967
+Active Std                   Fwd Header Length              0.010920
+Flow IAT Max                 RST Flag Count                 0.010816
+                             ECE Flag Count                 0.010816
+Average Packet Size          min_seg_size_forward           0.010609
+Flow IAT Mean                Flow IAT Min                   0.010582
+Bwd Packet Length Mean       Subflow Fwd Bytes              0.010574
+Avg Bwd Segment Size         Subflow Fwd Bytes              0.010574
+Flow IAT Min                 Fwd Packet Length Std          0.010557
+Avg Bwd Segment Size         Total Length of Fwd Packets    0.010552
+Bwd Packet Length Mean       Total Length of Fwd Packets    0.010552
+Packet Length Mean           min_seg_size_forward           0.010550
+Fwd PSH Flags_0              Fwd IAT Total                  0.010547
+Fwd IAT Total                Fwd PSH Flags_1                0.010547
+                             SYN Flag Count                 0.010547
+Max Packet Length            min_seg_size_forward           0.010539
+ECE Flag Count               ACK Flag Count                 0.010538
+RST Flag Count               ACK Flag Count                 0.010538
+PSH Flag Count               Subflow Fwd Packets            0.010530
+                             Total Fwd Packets              0.010530
+Packet Length Variance       min_seg_size_forward           0.010496
+Init_Win_bytes_backward      Subflow Fwd Packets            0.010445
+                             Total Fwd Packets              0.010445
+Flow IAT Min                 Destination Port               0.010313
+Init_Win_bytes_backward      Total Backward Packets         0.010305
+                             Subflow Bwd Packets            0.010305
+Bwd IAT Min                  Bwd IAT Std                    0.010202
+min_seg_size_forward         Bwd Packets/s                  0.010171
+Min Packet Length            ECE Flag Count                 0.010096
+                             RST Flag Count                 0.010096
+PSH Flag Count               Subflow Bwd Packets            0.010094
+                             Total Backward Packets         0.010094
+Bwd Packet Length Max        Avg Fwd Segment Size           0.010091
+                             Fwd Packet Length Mean         0.010091
+Bwd IAT Std                  min_seg_size_forward           0.010078
+Idle Std                     Destination Port               0.009999
+Packet Length Std            Flow Bytes/s                   0.009936
+Bwd Packet Length Std        min_seg_size_forward           0.009875
+Flow Duration                SYN Flag Count                 0.009861
+                             Fwd PSH Flags_1                0.009861
+Fwd PSH Flags_0              Flow Duration                  0.009861
+Active Std                   Fwd IAT Min                    0.009783
+act_data_pkt_fwd             Destination Port               0.009760
+Bwd Packet Length Max        min_seg_size_forward           0.009502
+Flow IAT Std                 ECE Flag Count                 0.009476
+                             RST Flag Count                 0.009476
+Fwd IAT Max                  act_data_pkt_fwd               0.009452
+Fwd Packet Length Min        Flow IAT Min                   0.009385
+Fwd PSH Flags_0              URG Flag Count                 0.009331
+Fwd PSH Flags_1              URG Flag Count                 0.009331
+SYN Flag Count               URG Flag Count                 0.009331
+Bwd Packet Length Min        ECE Flag Count                 0.009280
+                             RST Flag Count                 0.009280
+Init_Win_bytes_backward      CWE Flag Count                 0.009264
+                             Fwd URG Flags_1                0.009264
+                             Fwd URG Flags_0                0.009264
+Fwd URG Flags_0              Down/Up Ratio                  0.009257
+Fwd URG Flags_1              Down/Up Ratio                  0.009257
+CWE Flag Count               Down/Up Ratio                  0.009257
+Fwd IAT Mean                 Fwd Packet Length Min          0.009252
+Flow IAT Min                 ACK Flag Count                 0.009248
+Idle Max                     act_data_pkt_fwd               0.009230
+Fwd Packet Length Max        SYN Flag Count                 0.009054
+                             Fwd PSH Flags_1                0.009054
+Fwd PSH Flags_0              Fwd Packet Length Max          0.009054
+Avg Bwd Segment Size         min_seg_size_forward           0.009047
+Bwd Packet Length Mean       min_seg_size_forward           0.009047
+Packet Length Mean           ECE Flag Count                 0.009029
+                             RST Flag Count                 0.009029
+Packet Length Variance       act_data_pkt_fwd               0.009006
+Active Std                   Total Backward Packets         0.008854
+                             Subflow Bwd Packets            0.008854
+Active Max                   Flow Bytes/s                   0.008800
+Subflow Fwd Bytes            SYN Flag Count                 0.008775
+                             Fwd PSH Flags_1                0.008775
+Fwd PSH Flags_0              Subflow Fwd Bytes              0.008775
+Total Length of Fwd Packets  SYN Flag Count                 0.008769
+                             Fwd PSH Flags_1                0.008769
+Fwd PSH Flags_0              Total Length of Fwd Packets    0.008769
+Packet Length Variance       Active Std                     0.008718
+Idle Mean                    act_data_pkt_fwd               0.008713
+Active Std                   Fwd PSH Flags_1                0.008677
+                             SYN Flag Count                 0.008677
+Fwd PSH Flags_0              Active Std                     0.008677
+Flow IAT Std                 Subflow Fwd Bytes              0.008647
+                             Total Length of Fwd Packets    0.008629
+act_data_pkt_fwd             URG Flag Count                 0.008549
+Bwd Packet Length Min        Bwd IAT Mean                   0.008507
+Subflow Fwd Bytes            Flow Packets/s                 0.008387
+Fwd PSH Flags_0              Flow IAT Std                   0.008387
+Flow IAT Std                 SYN Flag Count                 0.008387
+                             Fwd PSH Flags_1                0.008387
+act_data_pkt_fwd             Fwd Packet Length Std          0.008376
+Total Length of Fwd Packets  Flow Packets/s                 0.008371
+Bwd IAT Total                min_seg_size_forward           0.008226
+Fwd IAT Total                ECE Flag Count                 0.008221
+                             RST Flag Count                 0.008221
+Average Packet Size          RST Flag Count                 0.008212
+                             ECE Flag Count                 0.008212
+Min Packet Length            min_seg_size_forward           0.008180
+Total Fwd Packets            Fwd Packet Length Max          0.008161
+Subflow Fwd Packets          Fwd Packet Length Max          0.008161
+RST Flag Count               Fwd Packets/s                  0.008147
+ECE Flag Count               Fwd Packets/s                  0.008147
+Bwd Packet Length Std        Total Fwd Packets              0.008115
+                             Subflow Fwd Packets            0.008115
+Flow IAT Max                 act_data_pkt_fwd               0.008002
+Idle Min                     act_data_pkt_fwd               0.007933
+Subflow Bwd Packets          Fwd Packet Length Max          0.007871
+Total Backward Packets       Fwd Packet Length Max          0.007871
+Active Max                   Fwd IAT Min                    0.007821
+Bwd Packet Length Std        Subflow Bwd Packets            0.007769
+                             Total Backward Packets         0.007769
+FIN Flag Count               Fwd Packet Length Max          0.007741
+Init_Win_bytes_forward       Total Fwd Packets              0.007682
+                             Subflow Fwd Packets            0.007682
+Packet Length Variance       Subflow Bwd Bytes              0.007620
+                             Total Length of Bwd Packets    0.007620
+Bwd Packet Length Std        Total Length of Bwd Packets    0.007515
+                             Subflow Bwd Bytes              0.007515
+ECE Flag Count               Bwd Packets/s                  0.007468
+RST Flag Count               Bwd Packets/s                  0.007468
+Init_Win_bytes_backward      Total Length of Bwd Packets    0.007439
+                             Subflow Bwd Bytes              0.007439
+FIN Flag Count               Idle Std                       0.007439
+Init_Win_bytes_forward       Fwd URG Flags_0                0.007417
+                             CWE Flag Count                 0.007417
+                             Fwd URG Flags_1                0.007417
+Flow Duration                ECE Flag Count                 0.007414
+                             RST Flag Count                 0.007414
+Min Packet Length            Fwd Header Length              0.007408
+act_data_pkt_fwd             ACK Flag Count                 0.007387
+Active Mean                  Flow Bytes/s                   0.007385
+Flow IAT Std                 min_seg_size_forward           0.007220
+Subflow Fwd Bytes            Down/Up Ratio                  0.007186
+Total Length of Fwd Packets  Down/Up Ratio                  0.007174
+Active Std                   Bwd Header Length              0.007170
+Flow IAT Min                 URG Flag Count                 0.007115
+Packet Length Variance       Total Fwd Packets              0.007109
+                             Subflow Fwd Packets            0.007109
+                             Subflow Bwd Packets            0.007054
+                             Total Backward Packets         0.007054
+                             Down/Up Ratio                  0.007016
+Init_Win_bytes_forward       Subflow Bwd Packets            0.007003
+                             Total Backward Packets         0.007003
+Bwd IAT Min                  Flow Bytes/s                   0.006862
+Min Packet Length            Total Fwd Packets              0.006853
+                             Subflow Fwd Packets            0.006853
+Init_Win_bytes_forward       min_seg_size_forward           0.006829
+CWE Flag Count               ACK Flag Count                 0.006810
+Fwd URG Flags_1              ACK Flag Count                 0.006810
+Fwd URG Flags_0              ACK Flag Count                 0.006810
+PSH Flag Count               Subflow Bwd Bytes              0.006805
+                             Total Length of Bwd Packets    0.006804
+Fwd IAT Std                  min_seg_size_forward           0.006717
+Fwd IAT Max                  Fwd PSH Flags_1                0.006708
+                             SYN Flag Count                 0.006708
+Fwd PSH Flags_0              Fwd IAT Max                    0.006708
+Bwd IAT Std                  Flow IAT Min                   0.006682
+Fwd IAT Min                  Fwd Packet Length Mean         0.006675
+                             Avg Fwd Segment Size           0.006675
+Avg Bwd Segment Size         ECE Flag Count                 0.006595
+Bwd Packet Length Mean       RST Flag Count                 0.006595
+                             ECE Flag Count                 0.006595
+Avg Bwd Segment Size         RST Flag Count                 0.006595
+Min Packet Length            Fwd Packet Length Mean         0.006588
+                             Avg Fwd Segment Size           0.006588
+                             Fwd URG Flags_1                0.006524
+                             CWE Flag Count                 0.006524
+                             Fwd URG Flags_0                0.006524
+ECE Flag Count               Destination Port               0.006519
+RST Flag Count               Destination Port               0.006519
+min_seg_size_forward         Fwd Packets/s                  0.006480
+act_data_pkt_fwd             Avg Fwd Segment Size           0.006419
+                             Fwd Packet Length Mean         0.006419
+Fwd IAT Max                  min_seg_size_forward           0.006418
+Fwd IAT Total                min_seg_size_forward           0.006408
+Idle Std                     Flow Bytes/s                   0.006359
+act_data_pkt_fwd             Flow Packets/s                 0.006344
+Bwd IAT Std                  Bwd Header Length              0.006316
+Active Std                   Flow Bytes/s                   0.006311
+Idle Max                     min_seg_size_forward           0.006301
+Subflow Fwd Bytes            Destination Port               0.006280
+Total Length of Fwd Packets  Destination Port               0.006267
+Bwd Packet Length Min        Total Fwd Packets              0.006261
+                             Subflow Fwd Packets            0.006261
+Active Std                   ECE Flag Count                 0.006250
+                             RST Flag Count                 0.006250
+Min Packet Length            Total Backward Packets         0.006245
+                             Subflow Bwd Packets            0.006245
+Bwd IAT Mean                 min_seg_size_forward           0.006110
+ECE Flag Count               Down/Up Ratio                  0.006096
+RST Flag Count               Down/Up Ratio                  0.006096
+Max Packet Length            Flow Bytes/s                   0.006074
+Bwd IAT Min                  Avg Fwd Segment Size           0.005982
+                             Fwd Packet Length Mean         0.005982
+Bwd Packet Length Min        Fwd URG Flags_0                0.005974
+                             Fwd URG Flags_1                0.005974
+                             CWE Flag Count                 0.005974
+Fwd Packet Length Min        act_data_pkt_fwd               0.005971
+Bwd IAT Max                  Bwd Header Length              0.005949
+Bwd Packet Length Std        Fwd Packet Length Mean         0.005893
+                             Avg Fwd Segment Size           0.005893
+Bwd IAT Std                  act_data_pkt_fwd               0.005878
+Active Min                   Flow Bytes/s                   0.005876
+Idle Mean                    min_seg_size_forward           0.005834
+Bwd Packet Length Std        Subflow Fwd Bytes              0.005833
+Flow IAT Min                 Down/Up Ratio                  0.005827
+Bwd Packet Length Std        Total Length of Fwd Packets    0.005820
+Bwd Packet Length Mean       Down/Up Ratio                  0.005818
+Avg Bwd Segment Size         Down/Up Ratio                  0.005818
+Average Packet Size          Fwd URG Flags_0                0.005790
+                             CWE Flag Count                 0.005790
+                             Fwd URG Flags_1                0.005790
+Fwd Packet Length Min        Fwd Packet Length Max          0.005769
+Packet Length Std            ECE Flag Count                 0.005700
+                             RST Flag Count                 0.005700
+Bwd Packet Length Max        ECE Flag Count                 0.005690
+                             RST Flag Count                 0.005690
+Flow IAT Max                 SYN Flag Count                 0.005678
+                             Fwd PSH Flags_1                0.005678
+Fwd PSH Flags_0              Flow IAT Max                   0.005678
+Flow Duration                min_seg_size_forward           0.005641
+Packet Length Mean           Fwd URG Flags_1                0.005635
+                             CWE Flag Count                 0.005635
+                             Fwd URG Flags_0                0.005635
+Max Packet Length            ECE Flag Count                 0.005588
+                             RST Flag Count                 0.005588
+min_seg_size_forward         Flow Packets/s                 0.005514
+Fwd IAT Min                  Flow Bytes/s                   0.005472
+Fwd IAT Mean                 min_seg_size_forward           0.005471
+Bwd Packet Length Min        Subflow Bwd Packets            0.005462
+                             Total Backward Packets         0.005462
+Flow IAT Mean                URG Flag Count                 0.005421
+Init_Win_bytes_forward       Total Length of Bwd Packets    0.005380
+                             Subflow Bwd Bytes              0.005380
+Bwd IAT Std                  Fwd Header Length              0.005332
+min_seg_size_forward         Fwd Packet Length Std          0.005284
+Flow IAT Min                 RST Flag Count                 0.005280
+                             ECE Flag Count                 0.005280
+Bwd Packet Length Std        RST Flag Count                 0.005216
+                             ECE Flag Count                 0.005216
+                             ACK Flag Count                 0.005190
+Total Fwd Packets            Fwd Packets/s                  0.005187
+Subflow Fwd Packets          Fwd Packets/s                  0.005187
+min_seg_size_forward         Idle Std                       0.005185
+Idle Min                     min_seg_size_forward           0.005181
+Fwd PSH Flags_0              Bwd IAT Std                    0.005085
+Bwd IAT Std                  SYN Flag Count                 0.005085
+                             Fwd PSH Flags_1                0.005085
+Bwd Packet Length Mean       CWE Flag Count                 0.005057
+                             Fwd URG Flags_1                0.005057
+Avg Bwd Segment Size         CWE Flag Count                 0.005057
+                             Fwd URG Flags_1                0.005057
+Bwd Packet Length Mean       Fwd URG Flags_0                0.005057
+Avg Bwd Segment Size         Fwd URG Flags_0                0.005057
+Bwd IAT Max                  Subflow Bwd Packets            0.005051
+                             Total Backward Packets         0.005051
+Flow IAT Max                 min_seg_size_forward           0.005039
+ECE Flag Count               URG Flag Count                 0.005022
+RST Flag Count               URG Flag Count                 0.005022
+FIN Flag Count               Flow Bytes/s                   0.004998
+Bwd IAT Max                  Fwd Header Length              0.004984
+Active Max                   Fwd PSH Flags_1                0.004939
+                             SYN Flag Count                 0.004939
+Fwd PSH Flags_0              Active Max                     0.004939
+Idle Mean                    ECE Flag Count                 0.004922
+                             RST Flag Count                 0.004922
+act_data_pkt_fwd             Idle Std                       0.004913
+Idle Max                     RST Flag Count                 0.004888
+                             ECE Flag Count                 0.004888
+Bwd IAT Max                  Total Fwd Packets              0.004855
+                             Subflow Fwd Packets            0.004855
+Idle Min                     ECE Flag Count                 0.004849
+                             RST Flag Count                 0.004849
+min_seg_size_forward         Fwd Packet Length Mean         0.004846
+                             Avg Fwd Segment Size           0.004846
+                             Fwd Packet Length Max          0.004830
+Fwd Packet Length Min        ECE Flag Count                 0.004791
+                             RST Flag Count                 0.004791
+FIN Flag Count               Fwd Packet Length Std          0.004784
+Total Length of Bwd Packets  Fwd Packet Length Max          0.004751
+Subflow Bwd Bytes            Fwd Packet Length Max          0.004751
+Min Packet Length            Total Length of Bwd Packets    0.004721
+                             Subflow Bwd Bytes              0.004721
+Max Packet Length            Fwd URG Flags_0                0.004691
+                             CWE Flag Count                 0.004691
+                             Fwd URG Flags_1                0.004691
+Packet Length Std            Fwd URG Flags_1                0.004673
+                             CWE Flag Count                 0.004673
+                             Fwd URG Flags_0                0.004673
+Total Fwd Packets            Destination Port               0.004638
+Subflow Fwd Packets          Destination Port               0.004638
+Active Mean                  SYN Flag Count                 0.004620
+                             Fwd PSH Flags_1                0.004620
+Fwd PSH Flags_0              Active Mean                    0.004620
+Bwd IAT Total                Fwd PSH Flags_1                0.004607
+                             SYN Flag Count                 0.004607
+Fwd PSH Flags_0              Bwd IAT Total                  0.004607
+Subflow Bwd Packets          Fwd Packets/s                  0.004588
+Total Backward Packets       Fwd Packets/s                  0.004588
+Init_Win_bytes_forward       Fwd Header Length              0.004508
+Bwd Packet Length Max        Fwd URG Flags_0                0.004478
+                             Fwd URG Flags_1                0.004478
+                             CWE Flag Count                 0.004478
+Total Fwd Packets            Bwd Packets/s                  0.004469
+Subflow Fwd Packets          Bwd Packets/s                  0.004469
+Fwd IAT Std                  Bwd IAT Min                    0.004419
+Bwd IAT Mean                 Subflow Fwd Bytes              0.004387
+                             Total Length of Fwd Packets    0.004378
+Subflow Bwd Packets          Destination Port               0.004345
+Total Backward Packets       Destination Port               0.004345
+Fwd IAT Total                CWE Flag Count                 0.004327
+                             Fwd URG Flags_1                0.004327
+                             Fwd URG Flags_0                0.004327
+RST Flag Count               Flow Packets/s                 0.004304
+ECE Flag Count               Flow Packets/s                 0.004304
+Bwd IAT Total                Bwd Header Length              0.004238
+Flow IAT Min                 Avg Fwd Segment Size           0.004219
+                             Fwd Packet Length Mean         0.004219
+Active Std                   Total Length of Bwd Packets    0.004207
+                             Subflow Bwd Bytes              0.004207
+min_seg_size_forward         Flow Bytes/s                   0.004187
+Bwd Packet Length Min        Total Length of Bwd Packets    0.004172
+                             Subflow Bwd Bytes              0.004171
+act_data_pkt_fwd             RST Flag Count                 0.004053
+                             ECE Flag Count                 0.004053
+Bwd Packet Length Std        CWE Flag Count                 0.003997
+                             Fwd URG Flags_1                0.003997
+                             Fwd URG Flags_0                0.003997
+CWE Flag Count               Bwd Packets/s                  0.003972
+Fwd URG Flags_1              Bwd Packets/s                  0.003972
+Fwd URG Flags_0              Bwd Packets/s                  0.003972
+FIN Flag Count               Subflow Fwd Bytes              0.003912
+Init_Win_bytes_forward       Bwd Header Length              0.003905
+FIN Flag Count               Total Length of Fwd Packets    0.003905
+Subflow Fwd Packets          URG Flag Count                 0.003832
+Total Fwd Packets            URG Flag Count                 0.003832
+Bwd IAT Min                  Flow IAT Min                   0.003772
+Fwd IAT Max                  CWE Flag Count                 0.003697
+                             Fwd URG Flags_1                0.003697
+                             Fwd URG Flags_0                0.003697
+Flow IAT Mean                min_seg_size_forward           0.003689
+Flow Duration                Fwd URG Flags_0                0.003682
+                             Fwd URG Flags_1                0.003682
+                             CWE Flag Count                 0.003682
+Bwd IAT Total                ECE Flag Count                 0.003677
+                             RST Flag Count                 0.003677
+Idle Max                     Bwd Header Length              0.003663
+Fwd IAT Max                  Bwd Header Length              0.003645
+Flow IAT Std                 CWE Flag Count                 0.003634
+                             Fwd URG Flags_1                0.003634
+                             Fwd URG Flags_0                0.003634
+Fwd IAT Min                  Idle Std                       0.003625
+Subflow Bwd Packets          Bwd Packets/s                  0.003617
+Total Backward Packets       Bwd Packets/s                  0.003617
+Idle Max                     CWE Flag Count                 0.003581
+                             Fwd URG Flags_1                0.003581
+                             Fwd URG Flags_0                0.003581
+Total Backward Packets       Down/Up Ratio                  0.003546
+Subflow Bwd Packets          Down/Up Ratio                  0.003546
+Idle Mean                    CWE Flag Count                 0.003532
+                             Fwd URG Flags_1                0.003532
+                             Fwd URG Flags_0                0.003532
+Fwd IAT Min                  URG Flag Count                 0.003531
+Bwd IAT Min                  Active Min                     0.003497
+Bwd Packet Length Min        min_seg_size_forward           0.003476
+Fwd IAT Std                  Bwd Header Length              0.003464
+Bwd IAT Total                CWE Flag Count                 0.003454
+                             Fwd URG Flags_1                0.003454
+                             Fwd URG Flags_0                0.003454
+                             Fwd Header Length              0.003427
+Fwd PSH Flags_0              ECE Flag Count                 0.003419
+                             RST Flag Count                 0.003419
+ECE Flag Count               SYN Flag Count                 0.003419
+RST Flag Count               SYN Flag Count                 0.003419
+ECE Flag Count               Fwd PSH Flags_1                0.003419
+RST Flag Count               Fwd PSH Flags_1                0.003419
+Fwd IAT Mean                 Flow IAT Min                   0.003415
+Fwd IAT Std                  Flow IAT Min                   0.003407
+Idle Mean                    Bwd Header Length              0.003405
+Idle Min                     Fwd URG Flags_1                0.003403
+                             CWE Flag Count                 0.003403
+                             Fwd URG Flags_0                0.003403
+Min Packet Length            Bwd Header Length              0.003402
+Fwd IAT Std                  Fwd URG Flags_1                0.003394
+                             CWE Flag Count                 0.003394
+                             Fwd URG Flags_0                0.003394
+PSH Flag Count               CWE Flag Count                 0.003357
+                             Fwd URG Flags_1                0.003357
+                             Fwd URG Flags_0                0.003357
+min_seg_size_forward         ACK Flag Count                 0.003349
+Flow IAT Min                 Idle Std                       0.003289
+Fwd Packet Length Min        Total Fwd Packets              0.003272
+                             Subflow Fwd Packets            0.003272
+Init_Win_bytes_backward      Fwd Header Length              0.003269
+Fwd IAT Mean                 Subflow Fwd Bytes              0.003230
+Fwd IAT Total                Bwd Header Length              0.003227
+Fwd IAT Mean                 Total Length of Fwd Packets    0.003223
+Bwd IAT Min                  min_seg_size_forward           0.003214
+Total Length of Bwd Packets  Destination Port               0.003182
+Subflow Bwd Bytes            Destination Port               0.003182
+CWE Flag Count               Avg Fwd Segment Size           0.003134
+                             Fwd Packet Length Mean         0.003134
+Fwd URG Flags_1              Avg Fwd Segment Size           0.003134
+                             Fwd Packet Length Mean         0.003134
+Fwd URG Flags_0              Avg Fwd Segment Size           0.003134
+                             Fwd Packet Length Mean         0.003134
+Total Backward Packets       URG Flag Count                 0.003122
+Subflow Bwd Packets          URG Flag Count                 0.003122
+Fwd Packet Length Min        CWE Flag Count                 0.003096
+                             Fwd URG Flags_1                0.003096
+                             Fwd URG Flags_0                0.003096
+Idle Min                     Bwd Header Length              0.003071
+Total Backward Packets       Flow Packets/s                 0.003061
+Subflow Bwd Packets          Flow Packets/s                 0.003061
+Total Length of Bwd Packets  Fwd Packets/s                  0.003060
+Subflow Bwd Bytes            Fwd Packets/s                  0.003060
+Idle Max                     Fwd Header Length              0.003055
+Packet Length Variance       Flow Bytes/s                   0.003034
+Fwd IAT Max                  Fwd Header Length              0.003029
+Idle Max                     Subflow Fwd Packets            0.003014
+                             Total Fwd Packets              0.003014
+FIN Flag Count               ECE Flag Count                 0.002967
+                             RST Flag Count                 0.002967
+Total Length of Bwd Packets  Down/Up Ratio                  0.002959
+Subflow Bwd Bytes            Down/Up Ratio                  0.002959
+Fwd Packet Length Min        Fwd Header Length              0.002958
+Packet Length Variance       Fwd URG Flags_1                0.002952
+                             CWE Flag Count                 0.002952
+                             Fwd URG Flags_0                0.002952
+Idle Mean                    Total Fwd Packets              0.002927
+                             Subflow Fwd Packets            0.002927
+Active Std                   min_seg_size_forward           0.002927
+Fwd IAT Total                Fwd Header Length              0.002917
+Max Packet Length            ACK Flag Count                 0.002912
+CWE Flag Count               Fwd Packet Length Max          0.002902
+Fwd URG Flags_1              Fwd Packet Length Max          0.002902
+Fwd URG Flags_0              Fwd Packet Length Max          0.002902
+Bwd IAT Max                  Subflow Bwd Bytes              0.002898
+                             Total Length of Bwd Packets    0.002898
+Flow IAT Mean                Fwd URG Flags_1                0.002894
+                             CWE Flag Count                 0.002894
+                             Fwd URG Flags_0                0.002894
+Total Fwd Packets            Flow Packets/s                 0.002854
+Subflow Fwd Packets          Flow Packets/s                 0.002854
+Init_Win_bytes_backward      Bwd Header Length              0.002829
+act_data_pkt_fwd             SYN Flag Count                 0.002828
+                             Fwd PSH Flags_1                0.002828
+Fwd PSH Flags_0              act_data_pkt_fwd               0.002828
+Fwd Packet Length Min        Total Backward Packets         0.002824
+                             Subflow Bwd Packets            0.002824
+Idle Mean                    Fwd Header Length              0.002815
+Fwd IAT Std                  Fwd Header Length              0.002803
+Active Max                   min_seg_size_forward           0.002795
+Flow IAT Max                 Fwd URG Flags_0                0.002795
+                             CWE Flag Count                 0.002795
+                             Fwd URG Flags_1                0.002795
+Bwd IAT Min                  Subflow Fwd Bytes              0.002773
+                             Total Length of Fwd Packets    0.002768
+Flow IAT Std                 Bwd Header Length              0.002763
+Idle Min                     Subflow Fwd Packets            0.002750
+                             Total Fwd Packets              0.002750
+Fwd IAT Mean                 CWE Flag Count                 0.002743
+                             Fwd URG Flags_1                0.002743
+                             Fwd URG Flags_0                0.002743
+Bwd IAT Max                  Fwd URG Flags_1                0.002738
+                             CWE Flag Count                 0.002738
+                             Fwd URG Flags_0                0.002738
+Bwd Header Length            Idle Std                       0.002730
+Bwd IAT Max                  ECE Flag Count                 0.002691
+                             RST Flag Count                 0.002691
+Bwd IAT Mean                 Flow IAT Min                   0.002680
+Init_Win_bytes_backward      min_seg_size_forward           0.002659
+Flow IAT Max                 Bwd Header Length              0.002652
+Fwd IAT Min                  Subflow Fwd Bytes              0.002651
+Fwd Packet Length Std        ACK Flag Count                 0.002648
+Fwd IAT Min                  Total Length of Fwd Packets    0.002646
+Flow Duration                Bwd Header Length              0.002642
+Subflow Fwd Bytes            URG Flag Count                 0.002632
+Total Length of Fwd Packets  URG Flag Count                 0.002628
+FIN Flag Count               act_data_pkt_fwd               0.002610
+Bwd IAT Mean                 RST Flag Count                 0.002582
+                             ECE Flag Count                 0.002582
+Idle Max                     Total Backward Packets         0.002580
+                             Subflow Bwd Packets            0.002580
+Idle Mean                    Total Backward Packets         0.002569
+                             Subflow Bwd Packets            0.002569
+Fwd URG Flags_0              Destination Port               0.002554
+CWE Flag Count               Destination Port               0.002554
+Fwd URG Flags_1              Destination Port               0.002554
+Flow IAT Max                 Subflow Fwd Packets            0.002543
+                             Total Fwd Packets              0.002543
+Fwd IAT Max                  Total Fwd Packets              0.002518
+                             Subflow Fwd Packets            0.002518
+Idle Min                     Fwd Header Length              0.002515
+Subflow Fwd Bytes            ACK Flag Count                 0.002476
+Total Length of Fwd Packets  ACK Flag Count                 0.002467
+Fwd URG Flags_1              Fwd Packet Length Std          0.002461
+CWE Flag Count               Fwd Packet Length Std          0.002461
+Fwd URG Flags_0              Fwd Packet Length Std          0.002461
+Idle Min                     Total Backward Packets         0.002459
+                             Subflow Bwd Packets            0.002459
+Flow IAT Mean                RST Flag Count                 0.002453
+                             ECE Flag Count                 0.002453
+Fwd Header Length            Idle Std                       0.002414
+Fwd IAT Std                  act_data_pkt_fwd               0.002392
+Total Length of Bwd Packets  URG Flag Count                 0.002387
+Subflow Bwd Bytes            URG Flag Count                 0.002387
+Flow Duration                Fwd Header Length              0.002380
+Total Length of Bwd Packets  Bwd Packets/s                  0.002377
+Subflow Bwd Bytes            Bwd Packets/s                  0.002377
+Bwd IAT Std                  CWE Flag Count                 0.002369
+                             Fwd URG Flags_1                0.002369
+                             Fwd URG Flags_0                0.002369
+Flow IAT Mean                Subflow Fwd Bytes              0.002341
+                             Total Length of Fwd Packets    0.002335
+Fwd Header Length            ACK Flag Count                 0.002276
+Total Backward Packets       ACK Flag Count                 0.002251
+Subflow Bwd Packets          ACK Flag Count                 0.002251
+Fwd Packet Length Min        Total Length of Bwd Packets    0.002243
+                             Subflow Bwd Bytes              0.002243
+Flow IAT Max                 Subflow Bwd Packets            0.002222
+                             Total Backward Packets         0.002222
+                             Fwd Header Length              0.002197
+Flow IAT Std                 Fwd Header Length              0.002179
+PSH Flag Count               Fwd Header Length              0.002164
+Bwd IAT Std                  ECE Flag Count                 0.002102
+                             RST Flag Count                 0.002102
+Bwd IAT Mean                 Bwd Header Length              0.002050
+                             CWE Flag Count                 0.002035
+                             Fwd URG Flags_1                0.002035
+                             Fwd URG Flags_0                0.002035
+Fwd IAT Max                  Total Backward Packets         0.002005
+                             Subflow Bwd Packets            0.002005
+Fwd IAT Min                  Active Mean                    0.001996
+Bwd Header Length            ACK Flag Count                 0.001976
+Total Length of Bwd Packets  Flow Packets/s                 0.001974
+Subflow Bwd Bytes            Flow Packets/s                 0.001973
+Total Fwd Packets            ACK Flag Count                 0.001943
+Subflow Fwd Packets          ACK Flag Count                 0.001943
+RST Flag Count               Subflow Fwd Bytes              0.001921
+ECE Flag Count               Subflow Fwd Bytes              0.001921
+RST Flag Count               Total Length of Fwd Packets    0.001917
+ECE Flag Count               Total Length of Fwd Packets    0.001917
+FIN Flag Count               CWE Flag Count                 0.001917
+                             Fwd URG Flags_1                0.001917
+                             Fwd URG Flags_0                0.001917
+PSH Flag Count               min_seg_size_forward           0.001913
+Active Max                   RST Flag Count                 0.001900
+                             ECE Flag Count                 0.001900
+Fwd IAT Min                  act_data_pkt_fwd               0.001893
+Fwd Packet Length Min        Subflow Fwd Bytes              0.001884
+                             Total Length of Fwd Packets    0.001881
+PSH Flag Count               Bwd Header Length              0.001870
+Bwd IAT Min                  ECE Flag Count                 0.001824
+                             RST Flag Count                 0.001824
+                             act_data_pkt_fwd               0.001797
+Subflow Fwd Packets          Fwd Packet Length Std          0.001788
+Total Fwd Packets            Fwd Packet Length Std          0.001788
+Fwd URG Flags_0              min_seg_size_forward           0.001767
+min_seg_size_forward         Fwd URG Flags_1                0.001767
+                             CWE Flag Count                 0.001767
+Fwd IAT Min                  min_seg_size_forward           0.001676
+Flow IAT Min                 Flow Bytes/s                   0.001653
+Subflow Fwd Bytes            Flow Bytes/s                   0.001650
+Total Length of Fwd Packets  Flow Bytes/s                   0.001647
+Bwd IAT Mean                 Fwd Header Length              0.001629
+Idle Mean                    Subflow Bwd Bytes              0.001574
+                             Total Length of Bwd Packets    0.001573
+Idle Min                     Subflow Bwd Bytes              0.001562
+                             Total Length of Bwd Packets    0.001562
+Active Min                   ECE Flag Count                 0.001559
+                             RST Flag Count                 0.001559
+Fwd Header Length            Flow Bytes/s                   0.001555
+Fwd IAT Mean                 Bwd Header Length              0.001555
+Fwd Packet Length Min        min_seg_size_forward           0.001536
+Idle Max                     Subflow Bwd Bytes              0.001535
+                             Total Length of Bwd Packets    0.001535
+Flow IAT Mean                Bwd Header Length              0.001531
+Fwd Header Length            Fwd Packets/s                  0.001523
+Packet Length Std            Fwd Header Length              0.001518
+Active Max                   Fwd URG Flags_1                0.001518
+                             CWE Flag Count                 0.001518
+                             Fwd URG Flags_0                0.001518
+Packet Length Variance       RST Flag Count                 0.001478
+                             ECE Flag Count                 0.001478
+Total Length of Bwd Packets  Fwd Packet Length Mean         0.001467
+                             Avg Fwd Segment Size           0.001467
+Subflow Bwd Bytes            Avg Fwd Segment Size           0.001467
+                             Fwd Packet Length Mean         0.001467
+FIN Flag Count               Total Fwd Packets              0.001461
+                             Subflow Fwd Packets            0.001461
+Fwd IAT Min                  ECE Flag Count                 0.001455
+                             RST Flag Count                 0.001455
+                             Active Min                     0.001441
+Bwd Packet Length Mean       Fwd Header Length              0.001435
+Avg Bwd Segment Size         Fwd Header Length              0.001435
+Flow IAT Max                 Total Length of Bwd Packets    0.001423
+                             Subflow Bwd Bytes              0.001422
+Fwd Header Length            Destination Port               0.001418
+Active Mean                  RST Flag Count                 0.001411
+                             ECE Flag Count                 0.001411
+Subflow Bwd Packets          Bwd Header Length              0.001405
+Total Backward Packets       Bwd Header Length              0.001405
+Subflow Fwd Packets          Bwd Header Length              0.001403
+Total Fwd Packets            Bwd Header Length              0.001403
+Max Packet Length            Fwd Header Length              0.001401
+Bwd Packet Length Max        Fwd Header Length              0.001396
+Flow IAT Mean                Total Backward Packets         0.001393
+                             Subflow Bwd Packets            0.001393
+Subflow Bwd Packets          Fwd Packet Length Std          0.001385
+Total Backward Packets       Fwd Packet Length Std          0.001385
+Total Length of Bwd Packets  Bwd Header Length              0.001381
+Subflow Bwd Bytes            Bwd Header Length              0.001381
+act_data_pkt_fwd             Down/Up Ratio                  0.001371
+Flow IAT Mean                Total Length of Bwd Packets    0.001371
+                             Subflow Bwd Bytes              0.001371
+Fwd Header Length            Bwd Packets/s                  0.001345
+FIN Flag Count               Subflow Bwd Packets            0.001338
+                             Total Backward Packets         0.001338
+Bwd Packet Length Std        Fwd Header Length              0.001325
+Packet Length Std            Bwd Header Length              0.001311
+Fwd Packet Length Min        Bwd Header Length              0.001307
+act_data_pkt_fwd             min_seg_size_forward           0.001301
+Active Mean                  CWE Flag Count                 0.001277
+                             Fwd URG Flags_1                0.001277
+                             Fwd URG Flags_0                0.001277
+Fwd IAT Mean                 Total Length of Bwd Packets    0.001275
+                             Subflow Bwd Bytes              0.001275
+Bwd Header Length            Destination Port               0.001271
+                             Fwd Packets/s                  0.001257
+Max Packet Length            Bwd Header Length              0.001243
+Fwd IAT Mean                 Subflow Bwd Packets            0.001230
+                             Total Backward Packets         0.001230
+                             RST Flag Count                 0.001228
+                             ECE Flag Count                 0.001228
+Bwd IAT Min                  Fwd URG Flags_0                0.001179
+                             CWE Flag Count                 0.001179
+                             Fwd URG Flags_1                0.001179
+Bwd Packet Length Max        Bwd Header Length              0.001176
+Bwd Packet Length Mean       Bwd Header Length              0.001168
+Avg Bwd Segment Size         Bwd Header Length              0.001168
+Average Packet Size          Bwd Header Length              0.001163
+Fwd IAT Mean                 Fwd Header Length              0.001150
+Bwd Packet Length Std        Bwd Header Length              0.001144
+Bwd IAT Mean                 Total Length of Bwd Packets    0.001140
+                             Subflow Bwd Bytes              0.001140
+min_seg_size_forward         Down/Up Ratio                  0.001129
+Flow IAT Mean                Fwd Header Length              0.001128
+Packet Length Mean           Bwd Header Length              0.001121
+Bwd IAT Min                  Total Fwd Packets              0.001101
+                             Subflow Fwd Packets            0.001101
+Active Mean                  min_seg_size_forward           0.001101
+CWE Flag Count               Idle Std                       0.001093
+Fwd URG Flags_1              Idle Std                       0.001093
+Fwd URG Flags_0              Idle Std                       0.001093
+Bwd Header Length            Bwd Packets/s                  0.001093
+ECE Flag Count               min_seg_size_forward           0.001092
+RST Flag Count               min_seg_size_forward           0.001092
+act_data_pkt_fwd             Fwd Header Length              0.001092
+Fwd Header Length            URG Flag Count                 0.001088
+Active Std                   Fwd URG Flags_1                0.001085
+                             CWE Flag Count                 0.001085
+                             Fwd URG Flags_0                0.001085
+Flow IAT Std                 Total Length of Bwd Packets    0.001083
+                             Subflow Bwd Bytes              0.001083
+Average Packet Size          Fwd Header Length              0.001077
+Bwd IAT Std                  Subflow Fwd Packets            0.001077
+                             Total Fwd Packets              0.001077
+Subflow Fwd Packets          Fwd Header Length              0.001074
+Total Fwd Packets            Fwd Header Length              0.001074
+Bwd IAT Min                  Total Backward Packets         0.001061
+                             Subflow Bwd Packets            0.001061
+Fwd IAT Max                  Total Length of Bwd Packets    0.001051
+                             Subflow Bwd Bytes              0.001051
+Fwd IAT Mean                 act_data_pkt_fwd               0.001028
+Active Min                   CWE Flag Count                 0.001018
+                             Fwd URG Flags_1                0.001018
+                             Fwd URG Flags_0                0.001018
+Fwd IAT Mean                 Total Fwd Packets              0.001018
+                             Subflow Fwd Packets            0.001018
+Packet Length Mean           Fwd Header Length              0.001012
+Subflow Fwd Packets          Idle Std                       0.001009
+Total Fwd Packets            Idle Std                       0.001009
+Flow IAT Mean                act_data_pkt_fwd               0.001008
+                             Subflow Fwd Packets            0.000989
+                             Total Fwd Packets              0.000989
+Fwd IAT Min                  Subflow Fwd Packets            0.000987
+                             Total Fwd Packets              0.000987
+Subflow Bwd Packets          Fwd Header Length              0.000981
+Total Backward Packets       Fwd Header Length              0.000981
+Packet Length Variance       Fwd Header Length              0.000977
+Total Length of Bwd Packets  Fwd Header Length              0.000971
+Subflow Bwd Bytes            Fwd Header Length              0.000971
+min_seg_size_forward         URG Flag Count                 0.000963
+Flow IAT Std                 act_data_pkt_fwd               0.000958
+Bwd Header Length            URG Flag Count                 0.000945
+Fwd IAT Min                  CWE Flag Count                 0.000940
+                             Fwd URG Flags_1                0.000940
+                             Fwd URG Flags_0                0.000940
+min_seg_size_forward         Destination Port               0.000930
+act_data_pkt_fwd             Bwd Header Length              0.000901
+RST Flag Count               Flow Bytes/s                   0.000894
+ECE Flag Count               Flow Bytes/s                   0.000894
+Fwd IAT Min                  Subflow Bwd Packets            0.000886
+                             Total Backward Packets         0.000886
+Bwd IAT Std                  Total Backward Packets         0.000876
+                             Subflow Bwd Packets            0.000876
+Flow IAT Std                 Subflow Bwd Packets            0.000870
+                             Total Backward Packets         0.000870
+Subflow Bwd Bytes            ACK Flag Count                 0.000863
+Total Length of Bwd Packets  ACK Flag Count                 0.000862
+Bwd IAT Min                  Total Length of Bwd Packets    0.000856
+                             Subflow Bwd Bytes              0.000856
+FIN Flag Count               Total Length of Bwd Packets    0.000853
+                             Subflow Bwd Bytes              0.000853
+Packet Length Variance       Bwd Header Length              0.000843
+Fwd Header Length            Subflow Fwd Bytes              0.000809
+FIN Flag Count               Flow IAT Min                   0.000809
+Fwd Header Length            Total Length of Fwd Packets    0.000808
+                             Fwd Packet Length Std          0.000800
+Bwd IAT Mean                 Subflow Bwd Packets            0.000789
+                             Total Backward Packets         0.000789
+Bwd Header Length            Flow Packets/s                 0.000789
+RST Flag Count               Subflow Fwd Packets            0.000764
+                             Total Fwd Packets              0.000764
+ECE Flag Count               Total Fwd Packets              0.000764
+                             Subflow Fwd Packets            0.000764
+Fwd PSH Flags_0              Fwd Header Length              0.000738
+Fwd Header Length            SYN Flag Count                 0.000738
+                             Fwd PSH Flags_1                0.000738
+RST Flag Count               Idle Std                       0.000738
+ECE Flag Count               Idle Std                       0.000738
+Total Fwd Packets            Down/Up Ratio                  0.000721
+Subflow Fwd Packets          Down/Up Ratio                  0.000721
+Bwd Header Length            Fwd Packet Length Std          0.000710
+Fwd IAT Min                  Total Length of Bwd Packets    0.000678
+                             Subflow Bwd Bytes              0.000678
+Fwd URG Flags_0              Fwd Packets/s                  0.000652
+Fwd URG Flags_1              Fwd Packets/s                  0.000652
+CWE Flag Count               Fwd Packets/s                  0.000652
+FIN Flag Count               Fwd Header Length              0.000642
+Fwd PSH Flags_0              Bwd Header Length              0.000641
+Bwd Header Length            Fwd PSH Flags_1                0.000641
+                             SYN Flag Count                 0.000641
+                             Fwd Packet Length Max          0.000641
+Bwd Packet Length Mean       Fwd Packet Length Mean         0.000634
+Avg Bwd Segment Size         Fwd Packet Length Mean         0.000634
+                             Avg Fwd Segment Size           0.000634
+Bwd Packet Length Mean       Avg Fwd Segment Size           0.000634
+Bwd IAT Mean                 Total Fwd Packets              0.000611
+                             Subflow Fwd Packets            0.000611
+Fwd IAT Std                  Subflow Bwd Bytes              0.000608
+                             Total Length of Bwd Packets    0.000608
+Subflow Bwd Bytes            Flow Bytes/s                   0.000608
+Total Length of Bwd Packets  Flow Bytes/s                   0.000607
+Total Backward Packets       Idle Std                       0.000604
+Subflow Bwd Packets          Idle Std                       0.000604
+Min Packet Length            Fwd IAT Mean                   0.000602
+Bwd Header Length            Down/Up Ratio                  0.000602
+Fwd Header Length            Fwd Packet Length Max          0.000596
+min_seg_size_forward         SYN Flag Count                 0.000592
+                             Fwd PSH Flags_1                0.000592
+Fwd PSH Flags_0              min_seg_size_forward           0.000592
+Flow IAT Min                 min_seg_size_forward           0.000589
+Fwd URG Flags_1              Flow Bytes/s                   0.000582
+CWE Flag Count               Flow Bytes/s                   0.000582
+Fwd URG Flags_0              Flow Bytes/s                   0.000582
+Fwd PSH Flags_0              Subflow Bwd Packets            0.000573
+                             Total Backward Packets         0.000573
+Total Backward Packets       SYN Flag Count                 0.000573
+                             Fwd PSH Flags_1                0.000573
+Subflow Bwd Packets          SYN Flag Count                 0.000573
+                             Fwd PSH Flags_1                0.000573
+Fwd PSH Flags_0              Subflow Bwd Bytes              0.000564
+Subflow Bwd Bytes            Fwd PSH Flags_1                0.000564
+                             SYN Flag Count                 0.000564
+Fwd PSH Flags_0              Total Length of Bwd Packets    0.000564
+Total Length of Bwd Packets  SYN Flag Count                 0.000564
+                             Fwd PSH Flags_1                0.000564
+FIN Flag Count               Bwd Header Length              0.000557
+Bwd Packet Length Min        Bwd Header Length              0.000551
+min_seg_size_forward         Subflow Fwd Bytes              0.000546
+                             Total Length of Fwd Packets    0.000544
+Fwd PSH Flags_0              Active Min                     0.000506
+Active Min                   SYN Flag Count                 0.000506
+                             Fwd PSH Flags_1                0.000506
+Bwd IAT Mean                 act_data_pkt_fwd               0.000492
+ECE Flag Count               Subflow Bwd Packets            0.000463
+                             Total Backward Packets         0.000463
+RST Flag Count               Total Backward Packets         0.000463
+                             Subflow Bwd Packets            0.000463
+Total Fwd Packets            Flow Bytes/s                   0.000461
+Subflow Fwd Packets          Flow Bytes/s                   0.000461
+Total Fwd Packets            min_seg_size_forward           0.000458
+Subflow Fwd Packets          min_seg_size_forward           0.000458
+Subflow Bwd Packets          min_seg_size_forward           0.000438
+Total Backward Packets       min_seg_size_forward           0.000438
+Subflow Bwd Bytes            Fwd Packet Length Std          0.000438
+Total Length of Bwd Packets  Fwd Packet Length Std          0.000438
+                             min_seg_size_forward           0.000397
+Subflow Bwd Bytes            min_seg_size_forward           0.000397
+Fwd Header Length            Flow Packets/s                 0.000396
+Active Min                   min_seg_size_forward           0.000381
+Bwd IAT Std                  Subflow Bwd Bytes              0.000358
+                             Total Length of Bwd Packets    0.000358
+Subflow Fwd Packets          Avg Fwd Segment Size           0.000348
+                             Fwd Packet Length Mean         0.000348
+Total Fwd Packets            Avg Fwd Segment Size           0.000348
+                             Fwd Packet Length Mean         0.000348
+Fwd IAT Std                  Subflow Fwd Packets            0.000347
+                             Total Fwd Packets              0.000347
+Fwd URG Flags_0              Subflow Fwd Bytes              0.000340
+Fwd URG Flags_1              Subflow Fwd Bytes              0.000340
+CWE Flag Count               Subflow Fwd Bytes              0.000340
+                             Total Length of Fwd Packets    0.000339
+Fwd URG Flags_1              Total Length of Fwd Packets    0.000339
+Fwd URG Flags_0              Total Length of Fwd Packets    0.000339
+Subflow Bwd Packets          Flow Bytes/s                   0.000338
+Total Backward Packets       Flow Bytes/s                   0.000338
+Flow IAT Std                 Subflow Fwd Packets            0.000334
+                             Total Fwd Packets              0.000334
+Flow IAT Min                 Fwd URG Flags_0                0.000328
+                             CWE Flag Count                 0.000328
+                             Fwd URG Flags_1                0.000328
+Flow IAT Std                 Flow IAT Min                   0.000325
+Fwd Header Length            Fwd Packet Length Mean         0.000288
+                             Avg Fwd Segment Size           0.000288
+act_data_pkt_fwd             CWE Flag Count                 0.000280
+                             Fwd URG Flags_1                0.000280
+                             Fwd URG Flags_0                0.000280
+Fwd Header Length            Down/Up Ratio                  0.000274
+Fwd PSH Flags_0              Subflow Fwd Packets            0.000251
+                             Total Fwd Packets              0.000251
+Subflow Fwd Packets          SYN Flag Count                 0.000251
+                             Fwd PSH Flags_1                0.000251
+Total Fwd Packets            SYN Flag Count                 0.000251
+                             Fwd PSH Flags_1                0.000251
+Bwd IAT Min                  Bwd Header Length              0.000250
+Fwd IAT Std                  Subflow Bwd Packets            0.000247
+                             Total Backward Packets         0.000247
+RST Flag Count               Total Length of Bwd Packets    0.000231
+ECE Flag Count               Total Length of Bwd Packets    0.000231
+                             Subflow Bwd Bytes              0.000231
+RST Flag Count               Subflow Bwd Bytes              0.000231
+Bwd Header Length            Avg Fwd Segment Size           0.000189
+                             Fwd Packet Length Mean         0.000189
+                             Subflow Fwd Bytes              0.000187
+                             Total Length of Fwd Packets    0.000187
+act_data_pkt_fwd             Flow Bytes/s                   0.000173
+Fwd IAT Min                  Bwd Header Length              0.000169
+RST Flag Count               CWE Flag Count                 0.000155
+                             Fwd URG Flags_1                0.000155
+ECE Flag Count               Fwd URG Flags_1                0.000155
+                             CWE Flag Count                 0.000155
+RST Flag Count               Fwd URG Flags_0                0.000155
+ECE Flag Count               Fwd URG Flags_0                0.000155
+Bwd Header Length            Flow Bytes/s                   0.000155
+Bwd IAT Min                  Fwd Header Length              0.000124
+Flow IAT Min                 Bwd Header Length              0.000124
+Total Backward Packets       Fwd Packet Length Mean         0.000117
+Subflow Bwd Packets          Fwd Packet Length Mean         0.000117
+                             Avg Fwd Segment Size           0.000117
+Total Backward Packets       Avg Fwd Segment Size           0.000117
+                             Fwd URG Flags_1                0.000116
+                             CWE Flag Count                 0.000116
+Subflow Bwd Packets          CWE Flag Count                 0.000116
+                             Fwd URG Flags_1                0.000116
+Total Backward Packets       Fwd URG Flags_0                0.000116
+Subflow Bwd Packets          Fwd URG Flags_0                0.000116
+Subflow Fwd Packets          Fwd URG Flags_1                0.000108
+                             CWE Flag Count                 0.000108
+Total Fwd Packets            Fwd URG Flags_1                0.000108
+                             CWE Flag Count                 0.000108
+                             Fwd URG Flags_0                0.000108
+Subflow Fwd Packets          Fwd URG Flags_0                0.000108
+Total Length of Bwd Packets  Idle Std                       0.000085
+Subflow Bwd Bytes            Idle Std                       0.000085
+Total Length of Bwd Packets  CWE Flag Count                 0.000074
+                             Fwd URG Flags_1                0.000074
+                             Fwd URG Flags_0                0.000074
+Subflow Bwd Bytes            Fwd URG Flags_1                0.000074
+                             CWE Flag Count                 0.000074
+                             Fwd URG Flags_0                0.000074
+Fwd IAT Min                  Fwd Header Length              0.000073
+ECE Flag Count               Fwd Header Length              0.000051
+RST Flag Count               Fwd Header Length              0.000051
+Flow IAT Min                 Fwd Header Length              0.000046
+ECE Flag Count               Bwd Header Length              0.000044
+RST Flag Count               Bwd Header Length              0.000044
+Fwd URG Flags_0              Fwd Header Length              0.000034
+Fwd Header Length            Fwd URG Flags_1                0.000034
+                             CWE Flag Count                 0.000034
+Bwd Header Length            CWE Flag Count                 0.000029
+                             Fwd URG Flags_1                0.000029
+Fwd URG Flags_0              Bwd Header Length              0.000029
+Flow IAT Min                 Fwd PSH Flags_1                0.000005
+                             SYN Flag Count                 0.000005
+Fwd PSH Flags_0              Flow IAT Min                   0.000005
+Bwd Packet Length Min        Fwd Header Length              0.000004
