@@ -80,7 +80,11 @@ def read(
         and not isinstance(path_or_buffer, io.TextIOBase)
     ):
         df_list = []
+
         datasets = glob.glob(path_or_buffer + "/*.csv")
+        if not datasets:
+            datasets = glob.glob(path_or_buffer + "/*.csv.zip")
+
         for dataset_path in datasets:
             df = pd.read_csv(
                 dataset_path,
