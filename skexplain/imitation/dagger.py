@@ -99,10 +99,6 @@ class Dagger(ABC):
                 X_iter, y_iter, train_size=0.7
             )
 
-            self.log(X_iter)
-            self.log("X_train X_test", X_train.shape, X_test.shape)
-            self.log("y_train y_test", y_train.shape, y_test.shape)
-
             # Step 2: Traing DecisionTreeRegressor with sampled data
             student.fit(X_train, y_train)
             student_pred = student.predict(X_test)
