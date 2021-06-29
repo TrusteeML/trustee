@@ -83,7 +83,7 @@ def read(
 
         datasets = glob.glob(path_or_buffer + "/*.csv")
         if not datasets:
-            datasets = glob.glob(path_or_buffer + "/*.csv.zip")
+            datasets = glob.glob(path_or_buffer + "/*.zip")
 
         for dataset_path in datasets:
             df = pd.read_csv(
