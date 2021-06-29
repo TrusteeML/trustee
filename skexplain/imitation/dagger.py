@@ -152,7 +152,6 @@ class ClassificationDagger(Dagger):
 
     def score(self, y_true, y_pred, average="macro"):
         """Score function for student models"""
-        self.log("\n{}".format(classification_report(y_true, y_pred, digits=3)))
         return f1_score(y_true, y_pred, average=average)
 
 
