@@ -199,7 +199,7 @@ def cic_ids_2017_label_converter(label):
         "DoS Slowhttptest": 5,
         "DoS slowloris": 6,
         "FTP-Patator": 7,
-        "Heartbleed": 8,  # temp, original value: 8
+        "Heartbleed": 8,
         "Infiltration": 9,
         "PortScan": 10,
         "SSH-Patator": 11,
@@ -218,7 +218,6 @@ def cic_ids_2017_label_converter(label):
 
 CIC_IDS_2017_DATASET_META = {
     "name": "cic_ids_2017",
-    # "path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE/Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv".format(rootpath.detect()),
     "path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE/".format(rootpath.detect()),
     "is_dir": True,
     "oversampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip".format(
@@ -337,7 +336,6 @@ CIC_IDS_2017_DATASET_META = {
         "Web Attack Sql Injection",
         "Web Attack XSS",
     ],
-    # "classes": ['BENIGN', 'DoS slowloris'],
     "converters": {"Label": lambda x: cic_ids_2017_label_converter(x)},
     "type": "classification",
     "url": "https://www.unb.ca/cic/datasets/ids-2017.html",

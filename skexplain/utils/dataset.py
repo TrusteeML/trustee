@@ -4,12 +4,11 @@ import io
 import numpy as np
 
 import pandas as pd
-import rootpath
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
 from pandas.api.types import CategoricalDtype
 from skexplain.enums.feature_type import FeatureType
-from skexplain.utils.const import CIC_IDS_2017_DATASET_META, IOT_DATASET_META
+from skexplain.utils.const import CIC_IDS_2017_DATASET_META
 
 
 def read(
@@ -142,8 +141,6 @@ def read(
         result = [len(df.columns) - 1]
 
     y = df[names[result]].copy()
-
-    log(df["Label"].unique())
 
     X = df.drop(columns=names[result], axis=1)
     # resulting dataset corresponds to feature variables only, so encode it if necessary
