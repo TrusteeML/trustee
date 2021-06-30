@@ -115,7 +115,6 @@ def read(
 
     if "categories" in metadata:
         for (column, categories) in metadata["categories"].items():
-            log("Column/Categories", column, categories)
             category = CategoricalDtype(categories=categories, ordered=True)
             df[column] = df[column].astype(category)
 
@@ -195,7 +194,7 @@ def read(
                 )
             else:
                 resample = resampler(n_jobs=4)
-        except:
+        except Exception:
             resample = resampler()
         X, y = resample.fit_resample(X, y)
         log("Features Shape after resample:", X.shape)
@@ -219,7 +218,6 @@ def read(
 def read_all_categories(datasets_dir, metadata={}):
     names = []
     numerical = []
-    categorical = []
     dummies = []
     use_cols = []
     result = []
@@ -260,7 +258,6 @@ def read_all_categories(datasets_dir, metadata={}):
     # resulting dataset corresponds to feature variables only, so encode it if necessary
     if dummies:
         dummy_cols = [names[i] for i in dummies]
-        categorical = [[] for i in dummy_cols]
         frame = pd.get_dummies(frame, columns=dummy_cols)
 
     print(frame.columns)
@@ -331,7 +328,7 @@ def resample(path, output_path, metadata, resampler):
     print("Resampling dataset using: {}".format(resampler.__name__))
     try:
         resample = resampler(n_jobs=4)
-    except:
+    except Exception:
         resample = resampler()
 
     X, y = resample.fit_resample(X, y)
