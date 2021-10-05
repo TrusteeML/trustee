@@ -89,9 +89,7 @@ DIABETES_DATASET_META = {
 
 IOT_DATASET_META = {
     "name": "iot",
-    "path": "{}/res/dataset/iot/csv_files/16-09-23-labeled.csv".format(
-        rootpath.detect()
-    ),
+    "path": "{}/res/dataset/iot/csv_files/16-09-23-labeled.csv".format(rootpath.detect()),
     # "path": "{}/res/dataset/iot/csv_files/".format(rootpath.detect()),
     # "is_dir": True,
     "has_header": False,
@@ -220,15 +218,11 @@ CIC_IDS_2017_DATASET_META = {
     "name": "cic_ids_2017",
     "path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE/".format(rootpath.detect()),
     "is_dir": True,
-    "oversampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip".format(
-        rootpath.detect()
-    ),
-    "undersampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv".format(
-        rootpath.detect()
-    ),
+    "oversampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip".format(rootpath.detect()),
+    "undersampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv".format(rootpath.detect()),
     "has_header": True,
     "fields": [
-        ("Destination Port", FeatureType.IDENTIFIER, "uint32", False),
+        ("Destination Port", FeatureType.NUMERICAL, "uint32", False),
         ("Flow Duration", FeatureType.NUMERICAL, "uint32", False),
         ("Total Fwd Packets", FeatureType.NUMERICAL, "uint32", False),
         ("Total Backward Packets", FeatureType.NUMERICAL, "uint32", False),
@@ -289,12 +283,12 @@ CIC_IDS_2017_DATASET_META = {
         ("Avg Fwd Segment Size", FeatureType.NUMERICAL, "float16", False),
         ("Avg Bwd Segment Size", FeatureType.NUMERICAL, "float16", False),
         ("Fwd Header Length", FeatureType.NUMERICAL, "uint32", False),
-        ("Fwd Avg Bytes/Bulk", FeatureType.IDENTIFIER, "uint8", False),
-        ("Fwd Avg Packets/Bulk", FeatureType.IDENTIFIER, "uint8", False),
-        ("Fwd Avg Bulk Rate", FeatureType.IDENTIFIER, "uint8", False),
-        ("Bwd Avg Bytes/Bulk", FeatureType.IDENTIFIER, "uint8", False),
-        ("Bwd Avg Packets/Bulk", FeatureType.IDENTIFIER, "uint8", False),
-        ("Bwd Avg Bulk Rate", FeatureType.IDENTIFIER, "uint8", False),
+        ("Fwd Avg Bytes/Bulk", FeatureType.NUMERICAL, "uint8", False),
+        ("Fwd Avg Packets/Bulk", FeatureType.NUMERICAL, "uint8", False),
+        ("Fwd Avg Bulk Rate", FeatureType.NUMERICAL, "uint8", False),
+        ("Bwd Avg Bytes/Bulk", FeatureType.NUMERICAL, "uint8", False),
+        ("Bwd Avg Packets/Bulk", FeatureType.NUMERICAL, "uint8", False),
+        ("Bwd Avg Bulk Rate", FeatureType.NUMERICAL, "uint8", False),
         ("Subflow Fwd Packets", FeatureType.NUMERICAL, "uint32", False),
         ("Subflow Fwd Bytes", FeatureType.NUMERICAL, "uint32", False),
         ("Subflow Bwd Packets", FeatureType.NUMERICAL, "uint32", False),
@@ -344,16 +338,10 @@ CIC_IDS_2017_DATASET_META = {
 
 CIC_IDS_2017_HB_DATASET_META = {
     "name": "cic_ids_2017",
-    "path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE/".format(
-        rootpath.detect()
-    ),
+    "path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE/".format(rootpath.detect()),
     "is_dir": True,
-    "oversampled_path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE_OverSampled.csv.zip".format(
-        rootpath.detect()
-    ),
-    "undersampled_path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE_UnderSampled.csv".format(
-        rootpath.detect()
-    ),
+    "oversampled_path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE_OverSampled.csv.zip".format(rootpath.detect()),
+    "undersampled_path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE_UnderSampled.csv".format(rootpath.detect()),
     "has_header": True,
     "fields": CIC_IDS_2017_DATASET_META["fields"],
     "categories": {
@@ -374,12 +362,8 @@ DOWNLOAD_DATASET_META = {
     # "path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE/Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv".format(rootpath.detect()),
     "path": "{}/res/dataset/download/download.csv".format(rootpath.detect()),
     "is_dir": False,
-    "oversampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip".format(
-        rootpath.detect()
-    ),
-    "undersampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv".format(
-        rootpath.detect()
-    ),
+    "oversampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip".format(rootpath.detect()),
+    "undersampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv".format(rootpath.detect()),
     "has_header": True,
     "fields": CIC_IDS_2017_DATASET_META["fields"],
     "categories": {
@@ -388,7 +372,8 @@ DOWNLOAD_DATASET_META = {
         "Fwd URG Flags": [np.uint8(0), np.uint8(1)],
         # "Bwd URG Flags": [np.uint8(0)],
     },
-    # "classes": ['BENIGN', 'Bot', 'DDoS', 'DoS GoldenEye', 'DoS Hulk', 'DoS Slowhttptest', 'DoS slowloris', 'FTP-Patator', 'Heartbleed', 'Infiltration', 'PortScan', 'SSH-Patator', 'Web Attack Brute Force', 'Web Attack Sql Injection', 'Web Attack XSS'],
+    # "classes": ['BENIGN', 'Bot', 'DDoS', 'DoS GoldenEye', 'DoS Hulk', 'DoS Slowhttptest', 'DoS slowloris', 'FTP-Patator', 'Heartbleed',
+    # 'Infiltration', 'PortScan', 'SSH-Patator', 'Web Attack Brute Force', 'Web Attack Sql Injection', 'Web Attack XSS'],
     "classes": ["BENIGN", "Heartbleed"],
     "converters": {"Label": lambda x: cic_ids_2017_label_converter(x)},
     "type": "classification",
@@ -407,7 +392,8 @@ HEARTBLEED_DATASET_META = {
         "Fwd URG Flags": [np.uint8(0), np.uint8(1)],
         # "Bwd URG Flags": [np.uint8(0)],
     },
-    # "classes": ['BENIGN', 'Bot', 'DDoS', 'DoS GoldenEye', 'DoS Hulk', 'DoS Slowhttptest', 'DoS slowloris', 'FTP-Patator', 'Heartbleed', 'Infiltration', 'PortScan', 'SSH-Patator', 'Web Attack Brute Force', 'Web Attack Sql Injection', 'Web Attack XSS'],
+    # "classes": ['BENIGN', 'Bot', 'DDoS', 'DoS GoldenEye', 'DoS Hulk', 'DoS Slowhttptest', 'DoS slowloris', 'FTP-Patator', 'Heartbleed',
+    # 'Infiltration', 'PortScan', 'SSH-Patator', 'Web Attack Brute Force', 'Web Attack Sql Injection', 'Web Attack XSS'],
     "classes": ["BENIGN", "Heartbleed"],
     "converters": {"Label": lambda x: np.uint8(0 if x == "BENIGN" else 1)},
     "type": "classification",
@@ -417,9 +403,7 @@ HEARTBLEED_DATASET_META = {
 
 HEARTBLEED_LARGE_DATASET_META = {
     "name": "heartbleed-large",
-    "path": "{}/res/dataset/heartbleed-large/heartbleed-large.csv".format(
-        rootpath.detect()
-    ),
+    "path": "{}/res/dataset/heartbleed-large/heartbleed-large.csv".format(rootpath.detect()),
     "is_dir": False,
     "has_header": True,
     "fields": CIC_IDS_2017_DATASET_META["fields"],
@@ -429,7 +413,8 @@ HEARTBLEED_LARGE_DATASET_META = {
         "Fwd URG Flags": [np.uint8(0), np.uint8(1)],
         # "Bwd URG Flags": [np.uint8(0)],
     },
-    # "classes": ['BENIGN', 'Bot', 'DDoS', 'DoS GoldenEye', 'DoS Hulk', 'DoS Slowhttptest', 'DoS slowloris', 'FTP-Patator', 'Heartbleed', 'Infiltration', 'PortScan', 'SSH-Patator', 'Web Attack Brute Force', 'Web Attack Sql Injection', 'Web Attack XSS'],
+    # "classes": ['BENIGN', 'Bot', 'DDoS', 'DoS GoldenEye', 'DoS Hulk', 'DoS Slowhttptest', 'DoS slowloris', 'FTP-Patator', 'Heartbleed',
+    #  'Infiltration', 'PortScan', 'SSH-Patator', 'Web Attack Brute Force', 'Web Attack Sql Injection', 'Web Attack XSS'],
     "classes": ["BENIGN", "Heartbleed"],
     "converters": {"Label": lambda x: np.uint8(0 if x == "BENIGN" else 1)},
     "type": "classification",
@@ -439,16 +424,10 @@ HEARTBLEED_LARGE_DATASET_META = {
 
 CIC_ALT_DATASET_META = {
     "name": "cic_alt",
-    "path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE/".format(
-        rootpath.detect()
-    ),
+    "path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE/".format(rootpath.detect()),
     "is_dir": True,
-    "oversampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip".format(
-        rootpath.detect()
-    ),
-    "undersampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv".format(
-        rootpath.detect()
-    ),
+    "oversampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip".format(rootpath.detect()),
+    "undersampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv".format(rootpath.detect()),
     "has_header": True,
     "fields": CIC_IDS_2017_DATASET_META["fields"],
     "categories": {
@@ -457,7 +436,8 @@ CIC_ALT_DATASET_META = {
         "Fwd URG Flags": [np.uint8(0), np.uint8(1)],
         # "Bwd URG Flags": [np.uint8(0)],
     },
-    # "classes": ['BENIGN', 'Bot', 'DDoS', 'DoS GoldenEye', 'DoS Hulk', 'DoS Slowhttptest', 'DoS slowloris', 'FTP-Patator', 'Heartbleed', 'Infiltration', 'PortScan', 'SSH-Patator', 'Web Attack Brute Force', 'Web Attack Sql Injection', 'Web Attack XSS'],
+    # "classes": ['BENIGN', 'Bot', 'DDoS', 'DoS GoldenEye', 'DoS Hulk', 'DoS Slowhttptest', 'DoS slowloris', 'FTP-Patator', 'Heartbleed',
+    # 'Infiltration', 'PortScan', 'SSH-Patator', 'Web Attack Brute Force', 'Web Attack Sql Injection', 'Web Attack XSS'],
     "classes": ["BENIGN", "ANOMALY"],
     "converters": {"Label": lambda x: np.uint8(0 if x == "BENIGN" else 1)},
     "type": "classification",
