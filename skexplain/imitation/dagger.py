@@ -46,7 +46,7 @@ class Dagger(ABC):
         if len(X) != len(y):
             raise ValueError("Features (X) and target (y) values should have the same length.")
 
-        features = X.to_numpy() if isinstance(X, pd.DataFrame) else X
+        features = X
         targets = self.expert.predict(X)
 
         if len(targets.shape) >= 2:
@@ -76,7 +76,13 @@ class Dagger(ABC):
                 self.log("Sampling {} points from training dataset with ({}, {}) entries".format(size, len(features), len(targets)))
 
             samples_idxs = np.random.choice(dataset_size, size=size, replace=False)
-            X_iter, y_iter = features[samples_idxs], targets[samples_idxs]
+
+            if isinstance(features, pd.DataFrame) and isinstance(targets, pd.Series):
+                X_iter, y_iter = features.iloc[samples_idxs], targets.iloc[samples_idxs]
+            elif isinstance(features, np.ndarray) and isinstance(targets, np.ndarray):
+                X_iter, y_iter = features[samples_idxs], targets[samples_idxs]
+            else:
+                X_iter, y_iter = np.array(features)[samples_idxs], np.array(targets)[samples_idxs]
 
             X_train, X_test, y_train, y_test = train_test_split(X_iter, y_iter, train_size=0.7)
 
@@ -94,8 +100,12 @@ class Dagger(ABC):
                 # expert_pred = expert_pred.ravel()
                 expert_pred = expert_pred.argmax(axis=-1)
 
-            features = np.append(features, X_test, axis=0)
-            targets = np.append(targets, expert_pred, axis=0)
+            if isinstance(features, pd.DataFrame) and isinstance(targets, pd.Series):
+                features = features.append(X_test)
+                targets = targets.append(expert_pred)
+            else:
+                features = np.append(features, X_test, axis=0)
+                targets = np.append(targets, expert_pred, axis=0)
 
             # Step 4: Calculate reward based on Decistion Tree Classifier fidelity to the Expert model
             reward = self.score(expert_pred, student_pred)

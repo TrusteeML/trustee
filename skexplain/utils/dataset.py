@@ -11,9 +11,7 @@ from skexplain.enums.feature_type import FeatureType
 from skexplain.utils.const import CIC_IDS_2017_DATASET_META
 
 
-def read(
-    path_or_buffer, metadata={}, verbose=False, logger=None, as_df=False, resampler=None
-):
+def read(path_or_buffer, metadata={}, verbose=False, logger=None, as_df=False, resampler=None):
     """
     Reads dataset from a CSV and returns it as dataframe
 
@@ -73,11 +71,7 @@ def read(
         log(10 * "=", "Metadata end.", 10 * "=")
         log("")  # skip line
 
-    if (
-        "is_dir" in metadata
-        and metadata["is_dir"]
-        and not isinstance(path_or_buffer, io.TextIOBase)
-    ):
+    if "is_dir" in metadata and metadata["is_dir"] and not isinstance(path_or_buffer, io.TextIOBase):
         df_list = []
 
         datasets = glob.glob(path_or_buffer + "/*.csv")
@@ -88,9 +82,7 @@ def read(
             df = pd.read_csv(
                 dataset_path,
                 delimiter=metadata["delimiter"] if "delimiter" in metadata else ",",
-                header=0
-                if "has_header" in metadata and metadata["has_header"]
-                else None,
+                header=0 if "has_header" in metadata and metadata["has_header"] else None,
                 names=names if names else None,
                 dtype=dtypes if dtypes else None,
                 usecols=use_cols,
@@ -155,16 +147,7 @@ def read(
 
     if verbose:
         log("Features Shape:", X.shape)
-        log(
-            "Column names:\n{}".format(
-                "".join(
-                    (
-                        "{}: {}\n".format(str(i), str(col))
-                        for (i, col) in zip(list(range(len(X.columns))), X.columns)
-                    )
-                )
-            )
-        )
+        log("Column names:\n{}".format("".join(("{}: {}\n".format(str(i), str(col)) for (i, col) in zip(list(range(len(X.columns))), X.columns)))))
 
         log("Targets shape:", y.shape, y.columns)
 
@@ -187,9 +170,7 @@ def read(
         try:
             if categorical:
                 resample = resampler(
-                    categorical_features=[
-                        item for sublist in categorical for item in sublist
-                    ],
+                    categorical_features=[item for sublist in categorical for item in sublist],
                     n_jobs=4,
                 )
             else:
@@ -284,9 +265,7 @@ def resample(path, output_path, metadata, resampler):
             df = pd.read_csv(
                 dataset_path,
                 delimiter=metadata["delimiter"] if "delimiter" in metadata else ",",
-                header=0
-                if "has_header" in metadata and metadata["has_header"]
-                else None,
+                header=0 if "has_header" in metadata and metadata["has_header"] else None,
                 names=names if names else None,
             )
             df_list.append(df)
@@ -312,16 +291,7 @@ def resample(path, output_path, metadata, resampler):
     X = df.drop(columns=names[result], axis=1)
 
     print("Features Shape:", X.shape)
-    print(
-        "Column names:\n{}".format(
-            "".join(
-                (
-                    "{}: {}\n".format(str(i), str(col))
-                    for (i, col) in zip(list(range(len(X.columns))), X.columns)
-                )
-            )
-        )
-    )
+    print("Column names:\n{}".format("".join(("{}: {}\n".format(str(i), str(col)) for (i, col) in zip(list(range(len(X.columns))), X.columns)))))
 
     print("Targets shape:", y.shape, y.columns)
 
