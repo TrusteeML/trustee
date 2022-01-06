@@ -1,2 +1,0 @@
-model_checkpoint_path: "model_2class_SessionAllLayers.ckpt"
-all_model_checkpoint_paths: "model_2class_SessionAllLayers.ckpt"

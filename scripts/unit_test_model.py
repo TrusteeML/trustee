@@ -1,33 +1,10 @@
-import copy
-import io
-
-import numpy as np
-
-import graphviz
-import matplotlib.pyplot as plt
-import pandas as pd
 import rootpath
-import shap
-from imblearn.over_sampling import RandomOverSampler
-from imblearn.under_sampling import RandomUnderSampler
 from interpret import show
 from interpret.blackbox import LimeTabular
-from skexplain.enums.feature_type import FeatureType
-from skexplain.imitation import (ClassificationDagger,
-                                 IncrementalClassificationDagger,
-                                 RegressionDagger)
 from skexplain.utils import dataset, log, persist
-from skexplain.utils.const import (BOSTON_DATASET_META,
-                                   CIC_IDS_2017_DATASET_META,
-                                   DIABETES_DATASET_META,
-                                   DOWNLOAD_DATASET_META, IOT_DATASET_META,
-                                   WINE_DATASET_META)
-from sklearn import tree
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from skexplain.utils.const import CIC_IDS_2017_DATASET_META, DOWNLOAD_DATASET_META
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, f1_score, r2_score
-from sklearn.model_selection import train_test_split
-from sklearn.neural_network import MLPClassifier, MLPRegressor
-from sklearn.svm import LinearSVC
 
 DF_TEST = """
     Destination Port, Flow Duration, Total Fwd Packets, Total Backward Packets, Total Length of Fwd Packets, Total Length of Bwd Packets, Fwd Packet Length Max, Fwd Packet Length Min, Fwd Packet Length Mean, Fwd Packet Length Std, Bwd Packet Length Max, Bwd Packet Length Min, Bwd Packet Length Mean, Bwd Packet Length Std, Flow Bytes/s, Flow Packets/s, Flow IAT Mean, Flow IAT Std, Flow IAT Max, Flow IAT Min, Fwd IAT Total, Fwd IAT Mean, Fwd IAT Std, Fwd IAT Max, Fwd IAT Min, Bwd IAT Total, Bwd IAT Mean, Bwd IAT Std, Bwd IAT Max, Bwd IAT Min, Fwd PSH Flags, Bwd PSH Flags, Fwd URG Flags, Bwd URG Flags, Fwd Header Length, Bwd Header Length, Fwd Packets/s, Bwd Packets/s, Min Packet Length, Max Packet Length, Packet Length Mean, Packet Length Std, Packet Length Variance, FIN Flag Count, SYN Flag Count, RST Flag Count, PSH Flag Count, ACK Flag Count, URG Flag Count, CWE Flag Count, ECE Flag Count, Down/Up Ratio, Average Packet Size, Avg Fwd Segment Size, Avg Bwd Segment Size, Fwd Header Length, Fwd Avg Bytes/Bulk, Fwd Avg Packets/Bulk, Fwd Avg Bulk Rate, Bwd Avg Bytes/Bulk, Bwd Avg Packets/Bulk, Bwd Avg Bulk Rate, Subflow Fwd Packets, Subflow Fwd Bytes, Subflow Bwd Packets, Subflow Bwd Bytes, Init_Win_bytes_forward, Init_Win_bytes_backward, act_data_pkt_fwd, min_seg_size_forward, Active Mean, Active Std, Active Max, Active Min, Idle Mean, Idle Std, Idle Max, Idle Min, Label\n
@@ -43,23 +20,18 @@ DF_TEST_2 = """
 
 
 def unit_test(df_test_meta, df_train_meta, model=RandomForestClassifier, as_df=False):
-    """ Test using Reinforcement Learning to extract Decision Tree from a generic Blackbox model """
-    logger = log.Logger(
-        "{}/res/log/{}/unit_test_{}_{}.log".format(rootpath.detect(), df_train_meta['name'],  model.__name__, "Raw")
-    )
+    """Test using Reinforcement Learning to extract Decision Tree from a generic Blackbox model"""
+    logger = log.Logger("{}/res/log/{}/unit_test_{}_{}.log".format(rootpath.detect(), df_train_meta["name"], model.__name__, "Raw"))
 
     # Step 1: Parse test def
-    X, y, _, _, _ = dataset.read(df_train_meta['path'], metadata=df_train_meta,
-                                 verbose=True, logger=logger, as_df=as_df)
+    X, y, _, _, _ = dataset.read(df_train_meta["path"], metadata=df_train_meta, verbose=True, logger=logger, as_df=as_df)
 
     # Step 1: Parse test def
-    X_test, y_test, feature_names, _, _ = dataset.read(df_test_meta['path'], metadata=df_test_meta,
-                                                       verbose=True, logger=logger, as_df=as_df)
+    X_test, y_test, feature_names, _, _ = dataset.read(df_test_meta["path"], metadata=df_test_meta, verbose=True, logger=logger, as_df=as_df)
 
     # Step 2: Train black-box model with loaded dataset
     logger.log("#" * 10, "Model init", "#" * 10)
-    model_path = "../res/weights/{}_{}_{}_{}.joblib".format(model.__name__,
-                                                            "Raw", df_train_meta['name'], X_test.shape[1])
+    model_path = "../res/weights/{}_{}_{}_{}.joblib".format(model.__name__, "Raw", df_train_meta["name"], X_test.shape[1])
     logger.log("Looking for pre-trained model: {}...".format(model_path))
     blackbox = persist.load_model(model_path)
     if not blackbox:
@@ -76,7 +48,7 @@ def unit_test(df_test_meta, df_train_meta, model=RandomForestClassifier, as_df=F
     logger.log(y_test.ravel(), y_pred)
 
     blackbox_score = 0
-    if df_train_meta['type'] == 'classification':
+    if df_train_meta["type"] == "classification":
         logger.log("Blackbox model training classification report:")
         logger.log("\n{}".format(classification_report(y_test, y_pred, digits=3)))
         blackbox_score = f1_score(y_test, y_pred, average="macro")
@@ -91,7 +63,7 @@ def unit_test(df_test_meta, df_train_meta, model=RandomForestClassifier, as_df=F
     lime = LimeTabular(predict_fn=blackbox.predict_proba, data=X, random_state=1)
 
     # Pick the instances to explain, optionally pass in labels if you have them
-    lime_local = lime.explain_local(X_test[:1], y_test[:1], name='LIME')
+    lime_local = lime.explain_local(X_test[:1], y_test[:1], name="LIME")
 
     show(lime_local)
 
@@ -106,12 +78,11 @@ def unit_test(df_test_meta, df_train_meta, model=RandomForestClassifier, as_df=F
 
 
 def main():
-    """ Main block """
+    """Main block"""
     # read already undersampled dataset from disk instead of doing the oversampling every time
     # unit_test(df_test_meta=io.StringIO(DF_TEST_2), df_train_meta=CIC_IDS_2017_DATASET_META, model=RandomForestClassifier)
 
-    unit_test(df_test_meta=DOWNLOAD_DATASET_META,
-              df_train_meta=CIC_IDS_2017_DATASET_META, model=RandomForestClassifier)
+    unit_test(df_test_meta=DOWNLOAD_DATASET_META, df_train_meta=CIC_IDS_2017_DATASET_META, model=RandomForestClassifier)
 
 
 if __name__ == "__main__":

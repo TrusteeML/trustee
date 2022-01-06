@@ -63,9 +63,7 @@ def dagger_test_dnn(
 
     logger.log("Splitting dataset into training and test...")
     X_indexes = np.arange(0, X.shape[0])
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_indexes, y, train_size=0.7, stratify=y
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X_indexes, y, train_size=0.7, stratify=y)
     X_train = X.iloc[X_train] if isinstance(X, pd.DataFrame) else X[X_train]
     X_test = X.iloc[X_test] if isinstance(X, pd.DataFrame) else X[X_test]
     y_train = np_utils.to_categorical(y_train)
@@ -74,9 +72,7 @@ def dagger_test_dnn(
 
     # Step 2: Train black-box model with loaded dataset
     logger.log("#" * 10, "Model init", "#" * 10)
-    model_path = "../res/weights/{}_{}_{}.h5".format(
-        "DNN", resampler.__name__ if resampler else "Raw", dataset_meta["name"]
-    )
+    model_path = "../res/weights/{}_{}_{}.h5".format("DNN", resampler.__name__ if resampler else "Raw", dataset_meta["name"])
     logger.log("Looking for pre-trained model: {}...".format(model_path))
     try:
         blackbox = load_model(model_path)
@@ -98,9 +94,7 @@ def dagger_test_dnn(
         blackbox.compile(
             optimizer="adam",
             metrics=["accuracy" if dataset_meta["type"] == "classification" else "mse"],
-            loss="categorical_crossentropy"
-            if dataset_meta["type"] == "classification"
-            else "mean_squared_error",
+            loss="categorical_crossentropy" if dataset_meta["type"] == "classification" else "mean_squared_error",
         )
 
         logger.log("#" * 10, "Model fit", "#" * 10)
@@ -126,11 +120,7 @@ def dagger_test_dnn(
         logger.log("Blackbox model training classification report:")
         logger.log("\n{}".format(classification_report(y_test, y_pred, digits=3)))
         blackbox_score = f1_score(y_test, y_pred, average="macro")
-        logger.log(
-            "F1-score for test data: {}".format(
-                f1_score(y_test, y_pred, average="macro")
-            )
-        )
+        logger.log("F1-score for test data: {}".format(f1_score(y_test, y_pred, average="macro")))
     else:
         blackbox_score = r2_score(y_test, y_pred)
         logger.log("Blackbox model R2 score: {}".format(blackbox_score))
@@ -147,7 +137,7 @@ def dagger_test_dnn(
     dagger.fit(
         X,
         y,
-        max_iter=100,
+        num_iter=100,
         max_leaf_nodes=max_leaves,
         num_samples=num_samples,
         ccp_alpha=ccp_alpha,
@@ -165,15 +155,11 @@ def dagger_test_dnn(
         fidelity = 0
         if dataset_meta["type"] == "classification":
             logger.log("Model explanation classification report:")
-            logger.log(
-                "\n{}".format(classification_report(y_test, dt_y_pred, digits=3))
-            )
+            logger.log("\n{}".format(classification_report(y_test, dt_y_pred, digits=3)))
             dt_score = f1_score(y_test, dt_y_pred, average="macro")
 
             logger.log("Model explanation global fidelity report:")
-            logger.log(
-                "\n{}".format(classification_report(y_pred, dt_y_pred, digits=3))
-            )
+            logger.log("\n{}".format(classification_report(y_pred, dt_y_pred, digits=3)))
             fidelity = f1_score(y_pred, dt_y_pred, average="macro")
         else:
             dt_score = r2_score(y_test, dt_y_pred)

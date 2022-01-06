@@ -1,34 +1,12 @@
-import csv
-
 import numpy as np
 
-import graphviz
-import matplotlib.pyplot as plt
 import pandas as pd
 import rootpath
-from imblearn.over_sampling import RandomOverSampler
-from imblearn.under_sampling import RandomUnderSampler
-from skexplain.enums.feature_type import FeatureType
-from skexplain.imitation import (
-    ClassificationDagger,
-    IncrementalClassificationDagger,
-    RegressionDagger,
-)
 from skexplain.utils import dataset, log, persist
-from skexplain.utils.const import (
-    BOSTON_DATASET_META,
-    CIC_ALT_DATASET_META,
-    CIC_IDS_2017_DATASET_META,
-    DIABETES_DATASET_META,
-    IOT_DATASET_META,
-    WINE_DATASET_META,
-)
-from sklearn import tree
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from skexplain.utils.const import CIC_IDS_2017_DATASET_META
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, f1_score, r2_score
 from sklearn.model_selection import train_test_split
-from sklearn.neural_network import MLPClassifier, MLPRegressor
-from sklearn.svm import LinearSVC
 
 
 def train_test_model(
@@ -63,9 +41,7 @@ def train_test_model(
 
     logger.log("Splitting dataset into training and test...")
     X_indexes = np.arange(0, X.shape[0])
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_indexes, y, train_size=0.7, stratify=y
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X_indexes, y, train_size=0.7, stratify=y)
     X_train = X.iloc[X_train] if isinstance(X, pd.DataFrame) else X[X_train]
     X_test = X.iloc[X_test] if isinstance(X, pd.DataFrame) else X[X_test]
     logger.log("Done!")
@@ -84,11 +60,9 @@ def train_test_model(
     logger.log("y_train", y_train)
     try:
         blackbox = model(n_jobs=4)
-    except:
+    except Exception:
         blackbox = model()
-    blackbox.fit(
-        X_train, y_train if isinstance(y_train, pd.DataFrame) else y_train.ravel()
-    )
+    blackbox.fit(X_train, y_train if isinstance(y_train, pd.DataFrame) else y_train.ravel())
     logger.log("Done!")
     if model_path:
         persist.save_model(blackbox, model_path)
@@ -113,9 +87,7 @@ def train_test_model(
     if validate_dataset_path:
         # Step 2.a (optional): Test trained model with a validation dataset
         logger.log("Reading validation dataset fromn CSV...")
-        X_validate, y_validate, _, _, _ = dataset.read(
-            validate_dataset_path, metadata=dataset_meta, verbose=True, logger=logger
-        )
+        X_validate, y_validate, _, _, _ = dataset.read(validate_dataset_path, metadata=dataset_meta, verbose=True, logger=logger)
         logger.log("Done!")
 
         logger.log("#" * 10, "Model validation", "#" * 10)
@@ -123,18 +95,10 @@ def train_test_model(
 
         if dataset_meta["type"] == "classification":
             logger.log("Blackbox model validation classification report:")
-            logger.log(
-                "\n{}".format(
-                    classification_report(y_validate, y_validation_pred, digits=3)
-                )
-            )
+            logger.log("\n{}".format(classification_report(y_validate, y_validation_pred, digits=3)))
             # logger.log("F1-score for test data: {}".format(f1_score(y_test, y_pred, average="macro")))
         else:
-            logger.log(
-                "Blackbox model validation R2 score: {}".format(
-                    r2_score(y_validate, y_validation_pred)
-                )
-            )
+            logger.log("Blackbox model validation R2 score: {}".format(r2_score(y_validate, y_validation_pred)))
 
         logger.log("#" * 10, "Done", "#" * 10)
 

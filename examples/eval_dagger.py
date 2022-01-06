@@ -3,11 +3,7 @@ import csv
 import graphviz
 import pandas as pd
 import rootpath
-from skexplain.enums.feature_type import FeatureType
-from skexplain.imitation import (
-    ClassificationDagger,
-    RegressionDagger,
-)
+from skexplain.imitation import ClassificationDagger, RegressionDagger
 from skexplain.utils import dataset, log, persist
 from skexplain.utils.const import (
     IOT_DATASET_META,
@@ -56,18 +52,14 @@ def dagger_leaves_eval(
 
     # Step 2: Train black-box model with loaded dataset
     logger.log("#" * 10, "Model train", "#" * 10)
-    model_path = "../res/weights/{}_{}_{}.joblib".format(
-        model.__name__, resampler.__name__ if resampler else "Raw", dataset_meta["name"]
-    )
+    model_path = "../res/weights/{}_{}_{}.joblib".format(model.__name__, resampler.__name__ if resampler else "Raw", dataset_meta["name"])
     logger.log("Looking for pre-trained model: {}...".format(model_path))
     blackbox = persist.load_model(model_path)
     if not blackbox:
         logger.log("Model path does not exist.")
         logger.log("Training model: {}...".format(model))
         blackbox = model()
-        blackbox.fit(
-            X_train, y_train if isinstance(y_train, pd.DataFrame) else y_train.ravel()
-        )
+        blackbox.fit(X_train, y_train if isinstance(y_train, pd.DataFrame) else y_train.ravel())
         logger.log("Done!")
         if model_path:
             persist.save_model(blackbox, model_path)
@@ -84,9 +76,7 @@ def dagger_leaves_eval(
 
     logger.log("#" * 10, "Done", "#" * 10)
 
-    with open(
-        "{}/res/results/dagger_leaves_eval.csv".format(rootpath.detect()), "w"
-    ) as csv_file:
+    with open("{}/res/results/dagger_leaves_eval.csv".format(rootpath.detect()), "w") as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(
             [
@@ -110,7 +100,7 @@ def dagger_leaves_eval(
             dagger.fit(
                 X,
                 y,
-                max_iter=100,
+                num_iter=100,
                 max_leaf_nodes=num_leaves,
                 num_samples=num_samples,
                 verbose=True,
@@ -124,13 +114,9 @@ def dagger_leaves_eval(
             score = 0
             if dataset_meta["type"] == "classification":
                 logger.log("Model explanation classification report:")
-                logger.log(
-                    "\n{}".format(classification_report(y_test, dt_y_pred, digits=3))
-                )
+                logger.log("\n{}".format(classification_report(y_test, dt_y_pred, digits=3)))
                 logger.log("Model explanation global fidelity report:")
-                logger.log(
-                    "\n{}".format(classification_report(y_pred, dt_y_pred, digits=3))
-                )
+                logger.log("\n{}".format(classification_report(y_pred, dt_y_pred, digits=3)))
                 score = f1_score(y_test, dt_y_pred, average="macro")
                 fidelity = f1_score(y_pred, dt_y_pred, average="macro")
             else:
@@ -154,9 +140,7 @@ def dagger_leaves_eval(
             dot_data = tree.export_graphviz(
                 dt,
                 feature_names=feature_names,
-                class_names=dataset_meta["classes"]
-                if "classes" in dataset_meta
-                else None,
+                class_names=dataset_meta["classes"] if "classes" in dataset_meta else None,
                 filled=True,
                 rounded=True,
                 special_characters=True,
@@ -176,9 +160,7 @@ def dagger_leaves_eval(
 
 def main():
     """Main block"""
-    dagger_leaves_eval(
-        IOT_DATASET_META, model=MLPClassifier, resampler=None, num_samples=10000
-    )
+    dagger_leaves_eval(IOT_DATASET_META, model=MLPClassifier, resampler=None, num_samples=10000)
 
 
 if __name__ == "__main__":

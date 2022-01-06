@@ -1,8 +1,7 @@
 from abc import ABC
 from copy import deepcopy
 
-from pandas.core.frame import DataFrame
-
+import torch
 import numpy as np
 import pandas as pd
 
@@ -34,7 +33,7 @@ class Dagger(ABC):
         max_leaf_nodes=None,
         max_depth=None,
         ccp_alpha=0.0,
-        max_iter=100,
+        num_iter=100,
         num_samples=2000,
         samples_size=None,
         verbose=False,
@@ -62,12 +61,12 @@ class Dagger(ABC):
 
         if verbose:
             self.log("Expert model score: {}".format(self.score(y, targets)))
-            self.log("Initializing Dagger loop with {} iterations".format(max_iter))
+            self.log("Initializing Dagger loop with {} iterations".format(num_iter))
 
         # Dagger loop
-        for i in range(max_iter):
+        for i in range(num_iter):
             if verbose:
-                self.log("#" * 10, "Iteration {}/{}".format(i, max_iter), "#" * 10)
+                self.log("#" * 10, "Iteration {}/{}".format(i, num_iter), "#" * 10)
 
             dataset_size = len(features)
             size = int(int(len(X)) * samples_size) if samples_size else num_samples
@@ -81,6 +80,8 @@ class Dagger(ABC):
                 X_iter, y_iter = features.iloc[samples_idxs], targets.iloc[samples_idxs]
             elif isinstance(features, np.ndarray) and isinstance(targets, np.ndarray):
                 X_iter, y_iter = features[samples_idxs], targets[samples_idxs]
+            elif torch.is_tensor(features) and torch.is_tensor(targets):
+                X_iter, y_iter = features[samples_idxs].clone().detach(), targets[samples_idxs].clone().detach()
             else:
                 X_iter, y_iter = np.array(features)[samples_idxs], np.array(targets)[samples_idxs]
 
@@ -103,6 +104,9 @@ class Dagger(ABC):
             if isinstance(features, pd.DataFrame) and isinstance(targets, pd.Series):
                 features = features.append(X_test)
                 targets = targets.append(expert_pred)
+            elif torch.is_tensor(features) and torch.is_tensor(targets):
+                features = torch.cat((features, X_test), 0)
+                targets = torch.cat((targets, expert_pred), 0)
             else:
                 features = np.append(features, X_test, axis=0)
                 targets = np.append(targets, expert_pred, axis=0)

@@ -28,6 +28,9 @@ pyshark = "^0.4.2"
 interpret = "^0.2.4"
 jupyter = "^1.0.0"
 setuptools = "^57.0.0"
+torch = "^1.10.0"
+prettytable = "^2.4.0"
+termcolor = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 

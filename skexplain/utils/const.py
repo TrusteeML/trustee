@@ -89,9 +89,9 @@ DIABETES_DATASET_META = {
 
 IOT_DATASET_META = {
     "name": "iot",
-    "path": "{}/res/dataset/iot/csv_files/16-09-23-labeled.csv".format(rootpath.detect()),
-    # "path": "{}/res/dataset/iot/csv_files/".format(rootpath.detect()),
-    # "is_dir": True,
+    # "path": "{}/res/dataset/iot/csv_files/16-09-23-labeled.csv".format(rootpath.detect()),
+    "path": "{}/res/dataset/iot/csv_files/".format(rootpath.detect()),
+    "is_dir": True,
     "has_header": False,
     "fields": [
         ("Frame Length", FeatureType.NUMERICAL, None, False),
@@ -100,7 +100,11 @@ IOT_DATASET_META = {
         ("IPv4 Flags", FeatureType.CATEGORICAL, None, False),
         ("IPv6 Next Header", FeatureType.CATEGORICAL, None, False),
         ("IPv6 Option", FeatureType.CATEGORICAL, None, False),
+        ("TCP Src Port", FeatureType.NUMERICAL, None, False),
+        ("TCP Dst Port", FeatureType.NUMERICAL, None, False),
         ("TCP Flags", FeatureType.CATEGORICAL, None, False),
+        ("UDP Src Port", FeatureType.NUMERICAL, None, False),
+        ("UDP Dst Port", FeatureType.NUMERICAL, None, False),
         ("IoT Device Type", FeatureType.CATEGORICAL, None, True),
     ],
     "classes": ["Smart Static", "Sensor", "Audio", "Video", "Other"],
