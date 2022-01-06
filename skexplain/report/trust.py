@@ -159,7 +159,7 @@ def fit_and_explain(
 
     log("#" * 10, "Explanation validation", "#" * 10)
     (dt, reward, idx) = dagger.explain()
-    logger.log("Model explanation {} training fidelity: {}".format(idx, reward))
+    log("Model explanation {} training fidelity: {}".format(idx, reward))
     dt_y_pred = dt.predict(X_test)
 
     log("Model explanation global fidelity report:")
