@@ -111,7 +111,7 @@ IOT_DATASET_META = {
     "converters": {
         1: lambda x: int(x, 16) if x else None,
         3: lambda x: int(x, 16) if x else None,
-        6: lambda x: int(x, 16) if x else None,
+        8: lambda x: int(x, 16) if x else None,
     },
     "type": "classification",
     "categories": {

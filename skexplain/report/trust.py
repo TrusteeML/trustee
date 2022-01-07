@@ -16,7 +16,8 @@ from autogluon.tabular import TabularPredictor
 
 # import prettytable
 from prettytable import PrettyTable
-from termcolor import colored
+
+# from termcolor import colored
 
 from skexplain.imitation import ClassificationDagger
 
@@ -54,7 +55,8 @@ def get_dt_info(dt):
 
     splits = []
     features_used = {}
-    samples_sum = np.sum(samples)
+    # sum of all samples in all non-leaf nodes
+    samples_sum = np.sum([node_sample if children_left[node] != children_right[node] else 0 for node, node_sample in enumerate(samples)])
 
     def walk_tree(node, path):
         """Recursively iterates through all nodes in given decision tree and returns them as a list."""
@@ -107,6 +109,9 @@ def fit_and_explain(
     y_test,
     dagger_num_iter=100,
     dagger_sample_size=0.5,
+    dagger_max_leaf_nodes=None,
+    dagger_max_depth=None,
+    dagger_ccp_alpha=0.0,
     class_names=None,
     logger=None,
     verbose=False,
@@ -152,8 +157,10 @@ def fit_and_explain(
         X_train,
         y_train,
         num_iter=dagger_num_iter,
-        max_leaf_nodes=None,
         samples_size=dagger_sample_size,
+        max_leaf_nodes=dagger_max_leaf_nodes,
+        max_depth=dagger_max_depth,
+        ccp_alpha=dagger_ccp_alpha,
         verbose=verbose,
     )
 
@@ -192,6 +199,9 @@ def trust_report(
     train_size=0.7,
     dagger_num_iter=10,
     dagger_sample_size=0.3,
+    dagger_max_leaf_nodes=None,
+    dagger_max_depth=None,
+    dagger_ccp_alpha=0.0,
     top_n=10,
     logger=None,
     verbose=False,
@@ -236,6 +246,9 @@ def trust_report(
         y_test,
         dagger_num_iter=dagger_num_iter,
         dagger_sample_size=dagger_sample_size,
+        dagger_max_leaf_nodes=dagger_max_leaf_nodes,
+        dagger_max_depth=dagger_max_depth,
+        dagger_ccp_alpha=dagger_ccp_alpha,
         class_names=class_names,
         verbose=verbose,
         logger=logger,
@@ -249,6 +262,7 @@ def trust_report(
 
     first_dt_class = type(first_dt).__name__
     first_dt_size = first_dt.tree_.node_count
+    first_dt_n_leaves = first_dt.tree_.n_leaves
     first_dt_samples = first_dt.tree_.n_node_samples[0]
     first_dt_samples_by_class = first_dt.tree_.value[0][0]
 
@@ -284,6 +298,8 @@ def trust_report(
             y_test,
             dagger_num_iter=dagger_num_iter,
             dagger_sample_size=dagger_sample_size,
+            dagger_max_depth=dagger_max_depth,
+            dagger_ccp_alpha=dagger_ccp_alpha,
             class_names=class_names,
             verbose=verbose,
             logger=logger,
@@ -382,15 +398,37 @@ def trust_report(
     top_features = PrettyTable(
         title="Top {} Features".format(len(first_dt_top_features)), field_names=["Feature", "# of Nodes (%)", "Data Split % - ↓"]
     )
+
+    sum_nodes = 0
+    sum_nodes_perc = 0
+    sum_data_split = 0
     for (feat, values) in first_dt_top_features:
+        node, node_perc, data_split = (
+            values["count"],
+            (values["count"] / (first_dt_size - first_dt_n_leaves)) * 100,
+            (values["samples"] / first_dt_total_samples) * 100,
+        )
+        sum_nodes += node
+        sum_nodes_perc += node_perc
+        sum_data_split += data_split
+
         top_features.add_row(
             [
                 feature_names[feat] if feature_names else feat,
-                "{} ({:.2f}%)".format(values["count"], (values["count"] / first_dt_size) * 100),
-                "{:.2f}%".format((values["samples"] / first_dt_total_samples) * 100),
+                "{} ({:.2f}%)".format(node, node_perc),
+                "{} ({:.2f}%)".format(values["samples"], data_split),
             ]
         )
         top_features.add_row(["", "", ""])
+
+    top_features.add_row(["-" * 10, "-" * 10, "-" * 10])
+    top_features.add_row(
+        [
+            "Top {} Summary".format(len(first_dt_top_features)),
+            "{} ({:.2f}%)".format(sum_nodes, sum_nodes_perc),
+            "{:.2f}%".format(sum_data_split),
+        ]
+    )
 
     top_nodes = PrettyTable(
         title="Top {} Nodes".format(len(first_dt_top_nodes)),
@@ -422,11 +460,28 @@ def trust_report(
         )
         top_nodes.add_row(["", "", "", ""])
 
-    top_branches = PrettyTable(title="Top {} Branches".format(top_n), field_names=["Rule", "Decision (P(x))", "Samples (%) - ↓", "Class Samples (%)"])
+    top_branches = PrettyTable(
+        title="Top {} Branches".format(len(first_dt_top_branches)), field_names=["Rule", "Decision (P(x))", "Samples (%) - ↓", "Class Samples (%)"]
+    )
     top_branches.align = "l"
     top_branches.valign = "m"
 
+    sum_samples = 0
+    sum_samples_perc = 0
+    sum_class_samples_perc = {}
     for branch in first_dt_top_branches:
+        samples, samples_perc, class_samples_perc = (
+            branch["samples"],
+            (branch["samples"] / first_dt_samples) * 100,
+            (branch["samples"] / first_dt_samples_by_class[branch["class"]]) * 100,
+        )
+        sum_samples += samples
+        sum_samples_perc += samples_perc
+
+        if branch["class"] not in sum_class_samples_perc:
+            sum_class_samples_perc[branch["class"]] = 0
+        sum_class_samples_perc[branch["class"]] += class_samples_perc
+
         top_branches.add_row(
             [
                 "\n and ".join(
@@ -435,11 +490,29 @@ def trust_report(
                 "{}\n({:.2f}%)".format(
                     class_names[branch["class"]] if class_names and branch["class"] < len(class_names) else branch["class"], branch["prob"]
                 ),
-                "{}\n({:.2f}%)".format(branch["samples"], (branch["samples"] / first_dt_samples) * 100),
-                "({:.2f}%)".format((branch["samples"] / first_dt_samples_by_class[branch["class"]]) * 100),
+                "{}\n({:.2f}%)".format(samples, samples_perc),
+                "{:.2f}%".format(class_samples_perc),
             ]
         )
         top_branches.add_row(["", "", "", ""])
+
+    top_branches.add_row(["-" * 10, "-" * 10, "-" * 10, "-" * 10])
+    top_branches.add_row(
+        [
+            "Top {} Summary".format(len(first_dt_top_branches)),
+            "-",
+            "{} ({:.2f}%)".format(sum_samples, sum_samples_perc),
+            "\n".join(
+                [
+                    "{}: {:.2f}%".format(
+                        class_names[class_idx] if class_names and class_idx < len(class_names) else class_idx,
+                        class_perc,
+                    )
+                    for (class_idx, class_perc) in sum_class_samples_perc.items()
+                ]
+            ),
+        ]
+    )
 
     single_analysis_first_row.add_column("Top Nodes", [top_nodes])
     single_analysis_first_row.add_column("Top Branches", [top_branches])
@@ -449,7 +522,7 @@ def trust_report(
     repeated_analysis = PrettyTable(title="Repeated-run Analysis", header=False)
     iter_performance = PrettyTable(
         title="Iterative Feature Removal",
-        field_names=["Iteration", "Feature Removed", "# Features Removed", "Performance", "Fidelity"],
+        field_names=["Iteration", "Feature Removed", "# Features Removed", "Performance", "Decision Tree Size", "Fidelity"],
     )
     iter_performance.align = "l"
     iter_performance.valign = "m"
@@ -461,10 +534,11 @@ def trust_report(
                 feature_names[iter["feature_removed"]] if feature_names else iter["feature_removed"],
                 iter["n_features_removed"],
                 iter["classification_report"],
+                iter["dt"].tree_.n_leaves,
                 iter["fidelity_report"],
             ]
         )
-        iter_performance.add_row(["", "", "", "", ""])
+        iter_performance.add_row(["", "", "", "", "", ""])
 
     repeated_analysis.add_column("Iterative Feature Removal", [iter_performance])
 
