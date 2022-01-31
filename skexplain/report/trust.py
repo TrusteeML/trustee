@@ -73,7 +73,7 @@ def plot_top_nodes(
         ],
         [[(node["data_split"][0] / dt_samples) * 100 for node in top_nodes]],
         [[(node["data_split"][1] / dt_samples) * 100 for node in top_nodes]],
-        y_placeholder=[100],
+        # y_placeholder=[100],
         y_lim=(0, 100),
         path="{}/top_nodes.pdf".format(output_dir),
     )
@@ -100,7 +100,7 @@ def plot_top_nodes(
             ]
             for idx in range(len(dt_samples_by_class))
         ],
-        y_placeholder=[(samples / dt_samples) * 100 for samples in dt_samples_by_class],
+        # y_placeholder=[(samples / dt_samples) * 100 for samples in dt_samples_by_class],
         y_lim=(0, 100),
         labels=class_names,
         path="{}/top_nodes_by_class.pdf".format(output_dir),
@@ -122,7 +122,7 @@ def plot_top_branches(
                 [((branch["samples"] / dt_samples) * 100) for branch in top_branches]
             )
         ],
-        y_placeholder=[100],
+        # y_placeholder=[100],
         y_lim=(0, 100),
         path="{}/top_branches.pdf".format(output_dir),
     )
@@ -140,7 +140,7 @@ def plot_top_branches(
             )
             for idx, _ in enumerate(dt_samples_by_class)
         ],
-        y_placeholder=[(samples / dt_samples) * 100 for samples in dt_samples_by_class],
+        # y_placeholder=[(samples / dt_samples) * 100 for samples in dt_samples_by_class],
         y_lim=(0, 100),
         labels=class_names,
         path="{}/top_branches_by_class.pdf".format(output_dir),
@@ -239,8 +239,7 @@ def fit_and_explain(
     log = logger.log if logger else print
 
     if skip_retrain:
-        print("SKIPPED RETRAINING")
-        # blackbox_copy = blackbox
+        blackbox_copy = blackbox
     else:
         # clone blackbox params but resets training weights to allow retraining with new dataset
         try:
@@ -270,9 +269,8 @@ def fit_and_explain(
         else:
             blackbox_copy.fit(X_train, y_train)
 
-    print("PREDICTING VALUES")
-    y_pred = getattr(blackbox, predict_method_name)(X_test)
-    # y_pred = blackbox.predict(X_test)
+    y_pred = getattr(blackbox_copy, predict_method_name)(X_test)
+    # y_pred = blackbox_copy.predict(X_test)
 
     print("PREDICTING VALUES")
     log("Blackbox model classification report with training data:")
@@ -280,7 +278,7 @@ def fit_and_explain(
 
     # # Decision tree extraction
     log("Using Classification Dagger algorithm to extract DT...")
-    dagger = ClassificationDagger(expert=blackbox)
+    dagger = ClassificationDagger(expert=blackbox_copy)
 
     dagger.fit(
         X_train,
