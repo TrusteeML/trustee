@@ -36,19 +36,26 @@ class Dagger(ABC):
         num_iter=100,
         num_samples=2000,
         samples_size=None,
+        predict_method_name="predict",
         verbose=False,
     ):
         """Trains Decision Tree Regressor to imitate Expert model."""
         if verbose:
-            self.log("Initializing training dataset using {} as expert model".format(self.expert))
+            self.log(
+                "Initializing training dataset using {} as expert model".format(
+                    self.expert
+                )
+            )
 
         if len(X) != len(y):
-            raise ValueError("Features (X) and target (y) values should have the same length.")
+            raise ValueError(
+                "Features (X) and target (y) values should have the same length."
+            )
 
         features = X
-        targets = self.expert.predict(X)
+        targets = getattr(self.expert, predict_method_name)(X)
 
-        if len(targets.shape) >= 2:
+        if hasattr(targets, "shape") and len(targets.shape) >= 2:
             targets = targets.argmax(axis=-1)
             # targets = targets.ravel()
 
@@ -72,7 +79,11 @@ class Dagger(ABC):
             size = int(int(len(X)) * samples_size) if samples_size else num_samples
             # Step 1: Sample predictions from training dataset
             if verbose:
-                self.log("Sampling {} points from training dataset with ({}, {}) entries".format(size, len(features), len(targets)))
+                self.log(
+                    "Sampling {} points from training dataset with ({}, {}) entries".format(
+                        size, len(features), len(targets)
+                    )
+                )
 
             samples_idxs = np.random.choice(dataset_size, size=size, replace=False)
 
@@ -81,23 +92,37 @@ class Dagger(ABC):
             elif isinstance(features, np.ndarray) and isinstance(targets, np.ndarray):
                 X_iter, y_iter = features[samples_idxs], targets[samples_idxs]
             elif torch.is_tensor(features) and torch.is_tensor(targets):
-                X_iter, y_iter = features[samples_idxs].clone().detach(), targets[samples_idxs].clone().detach()
+                X_iter, y_iter = (
+                    features[samples_idxs].clone().detach(),
+                    targets[samples_idxs].clone().detach(),
+                )
             else:
-                X_iter, y_iter = np.array(features)[samples_idxs], np.array(targets)[samples_idxs]
+                X_iter, y_iter = (
+                    np.array(features)[samples_idxs],
+                    np.array(targets)[samples_idxs],
+                )
 
-            X_train, X_test, y_train, y_test = train_test_split(X_iter, y_iter, train_size=0.7)
+            X_train, X_test, y_train, y_test = train_test_split(
+                X_iter, y_iter, train_size=0.7
+            )
 
             # Step 2: Traing DecisionTreeRegressor with sampled data
             student.fit(X_train, y_train)
             student_pred = student.predict(X_test)
 
             if verbose:
-                self.log("Student model {} trained with depth {} and {} leaves:".format(i, student.get_depth(), student.get_n_leaves()))
-                self.log("Student model score: {}".format(self.score(y_test, student_pred)))
+                self.log(
+                    "Student model {} trained with depth {} and {} leaves:".format(
+                        i, student.get_depth(), student.get_n_leaves()
+                    )
+                )
+                self.log(
+                    "Student model score: {}".format(self.score(y_test, student_pred))
+                )
 
             # Step 3: Use expert model predictions to aggregate original dataset
-            expert_pred = self.expert.predict(X_test)
-            if len(expert_pred.shape) >= 2:
+            expert_pred = getattr(self.expert, predict_method_name)(X_test)
+            if hasattr(expert_pred, "shape") and len(expert_pred.shape) >= 2:
                 # expert_pred = expert_pred.ravel()
                 expert_pred = expert_pred.argmax(axis=-1)
 
@@ -152,7 +177,9 @@ class RegressionDagger(Dagger):
 
     def __init__(self, expert, logger=None):
         """Init method"""
-        super().__init__(expert=expert, student_class=DecisionTreeRegressor, logger=logger)
+        super().__init__(
+            expert=expert, student_class=DecisionTreeRegressor, logger=logger
+        )
 
     def score(self, y_true, y_pred):
         """Score function for student models"""

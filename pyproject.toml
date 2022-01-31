@@ -7,7 +7,7 @@ packages = [ { include = "skexplain"} ]
 
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "3.7"
 numpy = "^1.18.5"
 scipy = "^1.4.1"
 pandas = "^1.1.0"
@@ -16,8 +16,6 @@ scikit-learn = "^0.23.2"
 matplotlib = "^3.3.1"
 imbalanced-learn = "^0.7.0"
 rootpath = "^0.1.1"
-shap = "^0.36.0"
-tensorflow = "^2.3.1"
 keras = "^2.4.3"
 ipython = "^7.18.1"
 lime = "^0.2.0"
@@ -29,8 +27,11 @@ interpret = "^0.2.4"
 jupyter = "^1.0.0"
 setuptools = "^57.0.0"
 torch = "^1.10.0"
-prettytable = "^2.4.0"
+prettytable = "3.0.0"
 termcolor = "^1.1.0"
+shap = "^0.40.0"
+PyNaCl = "1.4.0"
+autogluon = "^0.3.1"
 
 [tool.poetry.dev-dependencies]
 
