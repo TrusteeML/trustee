@@ -52,12 +52,12 @@ def dagger_leaves_eval(
 
     # Step 2: Train black-box model with loaded dataset
     logger.log("#" * 10, "Model train", "#" * 10)
-    model_path = "../res/weights/{}_{}_{}.joblib".format(model.__name__, resampler.__name__ if resampler else "Raw", dataset_meta["name"])
-    logger.log("Looking for pre-trained model: {}...".format(model_path))
+    model_path = f"../res/weights/{model.__name__}_{resampler.__name__ if resampler else 'Raw'}_{dataset_meta['name']}.joblib"
+    logger.log(f"Looking for pre-trained model: {model_path}...")
     blackbox = persist.load_model(model_path)
     if not blackbox:
         logger.log("Model path does not exist.")
-        logger.log("Training model: {}...".format(model))
+        logger.log(f"Training model: {model}...")
         blackbox = model()
         blackbox.fit(X_train, y_train if isinstance(y_train, pd.DataFrame) else y_train.ravel())
         logger.log("Done!")
@@ -70,13 +70,13 @@ def dagger_leaves_eval(
     y_pred = blackbox.predict(X_test)
     if dataset_meta["type"] == "classification":
         logger.log("Blackbox model training classification report:")
-        logger.log("\n{}".format(classification_report(y_test, y_pred, digits=3)))
+        logger.log(f"\n{classification_report(y_test, y_pred, digits=3)}")
     else:
-        logger.log("Blackbox model R2 score: {}".format(r2_score(y_test, y_pred)))
+        logger.log(f"Blackbox model R2 score: {r2_score(y_test, y_pred)}")
 
     logger.log("#" * 10, "Done", "#" * 10)
 
-    with open("{}/res/results/dagger_leaves_eval.csv".format(rootpath.detect()), "w") as csv_file:
+    with open(f"{rootpath.detect()}/res/results/dagger_leaves_eval.csv", "w") as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(
             [
@@ -108,22 +108,22 @@ def dagger_leaves_eval(
 
             logger.log("#" * 10, "Explanation validation", "#" * 10)
             (dt, reward, idx) = dagger.explain()
-            logger.log("Model explanation {} local fidelity: {}".format(idx, reward))
+            logger.log(f"Model explanation {idx} local fidelity: {reward}")
             dt_y_pred = dt.predict(X_test)
 
             score = 0
             if dataset_meta["type"] == "classification":
                 logger.log("Model explanation classification report:")
-                logger.log("\n{}".format(classification_report(y_test, dt_y_pred, digits=3)))
+                logger.log(f"\n{classification_report(y_test, dt_y_pred, digits=3)}")
                 logger.log("Model explanation global fidelity report:")
-                logger.log("\n{}".format(classification_report(y_pred, dt_y_pred, digits=3)))
+                logger.log(f"\n{classification_report(y_pred, dt_y_pred, digits=3)}")
                 score = f1_score(y_test, dt_y_pred, average="macro")
                 fidelity = f1_score(y_pred, dt_y_pred, average="macro")
             else:
                 score = r2_score(y_test, dt_y_pred)
                 fidelity = r2_score(y_pred, dt_y_pred)
-                logger.log("Model explanation validation R2 score: {}".format(score))
-                logger.log("Model explanation global fidelity: {}".format(fidelity))
+                logger.log(f"Model explanation validation R2 score: {score}")
+                logger.log(f"Model explanation global fidelity: {fidelity}")
 
             writer.writerow(
                 [

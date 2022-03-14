@@ -5,7 +5,7 @@ from skexplain.enums.feature_type import FeatureType
 
 WINE_DATASET_META = {
     "name": "wine",
-    "path": "{}/res/dataset/wine.csv".format(rootpath.detect()),
+    "path": f"{rootpath.detect()}/res/dataset/wine.csv",
     "has_header": True,
     "delimiter": ";",
     "fields": [
@@ -28,7 +28,7 @@ WINE_DATASET_META = {
 
 DIABETES_DATASET_META = {
     "name": "diabetes",
-    "path": "{}/res/dataset/diabetes/diabetic_data.csv".format(rootpath.detect()),
+    "path": f"{rootpath.detect()}/res/dataset/diabetes/diabetic_data.csv",
     "has_header": True,
     "delimiter": ",",
     "fields": [
@@ -90,7 +90,7 @@ DIABETES_DATASET_META = {
 IOT_DATASET_META = {
     "name": "iot",
     # "path": "{}/res/dataset/iot/csv_files/16-09-23-labeled.csv".format(rootpath.detect()),
-    "path": "{}/res/dataset/iot/csv_files/".format(rootpath.detect()),
+    "path": f"{rootpath.detect()}/res/dataset/iot/csv_files/",
     "is_dir": True,
     "has_header": False,
     "fields": [
@@ -167,7 +167,7 @@ IOT_DATASET_META = {
 
 BOSTON_DATASET_META = {
     "name": "boston",
-    "path": "{}/res/dataset/boston.csv".format(rootpath.detect()),
+    "path": f"{rootpath.detect()}/res/dataset/boston.csv",
     "has_header": True,
     "fields": [
         ("CRIM", FeatureType.NUMERICAL, None, False),
@@ -220,10 +220,10 @@ def cic_ids_2017_label_converter(label):
 
 CIC_IDS_2017_DATASET_META = {
     "name": "cic_ids_2017",
-    "path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE/".format(rootpath.detect()),
+    "path": f"{rootpath.detect()}/res/dataset/CIC-IDS-2017/MachineLearningCVE/",
     "is_dir": True,
-    "oversampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip".format(rootpath.detect()),
-    "undersampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv".format(rootpath.detect()),
+    "oversampled_path": f"{rootpath.detect()}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip",
+    "undersampled_path": f"{rootpath.detect()}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv",
     "has_header": True,
     "fields": [
         ("Destination Port", FeatureType.NUMERICAL, "uint32", False),
@@ -342,10 +342,10 @@ CIC_IDS_2017_DATASET_META = {
 
 CIC_IDS_2017_HB_DATASET_META = {
     "name": "cic_ids_2017",
-    "path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE/".format(rootpath.detect()),
+    "path": f"{rootpath.detect()}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE/",
     "is_dir": True,
-    "oversampled_path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE_OverSampled.csv.zip".format(rootpath.detect()),
-    "undersampled_path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE_UnderSampled.csv".format(rootpath.detect()),
+    "oversampled_path": f"{rootpath.detect()}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE_OverSampled.csv.zip",
+    "undersampled_path": f"{rootpath.detect()}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE_UnderSampled.csv",
     "has_header": True,
     "fields": CIC_IDS_2017_DATASET_META["fields"],
     "categories": {
@@ -364,10 +364,10 @@ CIC_IDS_2017_HB_DATASET_META = {
 DOWNLOAD_DATASET_META = {
     "name": "download",
     # "path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE/Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv".format(rootpath.detect()),
-    "path": "{}/res/dataset/download/download.csv".format(rootpath.detect()),
+    "path": f"{rootpath.detect()}/res/dataset/download/download.csv",
     "is_dir": False,
-    "oversampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip".format(rootpath.detect()),
-    "undersampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv".format(rootpath.detect()),
+    "oversampled_path": f"{rootpath.detect()}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip",
+    "undersampled_path": f"{rootpath.detect()}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv",
     "has_header": True,
     "fields": CIC_IDS_2017_DATASET_META["fields"],
     "categories": {
@@ -386,7 +386,7 @@ DOWNLOAD_DATASET_META = {
 
 HEARTBLEED_DATASET_META = {
     "name": "heartbleed",
-    "path": "{}/res/dataset/heartbleed/heartbleed.csv".format(rootpath.detect()),
+    "path": f"{rootpath.detect()}/res/dataset/heartbleed/heartbleed.csv",
     "is_dir": False,
     "has_header": True,
     "fields": CIC_IDS_2017_DATASET_META["fields"],
@@ -407,7 +407,7 @@ HEARTBLEED_DATASET_META = {
 
 HEARTBLEED_LARGE_DATASET_META = {
     "name": "heartbleed-large",
-    "path": "{}/res/dataset/heartbleed-large/heartbleed-large.csv".format(rootpath.detect()),
+    "path": f"{rootpath.detect()}/res/dataset/heartbleed-large/heartbleed-large.csv",
     "is_dir": False,
     "has_header": True,
     "fields": CIC_IDS_2017_DATASET_META["fields"],
@@ -428,10 +428,10 @@ HEARTBLEED_LARGE_DATASET_META = {
 
 CIC_ALT_DATASET_META = {
     "name": "cic_alt",
-    "path": "{}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE/".format(rootpath.detect()),
+    "path": f"{rootpath.detect()}/res/dataset/CIC-IDS-2017-HB/MachineLearningCVE/",
     "is_dir": True,
-    "oversampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip".format(rootpath.detect()),
-    "undersampled_path": "{}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv".format(rootpath.detect()),
+    "oversampled_path": f"{rootpath.detect()}/res/dataset/CIC-IDS-2017/MachineLearningCVE_OverSampled.csv.zip",
+    "undersampled_path": f"{rootpath.detect()}/res/dataset/CIC-IDS-2017/MachineLearningCVE_UnderSampled.csv",
     "has_header": True,
     "fields": CIC_IDS_2017_DATASET_META["fields"],
     "categories": {

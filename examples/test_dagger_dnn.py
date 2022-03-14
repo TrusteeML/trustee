@@ -72,8 +72,8 @@ def dagger_test_dnn(
 
     # Step 2: Train black-box model with loaded dataset
     logger.log("#" * 10, "Model init", "#" * 10)
-    model_path = "../res/weights/{}_{}_{}.h5".format("DNN", resampler.__name__ if resampler else "Raw", dataset_meta["name"])
-    logger.log("Looking for pre-trained model: {}...".format(model_path))
+    model_path = f"../res/weights/DNN_{resampler.__name__ if resampler else 'Raw'}_{dataset_meta['name']}.h5"
+    logger.log(f"Looking for pre-trained model: {model_path}...")
     try:
         blackbox = load_model(model_path)
     except ValueError:
@@ -118,12 +118,12 @@ def dagger_test_dnn(
     blackbox_score = 0
     if dataset_meta["type"] == "classification":
         logger.log("Blackbox model training classification report:")
-        logger.log("\n{}".format(classification_report(y_test, y_pred, digits=3)))
+        logger.log(f"\n{classification_report(y_test, y_pred, digits=3)}")
         blackbox_score = f1_score(y_test, y_pred, average="macro")
-        logger.log("F1-score for test data: {}".format(f1_score(y_test, y_pred, average="macro")))
+        logger.log(f"F1-score for test data: {f1_score(y_test, y_pred, average='macro')}")
     else:
         blackbox_score = r2_score(y_test, y_pred)
-        logger.log("Blackbox model R2 score: {}".format(blackbox_score))
+        logger.log(f"Blackbox model R2 score: {blackbox_score}")
 
     logger.log("#" * 10, "Done", "#" * 10)
 
@@ -148,24 +148,24 @@ def dagger_test_dnn(
         csv_writer = csv.writer(csv_file, delimiter=",")
         logger.log("#" * 10, "Explanation validation", "#" * 10)
         (dt, reward, idx) = dagger.explain()
-        logger.log("Model explanation {} local fidelity: {}".format(idx, reward))
+        logger.log(f"Model explanation {idx} local fidelity: {reward}")
         dt_y_pred = dt.predict(X_test)
 
         dt_score = 0
         fidelity = 0
         if dataset_meta["type"] == "classification":
             logger.log("Model explanation classification report:")
-            logger.log("\n{}".format(classification_report(y_test, dt_y_pred, digits=3)))
+            logger.log(f"\n{classification_report(y_test, dt_y_pred, digits=3)}")
             dt_score = f1_score(y_test, dt_y_pred, average="macro")
 
             logger.log("Model explanation global fidelity report:")
-            logger.log("\n{}".format(classification_report(y_pred, dt_y_pred, digits=3)))
+            logger.log(f"\n{classification_report(y_pred, dt_y_pred, digits=3)}")
             fidelity = f1_score(y_pred, dt_y_pred, average="macro")
         else:
             dt_score = r2_score(y_test, dt_y_pred)
             fidelity = r2_score(y_pred, dt_y_pred)
-            logger.log("Model explanation validation R2 score: {}".format(dt_score))
-            logger.log("Model explanation global fidelity: {}".format(fidelity))
+            logger.log(f"Model explanation validation R2 score: {dt_score}")
+            logger.log(f"Model explanation global fidelity: {fidelity}")
 
         csv_writer.writerow(
             [

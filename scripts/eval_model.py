@@ -29,9 +29,9 @@ def model_eval(dataset_meta, model=RandomForestClassifier, resampler=None, as_df
     logger.log("Done!")
 
     for score in scores:
-        logger.log("F1 Score: %0.2f" % (score))
+        logger.log(f"F1 Score: {score:0.2f}")
 
-    logger.log("Avarage F1 Score: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+    logger.log(f"Avarage F1 Score: {scores.mean():0.2f} (+/- {scores.std() * 2:0.2f})")
     logger.log("#" * 10, "Done", "#" * 10)
 
 

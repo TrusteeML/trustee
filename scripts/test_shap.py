@@ -38,11 +38,11 @@ def shap_test(dataset_meta, model=RandomForestClassifier, resampler=None, as_df=
     model_path = "../res/weights/{}_{}_{}_{}.joblib".format(
         model.__name__, resampler.__name__ if resampler else "Raw", dataset_meta["name"], X.shape[1]
     )
-    logger.log("Looking for pre-trained model: {}...".format(model_path))
+    logger.log(f"Looking for pre-trained model: {model_path}...")
     blackbox = persist.load_model(model_path)
     if not blackbox:
         logger.log("Model path does not exist.")
-        logger.log("Training model: {}...".format(model))
+        logger.log(f"Training model: {model}...")
         blackbox = model()
         blackbox.fit(X_train, y_train if isinstance(y_train, pd.DataFrame) else y_train.ravel())
         logger.log("Done!")
@@ -94,11 +94,11 @@ def shap_dependence_test(dataset_meta, model=RandomForestClassifier, resampler=N
     model_path = "../res/weights/{}_{}_{}_{}.joblib".format(
         model.__name__, resampler.__name__ if resampler else "Raw", dataset_meta["name"], X.shape[1]
     )
-    logger.log("Looking for pre-trained model: {}...".format(model_path))
+    logger.log(f"Looking for pre-trained model: {model_path}...")
     blackbox = persist.load_model(model_path)
     if not blackbox:
         logger.log("Model path does not exist.")
-        logger.log("Training model: {}...".format(model))
+        logger.log(f"Training model: {model}...")
         blackbox = model()
         blackbox.fit(X_train, y_train if isinstance(y_train, pd.DataFrame) else y_train.ravel())
         logger.log("Done!")
@@ -122,7 +122,7 @@ def shap_dependence_test(dataset_meta, model=RandomForestClassifier, resampler=N
         shap.approximate_interactions(feat, shap_values[cls], X_test)
         for i in range(3):
             shap.dependence_plot(feat, shap_values[cls], X_test, feature_names=feature_names, show=False)
-        plt.savefig("dependence_{}_{}.png".format(cls, feat), dpi=300)
+        plt.savefig(f"dependence_{cls}_{feat}.png", dpi=300)
 
 
 def main():

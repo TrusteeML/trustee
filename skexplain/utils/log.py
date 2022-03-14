@@ -7,7 +7,7 @@ class Logger(logging.getLoggerClass()):
 
     def __init__(
         self,
-        path="{}/res/log/output.log".format(rootpath.detect()),
+        path=f"{rootpath.detect()}/res/log/output.log",
         level=logging.DEBUG,
     ):
         # Create handlers

@@ -124,8 +124,8 @@ def read(path_or_buffer, metadata={}, verbose=False, logger=None, as_df=False, r
         total_usage_mb = total_usage_b / 1024 ** 2
         mean_usage_b = df.memory_usage(deep=True).mean()
         mean_usage_mb = mean_usage_b / 1024 ** 2
-        log("Total memory usage: {:03.2f} MB".format(total_usage_mb))
-        log("Average memory usage: {:03.2f} MB".format(mean_usage_mb))
+        log(f"Total memory usage: {total_usage_mb:03.2f} MB")
+        log(f"Average memory usage: {mean_usage_mb:03.2f} MB")
 
     # if no result varibles is passed in metadata, we assume the last column as the result
     if not result:
@@ -142,7 +142,7 @@ def read(path_or_buffer, metadata={}, verbose=False, logger=None, as_df=False, r
         for i in range(len(X.columns)):
             for j in range(len(dummy_cols)):
                 cat_feat = dummy_cols[j]
-                if str(X.columns[i]).startswith("{}_".format(str(cat_feat))):
+                if str(X.columns[i]).startswith(f"{str(cat_feat)}_"):
                     categorical[j].append(i)
 
     if verbose:
@@ -166,7 +166,7 @@ def read(path_or_buffer, metadata={}, verbose=False, logger=None, as_df=False, r
     X = X.replace([np.inf, -np.inf], np.nan).fillna(-1)
 
     if resampler:
-        log("Resampling dataset using: {}".format(resampler.__name__))
+        log(f"Resampling dataset using: {resampler.__name__}")
         try:
             if categorical:
                 resample = resampler(
@@ -295,7 +295,7 @@ def resample(path, output_path, metadata, resampler):
 
     print("Targets shape:", y.shape, y.columns)
 
-    print("Resampling dataset using: {}".format(resampler.__name__))
+    print(f"Resampling dataset using: {resampler.__name__}")
     try:
         resample = resampler(n_jobs=4)
     except Exception:

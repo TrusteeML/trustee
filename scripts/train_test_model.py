@@ -55,7 +55,7 @@ def train_test_model(
         dataset_meta["name"],
         X.shape[1],
     )
-    logger.log("Training model: {}...".format(model))
+    logger.log(f"Training model: {model}...")
 
     logger.log("y_train", y_train)
     try:
@@ -75,12 +75,12 @@ def train_test_model(
     blackbox_score = 0
     if dataset_meta["type"] == "classification":
         logger.log("Blackbox model training classification report:")
-        logger.log("\n{}".format(classification_report(y_test, y_pred, digits=3)))
+        logger.log(f"\n{classification_report(y_test, y_pred, digits=3)}")
         blackbox_score = f1_score(y_test, y_pred, average="macro")
         # logger.log("F1-score for test data: {}".format(f1_score(y_test, y_pred, average="macro")))
     else:
         blackbox_score = r2_score(y_test, y_pred)
-        logger.log("Blackbox model R2 score: {}".format(blackbox_score))
+        logger.log(f"Blackbox model R2 score: {blackbox_score}")
 
     logger.log("#" * 10, "Done", "#" * 10)
 
@@ -95,10 +95,10 @@ def train_test_model(
 
         if dataset_meta["type"] == "classification":
             logger.log("Blackbox model validation classification report:")
-            logger.log("\n{}".format(classification_report(y_validate, y_validation_pred, digits=3)))
+            logger.log(f"\n{classification_report(y_validate, y_validation_pred, digits=3)}")
             # logger.log("F1-score for test data: {}".format(f1_score(y_test, y_pred, average="macro")))
         else:
-            logger.log("Blackbox model validation R2 score: {}".format(r2_score(y_validate, y_validation_pred)))
+            logger.log(f"Blackbox model validation R2 score: {r2_score(y_validate, y_validation_pred)}")
 
         logger.log("#" * 10, "Done", "#" * 10)
 

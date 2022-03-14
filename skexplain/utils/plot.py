@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
 from matplotlib import rcParams
 
 rcParams["font.family"] = "serif"
@@ -10,9 +12,7 @@ rcParams["font.weight"] = "light"
 
 def plot_confusion_matrix(cm, labels=[], path=None):
     """Util function to plot confusion matrix"""
-    cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
-        "", ["#edeef0", "#a7c3cd"]
-    )
+    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#edeef0", "#a7c3cd"])
     fig, ax = plt.subplots(figsize=(7.5, 7.5))
     ax.matshow(cm, cmap=cmap, alpha=0.3)
     for i in range(cm.shape[0]):
@@ -20,7 +20,7 @@ def plot_confusion_matrix(cm, labels=[], path=None):
             ax.text(
                 x=j,
                 y=i,
-                s="{:.2f}".format(cm[i, j]),
+                s=f"{cm[i, j]:.2f}",
                 va="center",
                 ha="center",
                 size="xx-large",
@@ -119,9 +119,75 @@ def plot_bars(x, y, y_lim=None, labels=[], title=None, path=None):
     plt.close()
 
 
-def plot_stacked_bars(
-    x, y, y_placeholder=None, y_lim=None, labels=[], title=None, path=None
-):
+def plot_lines_and_bars(x, lines, bars, y_lim=None, labels=[], legend=[], colors_by_x=[], title=None, path=None):
+    """Util function to plot lines"""
+    plt.figure(figsize=(40, 3))  # width:20, height:3
+
+    width = 0.4
+    fig, ax = plt.subplots()
+    locs = np.arange(len(x))  # the label locations
+    colors = [
+        "#d75d5b",
+        "#a7c3cd",
+        "#f5f0ed",
+        "#524a47",
+        "#8a4444",
+        "#edeef0",
+        "#c8c5c3",
+    ]
+
+    for idx, values in enumerate(lines):
+        ax.plot(
+            x,
+            values,
+            color=colors[idx] if idx < len(colors) else None,
+            label=labels[idx] if idx < len(labels) else "",
+        )
+
+    for idx, values in enumerate(bars):
+        if colors_by_x:
+            ax.bar(
+                locs,
+                values,
+                width if len(bars) > 1 else 1,
+                color=colors_by_x,
+            )
+        else:
+            ax.bar(
+                locs - (width / 2) if idx % 2 == 0 else locs + (width / 2),
+                values,
+                width if len(bars) > 1 else 1,
+                color=colors[len(colors) - idx - 1] if len(colors) - idx - 1 >= 0 else None,
+                label=labels[idx] if idx < len(labels) else "",
+            )
+
+    patches = []
+    if legend:
+        for label, color in legend.items():
+            patches.append(mpatches.Patch(color=color, label=label))
+
+    ax.set_xticks(locs)
+    ax.set_xticklabels(x, rotation=60)
+    if patches:
+        plt.legend(handles=patches)
+    else:
+        plt.legend()
+
+    if y_lim:
+        plt.ylim(y_lim)
+
+    if title:
+        plt.title(title)
+
+    plt.tight_layout()
+    if path:
+        plt.savefig(path)
+    else:
+        plt.show()
+    plt.close()
+
+
+def plot_stacked_bars(x, y, y_placeholder=None, y_lim=None, labels=[], title=None, path=None):
     plt.figure(figsize=(50, 10))  # width:20, height:3
     """Util function to plot stacker bars"""
     fig, ax = plt.subplots()
@@ -135,9 +201,9 @@ def plot_stacked_bars(
     ]
     # hatches = ["/", "-", "+", ".", "*"]
 
-    # y = np.sort(y, axis=0)[::-1]
-    y = np.sort(y, axis=0)[::-1]
     y_placeholder = np.sort(y_placeholder, axis=0)[::-1] if y_placeholder else None
+    labels = [label for _, label in (sorted(zip(y, labels), key=lambda pair: np.sum(pair[0]))[::-1])]
+    y = np.sort(y, axis=0)[::-1]
 
     if y_placeholder is not None:
         previous_stack = 0
@@ -155,7 +221,7 @@ def plot_stacked_bars(
                 bottom=previous_stack,
             )
         sum_y = [sum(val) for val in zip(*y)]
-        ax.bar_label(rects, labels=["%.2f" % val for val in sum_y], padding=1)
+        ax.bar_label(rects, labels=[f"{val:.2f}" for val in sum_y], padding=1)
 
     bottom_by_y = {}
     if y_placeholder is not None:
@@ -203,11 +269,9 @@ def plot_stacked_bars(
     plt.close()
 
 
-def plot_stacked_bars_split(
-    x, y_a, y_b, y_placeholder=None, y_lim=None, labels=[], title=None, path=None
-):
+def plot_stacked_bars_split(x, y_a, y_b, y_placeholder=None, y_lim=None, labels=[], title=None, path=None):
     """Util function to plot stacker bars"""
-    plt.figure(figsize=(50, 3))  # width:20, height:3
+    plt.figure(figsize=(50, 3))  # width:50, height:3
     fig, ax = plt.subplots()
     width = 0.8
     colors = [
@@ -219,8 +283,10 @@ def plot_stacked_bars_split(
     ]
     # hatches = ["/", "-", "+", ".", "*"]
 
+    labels = [label for _, label in sorted(zip(y_a, labels), key=lambda pair: np.sum(pair[0]))[::-1]]
     y_a = np.sort(y_a, axis=0)[::-1]
     y_b = np.sort(y_b, axis=0)[::-1]
+    x = np.sort(x, axis=0)[::-1]
     y_placeholder = np.sort(y_placeholder, axis=0)[::-1] if y_placeholder else None
 
     locs = np.arange(len(x))  # the label locations
@@ -251,12 +317,8 @@ def plot_stacked_bars_split(
             )
         sum_y_a = [sum(val) for val in zip(*y_a)]
         sum_y_b = [sum(val) for val in zip(*y_b)]
-        ax.bar_label(
-            rects1, labels=["%.2f" % val for val in sum_y_a], padding=1, rotation=60
-        )
-        ax.bar_label(
-            rects2, labels=["%.2f" % val for val in sum_y_b], padding=1, rotation=60
-        )
+        ax.bar_label(rects1, labels=[f"{val:.2f}" for val in sum_y_a], padding=1, rotation=60)
+        ax.bar_label(rects2, labels=[f"{val:.2f}" for val in sum_y_b], padding=1, rotation=60)
 
     bottom_by_y = {}
     bottom_by_y_a = {}

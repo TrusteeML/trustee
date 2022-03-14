@@ -80,11 +80,11 @@ def dagger_test(
         dataset_meta["name"],
         X.shape[1],
     )
-    logger.log("Looking for pre-trained model: {}...".format(model_path))
+    logger.log(f"Looking for pre-trained model: {model_path}...")
     blackbox = persist.load_model(model_path)
     if not blackbox:
         logger.log("Model path does not exist.")
-        logger.log("Training model: {}...".format(model))
+        logger.log(f"Training model: {model}...")
 
         logger.log("y_train", y_train)
         try:
@@ -104,12 +104,12 @@ def dagger_test(
     blackbox_score = 0
     if dataset_meta["type"] == "classification":
         logger.log("Blackbox model training classification report:")
-        logger.log("\n{}".format(classification_report(y_test, y_pred, digits=3)))
+        logger.log(f"\n{classification_report(y_test, y_pred, digits=3)}")
         blackbox_score = f1_score(y_test, y_pred, average="macro")
         # logger.log("F1-score for test data: {}".format(f1_score(y_test, y_pred, average="macro")))
     else:
         blackbox_score = r2_score(y_test, y_pred)
-        logger.log("Blackbox model R2 score: {}".format(blackbox_score))
+        logger.log(f"Blackbox model R2 score: {blackbox_score}")
 
     logger.log("#" * 10, "Done", "#" * 10)
 
@@ -124,10 +124,10 @@ def dagger_test(
 
         if dataset_meta["type"] == "classification":
             logger.log("Blackbox model validation classification report:")
-            logger.log("\n{}".format(classification_report(y_validate, y_validation_pred, digits=3)))
+            logger.log(f"\n{classification_report(y_validate, y_validation_pred, digits=3)}")
             # logger.log("F1-score for test data: {}".format(f1_score(y_test, y_pred, average="macro")))
         else:
-            logger.log("Blackbox model validation R2 score: {}".format(r2_score(y_validate, y_validation_pred)))
+            logger.log(f"Blackbox model validation R2 score: {r2_score(y_validate, y_validation_pred)}")
 
         logger.log("#" * 10, "Done", "#" * 10)
 
@@ -152,24 +152,24 @@ def dagger_test(
         csv_writer = csv.writer(csv_file, delimiter=",")
         logger.log("#" * 10, "Explanation validation", "#" * 10)
         (dt, reward, idx) = dagger.explain()
-        logger.log("Model explanation {} local fidelity: {}".format(idx, reward))
+        logger.log(f"Model explanation {idx} local fidelity: {reward}")
         dt_y_pred = dt.predict(X_test)
 
         dt_score = 0
         fidelity = 0
         if dataset_meta["type"] == "classification":
             logger.log("Model explanation classification report:")
-            logger.log("\n{}".format(classification_report(y_test, dt_y_pred, digits=3)))
+            logger.log(f"\n{classification_report(y_test, dt_y_pred, digits=3)}")
             dt_score = f1_score(y_test, dt_y_pred, average="macro")
 
             logger.log("Model explanation global fidelity report:")
-            logger.log("\n{}".format(classification_report(y_pred, dt_y_pred, digits=3)))
+            logger.log(f"\n{classification_report(y_pred, dt_y_pred, digits=3)}")
             fidelity = f1_score(y_pred, dt_y_pred, average="macro")
         else:
             dt_score = r2_score(y_test, dt_y_pred)
             fidelity = r2_score(y_pred, dt_y_pred)
-            logger.log("Model explanation validation R2 score: {}".format(dt_score))
-            logger.log("Model explanation global fidelity: {}".format(fidelity))
+            logger.log(f"Model explanation validation R2 score: {dt_score}")
+            logger.log(f"Model explanation global fidelity: {fidelity}")
 
         if validate_dataset_path:
             logger.log("#" * 10, "Decision tree validation", "#" * 10)
@@ -177,10 +177,10 @@ def dagger_test(
 
             if dataset_meta["type"] == "classification":
                 logger.log("Decision tree model validation classification report:")
-                logger.log("\n{}".format(classification_report(y_validate, y_validation_pred, digits=3)))
+                logger.log(f"\n{classification_report(y_validate, y_validation_pred, digits=3)}")
                 # logger.log("F1-score for test data: {}".format(f1_score(y_test, y_pred, average="macro")))
             else:
-                logger.log("Decision tree model validation R2 score: {}".format(r2_score(y_validate, y_validation_pred)))
+                logger.log(f"Decision tree model validation R2 score: {r2_score(y_validate, y_validation_pred)}")
 
         csv_writer.writerow(
             [

@@ -21,7 +21,7 @@ DF_TEST_2 = """
 
 def unit_test(df_test_meta, df_train_meta, model=RandomForestClassifier, as_df=False):
     """Test using Reinforcement Learning to extract Decision Tree from a generic Blackbox model"""
-    logger = log.Logger("{}/res/log/{}/unit_test_{}_{}.log".format(rootpath.detect(), df_train_meta["name"], model.__name__, "Raw"))
+    logger = log.Logger(f"{rootpath.detect()}/res/log/{df_train_meta['name']}/unit_test_{model.__name__}_Raw.log")
 
     # Step 1: Parse test def
     X, y, _, _, _ = dataset.read(df_train_meta["path"], metadata=df_train_meta, verbose=True, logger=logger, as_df=as_df)
@@ -31,8 +31,8 @@ def unit_test(df_test_meta, df_train_meta, model=RandomForestClassifier, as_df=F
 
     # Step 2: Train black-box model with loaded dataset
     logger.log("#" * 10, "Model init", "#" * 10)
-    model_path = "../res/weights/{}_{}_{}_{}.joblib".format(model.__name__, "Raw", df_train_meta["name"], X_test.shape[1])
-    logger.log("Looking for pre-trained model: {}...".format(model_path))
+    model_path = f"../res/weights/{model.__name__}_Raw_{df_train_meta['name']}_{X_test.shape[1]}.joblib"
+    logger.log(f"Looking for pre-trained model: {model_path}...")
     blackbox = persist.load_model(model_path)
     if not blackbox:
         raise ValueError("Trained model not found. Please train model before unit testing it.")
@@ -50,12 +50,12 @@ def unit_test(df_test_meta, df_train_meta, model=RandomForestClassifier, as_df=F
     blackbox_score = 0
     if df_train_meta["type"] == "classification":
         logger.log("Blackbox model training classification report:")
-        logger.log("\n{}".format(classification_report(y_test, y_pred, digits=3)))
+        logger.log(f"\n{classification_report(y_test, y_pred, digits=3)}")
         blackbox_score = f1_score(y_test, y_pred, average="macro")
         # logger.log("F1-score for test data: {}".format(f1_score(y_test, y_pred, average="macro")))
     else:
         blackbox_score = r2_score(y_test, y_pred)
-        logger.log("Blackbox model R2 score: {}".format(blackbox_score))
+        logger.log(f"Blackbox model R2 score: {blackbox_score}")
 
     logger.log("#" * 10, "Done", "#" * 10)
 

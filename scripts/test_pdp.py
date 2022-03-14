@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split
 def test_pdp(dataset_meta, model=RandomForestClassifier, resampler=None, as_df=False):
     """Test using Reinforcement Learning to extract Decision Tree from a generic Blackbox model"""
     logger = log.Logger(
-        "{}/res/log/test_pdp_{}_{}_{}.log".format(rootpath.detect(), model.__name__, resampler.__name__ if resampler else "Raw", dataset_meta["name"])
+        f"{rootpath.detect()}/res/log/test_pdp_{model.__name__}_{resampler.__name__ if resampler else 'Raw'}_{dataset_meta['name']}.log"
     )
 
     # Step 1: Load training dataset
@@ -32,11 +32,11 @@ def test_pdp(dataset_meta, model=RandomForestClassifier, resampler=None, as_df=F
     model_path = "../res/weights/{}_{}_{}_{}.joblib".format(
         model.__name__, resampler.__name__ if resampler else "Raw", dataset_meta["name"], X.shape[1]
     )
-    logger.log("Looking for pre-trained model: {}...".format(model_path))
+    logger.log(f"Looking for pre-trained model: {model_path}...")
     blackbox = persist.load_model(model_path)
     if not blackbox:
         logger.log("Model path does not exist.")
-        logger.log("Training model: {}...".format(model))
+        logger.log(f"Training model: {model}...")
         blackbox = model()
         blackbox.fit(X_train, y_train if isinstance(y_train, pd.DataFrame) else y_train.ravel())
         logger.log("Done!")
@@ -48,7 +48,7 @@ def test_pdp(dataset_meta, model=RandomForestClassifier, resampler=None, as_df=F
     for feat in range(len(feature_names)):
         plot_partial_dependence(blackbox, X_test, target=8, features=[feat], feature_names=feature_names)
         plt.tight_layout()
-        plt.savefig("pdp_{}.png".format(feat), dpi=300)
+        plt.savefig(f"pdp_{feat}.png", dpi=300)
 
 
 def main():

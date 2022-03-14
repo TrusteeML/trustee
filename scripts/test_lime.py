@@ -37,8 +37,8 @@ def lime_test(dataset_meta, model=RandomForestClassifier, resampler=None, as_df=
 
     # Step 2: Train black-box model with loaded dataset
     logger.log("#" * 10, "Model train", "#" * 10)
-    model_path = "../res/weights/{}_{}_{}.joblib".format(model.__name__, resampler.__name__ if resampler else "Raw", dataset_meta["name"])
-    logger.log("Looking for pre-trained model: {}...".format(model_path))
+    model_path = f"../res/weights/{model.__name__}_{resampler.__name__ if resampler else 'Raw'}_{dataset_meta['name']}.joblib"
+    logger.log(f"Looking for pre-trained model: {model_path}...")
     blackbox = persist.load_model(model_path)
     if not blackbox:
         raise ValueError("Traine model not found. Please train model before unit testing it.")
