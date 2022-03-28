@@ -119,7 +119,18 @@ def plot_bars(x, y, y_lim=None, labels=[], title=None, path=None):
     plt.close()
 
 
-def plot_lines_and_bars(x, lines, bars, y_lim=None, labels=[], legend=[], colors_by_x=[], title=None, path=None):
+def plot_lines_and_bars(
+    x,
+    lines,
+    bars,
+    y_lim=None,
+    second_x_axis=None,
+    labels=[],
+    legend=[],
+    colors_by_x=[],
+    title=None,
+    path=None,
+):
     """Util function to plot lines"""
     plt.figure(figsize=(40, 3))  # width:20, height:3
 
@@ -168,6 +179,13 @@ def plot_lines_and_bars(x, lines, bars, y_lim=None, labels=[], legend=[], colors
 
     ax.set_xticks(locs)
     ax.set_xticklabels(x, rotation=60)
+
+    if second_x_axis is not None:
+        ax2 = ax.twiny()
+        ax2.set_xlim(ax.get_xlim())
+        ax2.set_xticks(locs)
+        ax2.set_xticklabels(second_x_axis, rotation=60)
+
     if patches:
         plt.legend(handles=patches)
     else:
