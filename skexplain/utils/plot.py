@@ -40,6 +40,7 @@ def plot_confusion_matrix(cm, labels=[], path=None):
 
 def plot_lines(x, y, y_lim=None, labels=[], title=None, path=None):
     """Util function to plot lines"""
+    plt.figure(figsize=(10, 3))  # width:20, height:3
     colors = [
         "#d75d5b",
         "#a7c3cd",
@@ -50,13 +51,22 @@ def plot_lines(x, y, y_lim=None, labels=[], title=None, path=None):
         "#edeef0",
     ]
 
-    for idx, values in enumerate(y):
-        plt.plot(
-            x,
-            values,
-            color=colors[idx] if idx < len(colors) else None,
-            label=labels[idx] if idx < len(labels) else "",
-        )
+    if len(np.shape(x)) > 1:
+        for idx, (x_values, y_values) in enumerate(zip(x, y)):
+            plt.plot(
+                x_values,
+                y_values,
+                color=colors[idx] if idx < len(colors) else None,
+                label=labels[idx] if idx < len(labels) else "",
+            )
+    else:
+        for idx, values in enumerate(y):
+            plt.plot(
+                x,
+                values,
+                color=colors[idx] if idx < len(colors) else None,
+                label=labels[idx] if idx < len(labels) else "",
+            )
 
     plt.xticks(rotation=60)
     plt.legend()
@@ -188,7 +198,7 @@ def plot_lines_and_bars(
 
     if patches:
         plt.legend(handles=patches)
-    else:
+    elif labels:
         plt.legend()
 
     if y_lim:
@@ -239,7 +249,7 @@ def plot_stacked_bars(x, y, y_placeholder=None, y_lim=None, labels=[], title=Non
                 bottom=previous_stack,
             )
         sum_y = [sum(val) for val in zip(*y)]
-        ax.bar_label(rects, labels=[f"{val:.2f}" for val in sum_y], padding=1)
+        # ax.bar_label(rects, labels=[f"{val:.2f}" for val in sum_y], padding=1)
 
     bottom_by_y = {}
     if y_placeholder is not None:
@@ -265,7 +275,7 @@ def plot_stacked_bars(x, y, y_placeholder=None, y_lim=None, labels=[], title=Non
             color=colors[i] if i < len(colors) else None,
             label=labels[i] if labels else "",
         )
-        ax.bar_label(rects, label_type="center", fmt="%.2f", padding=5)
+        # ax.bar_label(rects, label_type="center", fmt="%.2f", padding=5)
 
     if labels:
         ax.legend()
@@ -335,8 +345,8 @@ def plot_stacked_bars_split(x, y_a, y_b, y_placeholder=None, y_lim=None, labels=
             )
         sum_y_a = [sum(val) for val in zip(*y_a)]
         sum_y_b = [sum(val) for val in zip(*y_b)]
-        ax.bar_label(rects1, labels=[f"{val:.2f}" for val in sum_y_a], padding=1, rotation=60)
-        ax.bar_label(rects2, labels=[f"{val:.2f}" for val in sum_y_b], padding=1, rotation=60)
+        # ax.bar_label(rects1, labels=[f"{val:.2f}" for val in sum_y_a], padding=1, rotation=60)
+        # ax.bar_label(rects2, labels=[f"{val:.2f}" for val in sum_y_b], padding=1, rotation=60)
 
     bottom_by_y = {}
     bottom_by_y_a = {}

@@ -1,4 +1,15 @@
+import os
+import math
+import numbers
 import numpy as np
+from numpy.core.defchararray import isdigit
+import pandas as pd
+from pandas.api.types import is_numeric_dtype
+
+import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
+
+
 from scipy import spatial
 
 from skexplain.utils import plot
@@ -101,12 +112,12 @@ def dt_similarity(dt_one, dt_two):
     similarity_vector = [1 - spatial.distance.cosine(x, y) for x, y in zip(dt_one_matrix, dt_two_matrix)]
     similarity = np.mean(similarity_vector)
 
-    return similarity, similarity_vector
+    return similarity, list(similarity_vector)
 
 
 def plot_top_features(top_features, dt_sum_samples, dt_nodes, output_dir, feature_names=[]):
-    """Uses top features informations and plots CDF with it"""
-    features = [feature_names[feat] if feature_names else feat for (feat, _) in top_features]
+    """Uses top features information and plots CDF with it"""
+    features = [feature_names[feat] if feature_names else str(feat) for (feat, _) in top_features]
     count = [(values["count"] / dt_nodes) * 100 for (_, values) in top_features]
     count_sum = np.cumsum(count)
     data = [(values["samples"] / dt_sum_samples) * 100 for (_, values) in top_features]
@@ -138,7 +149,7 @@ def plot_top_features(top_features, dt_sum_samples, dt_nodes, output_dir, featur
 
 
 def plot_top_nodes(top_nodes, dt_samples_by_class, dt_samples, output_dir, feature_names=[], class_names=[]):
-    """Uses top features informations and plots CDF with it"""
+    """Uses top features information and plots CDF with it"""
     plot.plot_stacked_bars_split(
         [
             "{} <= {:.2f}".format(
@@ -178,7 +189,7 @@ def plot_top_nodes(top_nodes, dt_samples_by_class, dt_samples, output_dir, featu
 
 
 def plot_top_branches(top_branches, dt_samples_by_class, dt_samples, output_dir, class_names=[]):
-    """Uses top features informations and plots CDF with it"""
+    """Uses top features information and plots CDF with it"""
     colors = [
         "#d75d5b",
         "#524a47",
@@ -195,7 +206,9 @@ def plot_top_branches(top_branches, dt_samples_by_class, dt_samples, output_dir,
     for branch in top_branches:
         class_label = class_names[branch["class"]] if class_names else branch["class"]
         if class_label not in colors_by_class:
-            colors_by_class[class_label] = colors.pop()
+            colors_by_class[class_label] = (
+                colors.pop() if colors else "#%02x%02x%02x" % tuple(np.random.randint(256, size=3))
+            )
         samples.append((branch["samples"] / dt_samples) * 100)
         colors_by_samples.append(colors_by_class[class_label])
 
@@ -233,7 +246,7 @@ def plot_top_branches(top_branches, dt_samples_by_class, dt_samples, output_dir,
 
 
 def plot_samples_by_level(dt_samples_by_level, dt_nodes_by_level, dt_samples, output_dir):
-    """Uses top features informations and plots CDF with it"""
+    """Uses dt information to plot number of samples per level"""
     samples = []
     for idx, level_samples in enumerate(dt_samples_by_level):
         if idx < len(dt_samples_by_level) - 1:
@@ -248,5 +261,207 @@ def plot_samples_by_level(dt_samples_by_level, dt_nodes_by_level, dt_samples, ou
         y_lim=(0, 100),
         second_x_axis=dt_nodes_by_level,
         labels=["Samples"],
+        legend={"CDF": "#d75d5b", "Samples": "#c8c5c3"},
         path=f"{output_dir}/samples_by_level.pdf",
     )
+
+
+def plot_dts_fidelity_by_size(ccp_iter, max_depth_iter, max_leaves_iter, output_dir):
+    """Uses pruning information to plot fidelity vs size of decision trees"""
+    num_leaves_ccp = []
+    depth_ccp = []
+    fidelity_ccp = []
+
+    num_leaves_max_depth = []
+    depth_max_depth = []
+    fidelity_max_depth = []
+
+    num_leaves_max_leaves = []
+    depth_max_leaves = []
+    fidelity_max_leaves = []
+
+    for i in ccp_iter:
+        num_leaves_ccp.append(i["dt"].get_n_leaves())
+        depth_ccp.append(i["dt"].get_depth())
+        fidelity_ccp.append(i["fidelity"] * 100)
+
+    for i in max_depth_iter:
+        num_leaves_max_depth.append(i["dt"].get_n_leaves())
+        depth_max_depth.append(i["dt"].get_depth())
+        fidelity_max_depth.append(i["fidelity"] * 100)
+
+    for i in max_leaves_iter:
+        num_leaves_max_leaves.append(i["dt"].get_n_leaves())
+        depth_max_leaves.append(i["dt"].get_depth())
+        fidelity_max_leaves.append(i["fidelity"] * 100)
+
+    plot.plot_lines(
+        [num_leaves_ccp, num_leaves_max_depth, num_leaves_max_leaves],
+        [fidelity_ccp, fidelity_max_depth, fidelity_max_leaves],
+        y_lim=(0, 100),
+        labels=["CCP", "Max Depth", "Max Leaves"],
+        path=f"{output_dir}/dts_fidelity_x_leaves.pdf",
+    )
+
+    plot.plot_lines(
+        [depth_ccp, depth_max_depth, depth_max_leaves],
+        [fidelity_ccp, fidelity_max_depth, fidelity_max_leaves],
+        y_lim=(0, 100),
+        labels=["CCP", "Max Depth", "Max Leaves"],
+        path=f"{output_dir}/dts_fidelity_x_depth.pdf",
+    )
+
+
+def plot_accuracy_by_feature_removed(whitebox_iter, output_dir, feature_names=[]):
+    """Uses iterative analysis information to plot f1-score from the trained blackbox vs number of features removed"""
+    blackbox_f1_scores = [i["f1"] * 100 for i in whitebox_iter]
+    fidelity = [i["fidelity"] * 100 for i in whitebox_iter]
+    features = [feature_names[i["feature_removed"]] if feature_names else i["feature_removed"] for i in whitebox_iter]
+    plot.plot_lines(
+        features,
+        [blackbox_f1_scores, fidelity],
+        y_lim=(0, 100),
+        labels=["Blackbox F1-Score", "DT Fidelity"],
+        path=f"{output_dir}/accuracy_by_feature_removed.pdf",
+    )
+
+
+def plot_distribution(X, y, top_branches, output_dir, feature_names=[], class_names=[]):
+    """Plots the distribution of the data based on the top branches"""
+    plots_output_dir = f"{output_dir}/dist"
+    if not os.path.exists(plots_output_dir):
+        os.makedirs(plots_output_dir)
+
+    colors = [
+        "#d75d5b",
+        "#524a47",
+        "#8a4444",
+        "#edeef0",
+        "#c8c5c3",
+        "#f5f0ed",
+        "#a7c3cd",
+    ]
+
+    df = pd.DataFrame(X, columns=feature_names if feature_names else None)
+    if isinstance(df.columns[0], numbers.Number):
+        df.columns = [str(i) for i in range(len(df.columns))]
+
+    df["label"] = y
+    if class_names and is_numeric_dtype(df["label"]):
+        df["label"] = df["label"].map(lambda x: class_names[int(x)])
+
+    num_classes = len(np.unique(y))
+    split_dfs = [x for _, x in df.groupby("label")]
+
+    for idx, branch in enumerate(top_branches):
+        branch_class = class_names[branch["class"]] if class_names else branch["class"]
+        branch_output_dir = f"{plots_output_dir}/{idx}_branch_{branch_class}/"
+
+        if not os.path.exists(branch_output_dir):
+            os.makedirs(branch_output_dir)
+
+        filtered_dfs = [x.copy(deep=True) for _, x in df.groupby("label")]
+        for rule_idx, (feat, op, thresh) in enumerate(branch["path"]):
+            column = df.columns[int(feat)] if (isinstance(feat, numbers.Number) or feat.isdigit()) else feat
+
+            plots_per_row = 5
+            if num_classes > plots_per_row:
+                n_rows = math.gcd(num_classes, plots_per_row)
+                n_cols = num_classes if num_classes <= plots_per_row else int(num_classes / n_rows)
+            else:
+                n_rows = num_classes
+                n_cols = 1
+
+            fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols)
+            axes = axes.flatten()
+            for df_idx, split_df in enumerate(split_dfs):
+                df_class = split_df["label"].unique()[0]
+
+                ax = axes[df_idx]
+                ax.hist(
+                    split_df[column].values,
+                    bins=50,
+                    histtype="bar",
+                    label="All" if df_idx == 0 else None,
+                    color=colors[0],
+                )
+                ax.yaxis.set_major_formatter(PercentFormatter(xmax=split_df.shape[0]))
+                ax.tick_params(axis="both", labelsize=6)
+                ax.set_title(df_class, fontsize=8)
+
+            tlt = fig.suptitle(f"{column} {op} {thresh:.3f}")
+            lgd = fig.legend(loc="lower center", bbox_to_anchor=(0.5, -0.05), fancybox=True, ncol=5)
+            plt.tight_layout()
+            plt.savefig(
+                f"{branch_output_dir}/{rule_idx}_{column.replace('/', '_')}_hist_all.pdf",
+                bbox_extra_artists=(lgd, tlt),
+                bbox_inches="tight",
+            )
+            plt.close()
+
+            fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols)
+            axes = axes.flatten()
+            for df_idx, split_df in enumerate(split_dfs):
+                branch_filter = f"filtered_dfs[{df_idx}]['{column}'] {op} {thresh}"
+                filtered_dfs[df_idx] = filtered_dfs[df_idx][eval(branch_filter)]
+                df_class = split_df["label"].unique()[0]
+
+                ax = axes[df_idx]
+                ax.hist(
+                    filtered_dfs[df_idx][column].values,
+                    bins=50,
+                    histtype="bar",
+                    label=f"Branch ({branch_class})" if df_idx == 0 else None,
+                    color=colors[-1],
+                )
+                ax.yaxis.set_major_formatter(PercentFormatter(xmax=split_df.shape[0]))
+                ax.tick_params(axis="both", labelsize=6)
+                ax.set_title(df_class, fontsize=8)
+
+            tlt = fig.suptitle(f"{column} {op} {thresh:.3f}")
+            lgd = fig.legend(loc="lower center", bbox_to_anchor=(0.5, -0.05), fancybox=True, ncol=5)
+            plt.tight_layout()
+            plt.savefig(
+                f"{branch_output_dir}/{rule_idx}_{column.replace('/', '_')}_hist_branch.pdf",
+                bbox_extra_artists=(lgd, tlt),
+                bbox_inches="tight",
+            )
+            plt.close()
+
+            fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols)
+            axes = axes.flatten()
+            for df_idx, split_df in enumerate(split_dfs):
+                df_class = split_df["label"].unique()[0]
+                branch_filter = f"filtered_dfs[{df_idx}]['{column}'] {op} {thresh}"
+                filtered_dfs[df_idx] = filtered_dfs[df_idx][eval(branch_filter)]
+
+                ax = axes[df_idx]
+                ax.hist(
+                    split_df[column].values,
+                    bins=50,
+                    histtype="bar",
+                    label="All" if df_idx == 0 else None,
+                    color=colors[0],
+                    # alpha=0.5,
+                )
+                ax.hist(
+                    filtered_dfs[df_idx][column].values,
+                    bins=50,
+                    histtype="bar",
+                    label=f"Branch ({branch_class})" if df_idx == 0 else None,
+                    color=colors[-1],
+                    # alpha=0.5,
+                )
+                ax.yaxis.set_major_formatter(PercentFormatter(xmax=split_df.shape[0]))
+                ax.tick_params(axis="both", labelsize=6)
+                ax.set_title(df_class, fontsize=8)
+
+            tlt = fig.suptitle(f"{column} {op} {thresh:.3f}")
+            lgd = fig.legend(loc="lower center", bbox_to_anchor=(0.5, -0.05), fancybox=True, ncol=5)
+            plt.tight_layout()
+            plt.savefig(
+                f"{branch_output_dir}/{rule_idx}_{column.replace('/', '_')}_hist.pdf",
+                bbox_extra_artists=(lgd, tlt),
+                bbox_inches="tight",
+            )
+            plt.close()
