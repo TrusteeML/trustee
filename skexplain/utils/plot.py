@@ -10,24 +10,22 @@ rcParams["font.serif"] = ["Roboto"]
 rcParams["font.weight"] = "light"
 
 
-def plot_confusion_matrix(cm, labels=[], path=None):
+def plot_heatmap(matrix, labels=[], path=None):
     """Util function to plot confusion matrix"""
-    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#edeef0", "#a7c3cd"])
+    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#a7c3cd", "#d75d5b"])
     fig, ax = plt.subplots(figsize=(7.5, 7.5))
-    ax.matshow(cm, cmap=cmap, alpha=0.3)
-    for i in range(cm.shape[0]):
-        for j in range(cm.shape[1]):
+    ax.matshow(matrix, cmap=cmap, alpha=0.3)
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
             ax.text(
                 x=j,
                 y=i,
-                s=f"{cm[i, j]:.2f}",
+                s=f"{matrix[i, j]:.2f}",
                 va="center",
                 ha="center",
                 size="xx-large",
             )
 
-    plt.xlabel("Prediction")
-    plt.ylabel("True")
     plt.xticks(ticks=range(len(labels)), labels=labels)
     plt.yticks(ticks=range(len(labels)), labels=labels)
     plt.tight_layout()
@@ -38,9 +36,34 @@ def plot_confusion_matrix(cm, labels=[], path=None):
     plt.close()
 
 
-def plot_lines(x, y, y_lim=None, labels=[], title=None, path=None):
+def plot_lines(x, y, ylim=None, labels=[], title=None, xlabel=None, ylabel=None, path=None):
     """Util function to plot lines"""
     plt.figure(figsize=(10, 3))  # width:20, height:3
+    markers = [
+        "o",
+        "v",
+        "^",
+        "<",
+        ">",
+        "1",
+        "2",
+        "3",
+        "4",
+        "8",
+        "s",
+        "p",
+        "P",
+        "*",
+        "h",
+        "H",
+        "+",
+        "x",
+        "X",
+        "D",
+        "d",
+        "|",
+        "_",
+    ]
     colors = [
         "#d75d5b",
         "#a7c3cd",
@@ -51,12 +74,16 @@ def plot_lines(x, y, y_lim=None, labels=[], title=None, path=None):
         "#edeef0",
     ]
 
-    if len(np.shape(x)) > 1:
+    if np.shape(x)[0] == 1:
+        x = np.ravel(x)
+
+    if np.shape(x) and np.shape(x)[0] > 1 and not isinstance(x[0], str) and np.shape(x[0]) and np.shape(x[0])[0] > 1:
         for idx, (x_values, y_values) in enumerate(zip(x, y)):
             plt.plot(
                 x_values,
                 y_values,
                 color=colors[idx] if idx < len(colors) else None,
+                marker=markers[idx] if idx < len(markers) else None,
                 label=labels[idx] if idx < len(labels) else "",
             )
     else:
@@ -65,14 +92,23 @@ def plot_lines(x, y, y_lim=None, labels=[], title=None, path=None):
                 x,
                 values,
                 color=colors[idx] if idx < len(colors) else None,
+                marker=markers[idx] if idx < len(markers) else None,
                 label=labels[idx] if idx < len(labels) else "",
             )
 
-    plt.xticks(rotation=60)
+    _, end = plt.xlim()
+    end = int(end)
+    plt.xticks(np.arange(0, end, max(1, int(end / 50))), rotation=60)
     plt.legend()
 
-    if y_lim:
-        plt.ylim(y_lim)
+    if xlabel:
+        plt.xlabel(xlabel)
+
+    if ylabel:
+        plt.ylabel(ylabel)
+
+    if ylim:
+        plt.ylim(ylim)
 
     if title:
         plt.title(title)
@@ -85,7 +121,7 @@ def plot_lines(x, y, y_lim=None, labels=[], title=None, path=None):
     plt.close()
 
 
-def plot_bars(x, y, y_lim=None, labels=[], title=None, path=None):
+def plot_bars(x, y, ylim=None, xlabel=None, ylabel=None, labels=[], title=None, path=None):
     """Util function to plot bars"""
     plt.figure(figsize=(30, 3))  # width:20, height:3
     width = 0.4
@@ -115,8 +151,14 @@ def plot_bars(x, y, y_lim=None, labels=[], title=None, path=None):
     if labels:
         ax.legend()
 
-    if y_lim:
-        ax.set_ylim(y_lim)
+    if xlabel:
+        plt.xlabel(xlabel)
+
+    if ylabel:
+        plt.ylabel(ylabel)
+
+    if ylim:
+        ax.set_ylim(ylim)
 
     if title:
         plt.title(title)
@@ -133,8 +175,11 @@ def plot_lines_and_bars(
     x,
     lines,
     bars,
-    y_lim=None,
+    ylim=None,
+    xlabel=None,
+    ylabel=None,
     second_x_axis=None,
+    second_x_axis_label=None,
     labels=[],
     legend=[],
     colors_by_x=[],
@@ -196,13 +241,22 @@ def plot_lines_and_bars(
         ax2.set_xticks(locs)
         ax2.set_xticklabels(second_x_axis, rotation=60)
 
+        if second_x_axis_label:
+            ax2.set_xlabel(second_x_axis_label)
+
     if patches:
         plt.legend(handles=patches)
     elif labels:
         plt.legend()
 
-    if y_lim:
-        plt.ylim(y_lim)
+    if xlabel:
+        ax.set_xlabel(xlabel)
+
+    if ylabel:
+        ax.set_ylabel(ylabel)
+
+    if ylim:
+        plt.ylim(ylim)
 
     if title:
         plt.title(title)
@@ -215,7 +269,7 @@ def plot_lines_and_bars(
     plt.close()
 
 
-def plot_stacked_bars(x, y, y_placeholder=None, y_lim=None, labels=[], title=None, path=None):
+def plot_stacked_bars(x, y, y_placeholder=None, ylim=None, xlabel=None, ylabel=None, labels=[], title=None, path=None):
     plt.figure(figsize=(50, 10))  # width:20, height:3
     """Util function to plot stacker bars"""
     fig, ax = plt.subplots()
@@ -280,8 +334,14 @@ def plot_stacked_bars(x, y, y_placeholder=None, y_lim=None, labels=[], title=Non
     if labels:
         ax.legend()
 
-    if y_lim:
-        ax.set_ylim(y_lim)
+    if xlabel:
+        plt.xlabel(xlabel)
+
+    if ylabel:
+        plt.ylabel(ylabel)
+
+    if ylim:
+        ax.set_ylim(ylim)
 
     plt.xticks(rotation=60)
     if title:
@@ -297,7 +357,9 @@ def plot_stacked_bars(x, y, y_placeholder=None, y_lim=None, labels=[], title=Non
     plt.close()
 
 
-def plot_stacked_bars_split(x, y_a, y_b, y_placeholder=None, y_lim=None, labels=[], title=None, path=None):
+def plot_stacked_bars_split(
+    x, y_a, y_b, y_placeholder=None, ylim=None, xlabel=None, ylabel=None, labels=[], title=None, path=None
+):
     """Util function to plot stacker bars"""
     plt.figure(figsize=(50, 3))  # width:50, height:3
     fig, ax = plt.subplots()
@@ -401,8 +463,14 @@ def plot_stacked_bars_split(x, y_a, y_b, y_placeholder=None, y_lim=None, labels=
     if labels:
         ax.legend()
 
-    if y_lim:
-        ax.set_ylim(y_lim)
+    if xlabel:
+        plt.xlabel(xlabel)
+
+    if ylabel:
+        plt.ylabel(ylabel)
+
+    if ylim:
+        ax.set_ylim(ylim)
 
     if title:
         plt.title(title)
