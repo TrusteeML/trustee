@@ -4,6 +4,7 @@ import torch
 import numpy as np
 import pandas as pd
 from copy import deepcopy
+import functools
 
 from sklearn.metrics import f1_score, r2_score
 from sklearn.model_selection import train_test_split
@@ -12,6 +13,20 @@ from sklearn.tree._tree import TREE_LEAF, TREE_UNDEFINED
 
 
 from skexplain.helpers import get_dt_info, prune_index, get_dt_dict
+
+
+def _check_if_trained(func):
+    """
+    Check whether the dagger is already fitted and self.best_student exists
+    """
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if not self.best_student:
+            raise ValueError("No student models have been trained yet. Please fit() dagger explainer first.")
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 class Dagger(abc.ABC):
@@ -174,34 +189,29 @@ class Dagger(abc.ABC):
 
         return max(self.students, key=lambda item: item[1])
 
+    @_check_if_trained
     def get_students(self):
         """Returns list of all (student, reward) obtained during the training process."""
-        if not self.best_student:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explaimer first.")
-
         return self.students
 
+    @_check_if_trained
     def get_n_features(self):
         """Returns number of features used in the top student model."""
-        if not self.best_student:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explaimer first.")
 
         if not self.features:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
 
         return len(self.features.keys())
 
+    @_check_if_trained
     def get_n_classes(self):
         """Returns number of classes used in the top student model."""
-        if not self.best_student:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explaimer first.")
 
         return self.best_student.tree_.n_classes[0]
 
+    @_check_if_trained
     def get_samples_sum(self):
         """Returns the sum of all samples in all non-leaf nodes in best student model."""
-        if not self.best_student:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explaimer first.")
 
         left = self.best_student.tree_.children_left
         right = self.best_student.tree_.children_right
@@ -209,30 +219,27 @@ class Dagger(abc.ABC):
 
         return np.sum([n_samples if left[node] != right[node] else 0 for node, n_samples in enumerate(samples)])
 
+    @_check_if_trained
     def get_top_branches(self, top_n=10):
         """Returns list of top branches of the best student."""
-        if not self.best_student:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explaimer first.")
 
         if not self.branches:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
 
         return sorted(self.branches, key=lambda p: p["samples"], reverse=True)[:top_n]
 
+    @_check_if_trained
     def get_top_features(self, top_n=10):
         """Returns list of top features of the best student."""
-        if not self.best_student:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explaimer first.")
 
         if not self.features:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
 
         return sorted(self.features.items(), key=lambda p: p[1]["samples"], reverse=True)[:top_n]
 
+    @_check_if_trained
     def get_top_nodes(self, top_n=10):
         """Returns list of top nodes of the best student."""
-        if not self.best_student:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explaimer first.")
 
         if not self.nodes:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
@@ -241,10 +248,9 @@ class Dagger(abc.ABC):
             self.nodes, key=lambda p: p["samples"] * abs(p["gini_split"][0] - p["gini_split"][1]), reverse=True
         )[:top_n]
 
+    @_check_if_trained
     def get_samples_by_level(self):
         """Returns list of samples by level of the best student."""
-        if not self.best_student:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explaimer first.")
 
         if not self.nodes:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
@@ -261,10 +267,9 @@ class Dagger(abc.ABC):
 
         return samples_by_level
 
+    @_check_if_trained
     def get_leaves_by_level(self):
         """Returns list of leaves by level of the best student."""
-        if not self.best_student:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explaimer first.")
 
         if not self.branches:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
@@ -275,10 +280,9 @@ class Dagger(abc.ABC):
 
         return leaves_by_level
 
+    @_check_if_trained
     def prune(self, top_n=10, max_impurity=0.15):
         """Prunes and returns the best student model explanation from the list of students."""
-        if not self.best_student:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explaimer first.")
 
         top_branches = self.get_top_branches(top_n=top_n)
         prunned_student = deepcopy(self.best_student)
