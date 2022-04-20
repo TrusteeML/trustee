@@ -24,7 +24,7 @@ def _check_if_trained(func):
     def wrapper(self, *args, **kwargs):
         if not self.best_student:
             raise ValueError("No student models have been trained yet. Please fit() dagger explainer first.")
-        return func(*args, **kwargs)
+        return func(self, *args, **kwargs)
 
     return wrapper
 
@@ -281,7 +281,7 @@ class Dagger(abc.ABC):
         return leaves_by_level
 
     @_check_if_trained
-    def prune(self, top_n=10, max_impurity=0.15):
+    def prune(self, top_n=10, max_impurity=0.10):
         """Prunes and returns the best student model explanation from the list of students."""
 
         top_branches = self.get_top_branches(top_n=top_n)
