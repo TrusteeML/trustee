@@ -253,7 +253,7 @@ def plot_accuracy_by_feature_removed(whitebox_iter, output_dir, feature_names=[]
 
 def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_names=[], class_names=[]):
     """Plots the distribution of the data based on the top branches"""
-    plots_output_dir = f"{output_dir}/dist"
+    plots_output_dir = f"{output_dir}/dist" if not aggregate else f"{output_dir}/aggr_dist"
     if not os.path.exists(plots_output_dir):
         os.makedirs(plots_output_dir)
 
@@ -272,14 +272,53 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
         df.columns = [str(i) for i in range(len(df.columns))]
 
     if aggregate:
-        prefixes = set({})
+        col_regex = "([\w_]+)_([0-9]+)"
+        opt_prefixes = set({})
+        non_opt_prefixes = set({})
+        field_size = {}
+        non_aggr_cols = df.columns  # for plotting
         for col in df.columns:
-            prefix = re.findall("([\w_]+)_([0-9]+)", col)[0][0]
-            prefixes.add(prefix)
+            match_groups = re.findall(col_regex, col)[0]
+            prefix = match_groups[0]
+            bit = int(match_groups[1])
+            if "opt" in col:
+                opt_prefixes.add(prefix)
+            else:
+                non_opt_prefixes.add(prefix)
 
-        grouper = [next(p for p in prefixes if p in c) for c in df.columns]
-        df = df.groupby(grouper, axis=1).apply(lambda x: int("".join(x.astype(str))))
-        print(df.head())
+            if prefix not in field_size:
+                field_size[prefix] = bit
+
+            if field_size[prefix] < bit:
+                field_size[prefix] = bit
+
+        # we need to treat option differently
+        opt_df = df[[col for col in df.columns if "opt" in col]]
+        non_opt_df = df[[col for col in df.columns if "opt" not in col]]
+
+        def bin_to_int(num):
+            try:
+                return int(num, 2)
+            except:
+                return -1
+
+        grouper = [next(p for p in non_opt_prefixes if p in c) for c in non_opt_df.columns]
+        non_opt_df = non_opt_df.groupby(grouper, axis=1).apply(
+            lambda x: x.astype(str).apply("".join, axis=1).apply(bin_to_int)
+        )
+        # print(non_opt_df)
+
+        # grouper = [next(p for p in opt_prefixes if p in c) for c in opt_df.columns]
+        # opt_df = opt_df.groupby(grouper, axis=1).apply(lambda x: x.astype(str).apply("".join, axis=1))
+        # for col in opt_df.columns:
+        #     for idx, start in enumerate(range(0, 320, 32)):
+        #         print(idx, start)
+        #         opt_df[f"{col}_{idx}"] = opt_df[col].str.slice(start, start + 32)
+
+        #     print(opt_df[col].str.extract("(.{32,32})" * 10, expand=True))
+
+        # print(opt_df)
+        df = pd.concat([non_opt_df, opt_df], axis=1)
 
     df["label"] = y
     if class_names and is_numeric_dtype(df["label"]):
@@ -290,14 +329,23 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
 
     for idx, branch in enumerate(top_branches):
         branch_class = class_names[branch["class"]] if class_names else branch["class"]
-        branch_output_dir = f"{plots_output_dir}/{idx}_branch_{branch_class}/"
+        branch_output_dir = f"{plots_output_dir}/{idx}_branch_{branch_class.strip()}"
 
         if not os.path.exists(branch_output_dir):
             os.makedirs(branch_output_dir)
 
         filtered_dfs = [x.copy(deep=True) for _, x in df.groupby("label")]
         for rule_idx, (_, feat, op, thresh) in enumerate(branch["path"]):
-            column = df.columns[int(feat)] if (isinstance(feat, numbers.Number) or feat.isdigit()) else feat
+            if aggregate:
+                column = non_aggr_cols[int(feat)] if (isinstance(feat, numbers.Number) or feat.isdigit()) else feat
+                if "opt" not in column:
+                    match_groups = re.findall(col_regex, column)[0]
+                    column = match_groups[0]
+                    bit = match_groups[1]
+                    shift = field_size[column]
+                    thresh = (1 << (shift - int(bit))) - (1 - int(thresh))
+            else:
+                column = df.columns[int(feat)] if (isinstance(feat, numbers.Number) or feat.isdigit()) else feat
 
             plots_per_row = 5
             if num_classes > plots_per_row:
@@ -315,7 +363,7 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
                 ax = axes[df_idx]
                 ax.hist(
                     split_df[column].values,
-                    bins=50,
+                    # bins=50,
                     histtype="bar",
                     label="All" if df_idx == 0 else None,
                     color=colors[0],
@@ -344,9 +392,9 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
                 ax = axes[df_idx]
                 ax.hist(
                     filtered_dfs[df_idx][column].values,
-                    bins=50,
+                    # bins=50,
                     histtype="bar",
-                    label=f"Branch ({branch_class})" if df_idx == 0 else None,
+                    label=f"Branch ({branch_class.strip()})" if df_idx == 0 else None,
                     color=colors[-1],
                 )
                 ax.yaxis.set_major_formatter(PercentFormatter(xmax=split_df.shape[0]))
@@ -373,19 +421,17 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
                 ax = axes[df_idx]
                 ax.hist(
                     split_df[column].values,
-                    bins=50,
+                    # bins=50,
                     histtype="bar",
                     label="All" if df_idx == 0 else None,
                     color=colors[0],
-                    # alpha=0.5,
                 )
                 ax.hist(
                     filtered_dfs[df_idx][column].values,
-                    bins=50,
+                    # bins=50,
                     histtype="bar",
-                    label=f"Branch ({branch_class})" if df_idx == 0 else None,
+                    label=f"Branch ({branch_class.strip()})" if df_idx == 0 else None,
                     color=colors[-1],
-                    # alpha=0.5,
                 )
                 ax.yaxis.set_major_formatter(PercentFormatter(xmax=split_df.shape[0]))
                 ax.tick_params(axis="both", labelsize=6)

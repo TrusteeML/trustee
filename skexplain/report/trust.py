@@ -53,7 +53,6 @@ class TrustReport:
         dagger_max_depth=None,
         dagger_ccp_alpha=0.0,
         skip_retrain=False,
-        aggregate=False,
         top_n=10,
         logger=None,
         verbose=False,
@@ -80,7 +79,6 @@ class TrustReport:
         self.dagger_max_depth = dagger_max_depth
         self.dagger_ccp_alpha = dagger_ccp_alpha
         self.skip_retrain = skip_retrain
-        self.aggregate = aggregate
         self.top_n = top_n
         self.logger = logger
         self.verbose = verbose
@@ -1133,7 +1131,7 @@ class TrustReport:
             graph = graphviz.Source(dot_data)
             graph.render(f"{prunning_output_dir}/max_leaves_dt_{idx}_{i['dt'].tree_.node_count}")
 
-    def plot(self, output_dir):
+    def plot(self, output_dir, aggregate=False):
         """
         Plot the analysis results.
 
@@ -1203,7 +1201,7 @@ class TrustReport:
             plots_output_dir,
             feature_names=self.feature_names,
             class_names=self.class_names,
-            aggregate=self.aggregate,
+            aggregate=aggregate,
         )
 
         # plot_skewness_heatmaps(
@@ -1236,7 +1234,7 @@ class TrustReport:
 
         return report
 
-    def save(self, output_dir):
+    def save(self, output_dir, aggregate=False):
         """Saves report and plots to output dir"""
         ################################################
         #                    OUTPUT                    #
@@ -1256,4 +1254,4 @@ class TrustReport:
                 pickle.dump(self, file)
 
             self._save_dts(report_output_dir)
-            self.plot(report_output_dir)
+            self.plot(report_output_dir, aggregate=aggregate)
