@@ -147,21 +147,15 @@ def read(path_or_buffer, metadata={}, verbose=False, logger=None, as_df=False, r
 
     if verbose:
         log("Features Shape:", X.shape)
-        log("Column names:\n{}".format("".join(("{}: {}\n".format(str(i), str(col)) for (i, col) in zip(list(range(len(X.columns))), X.columns)))))
+        log(
+            "Column names:\n{}".format(
+                "".join(
+                    ("{}: {}\n".format(str(i), str(col)) for (i, col) in zip(list(range(len(X.columns))), X.columns))
+                )
+            )
+        )
 
         log("Targets shape:", y.shape, y.columns)
-
-    # for col in X.columns:
-    #     if X[col].dtype == np.float64:
-    #         X[col] = X[col].astype(np.float32)
-    #     elif X[col].dtype == np.int64:
-    #         X[col] = X[col].astype(np.int32)
-    #
-    # for col in y.columns:
-    #     if y[col].dtype == np.float64:
-    #         y[col] = y[col].astype(np.float32)
-    #     elif y[col].dtype == np.int64:
-    #         y[col] = y[col].astype(np.int32)
 
     X = X.replace([np.inf, -np.inf], np.nan).fillna(-1)
 
@@ -291,7 +285,11 @@ def resample(path, output_path, metadata, resampler):
     X = df.drop(columns=names[result], axis=1)
 
     print("Features Shape:", X.shape)
-    print("Column names:\n{}".format("".join(("{}: {}\n".format(str(i), str(col)) for (i, col) in zip(list(range(len(X.columns))), X.columns)))))
+    print(
+        "Column names:\n{}".format(
+            "".join(("{}: {}\n".format(str(i), str(col)) for (i, col) in zip(list(range(len(X.columns))), X.columns)))
+        )
+    )
 
     print("Targets shape:", y.shape, y.columns)
 

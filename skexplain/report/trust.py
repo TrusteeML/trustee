@@ -7,15 +7,14 @@ import numpy as np
 import pandas as pd
 
 from sklearn import tree
-from sklearn.metrics import classification_report, f1_score, confusion_matrix
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics import classification_report, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.base import clone
 
 from autogluon.tabular import TabularPredictor
 from prettytable import PrettyTable
 
-from skexplain.imitation import ClassificationDagger
+from skexplain.imitation import ClassificationTrustee
 from skexplain.helpers import get_dt_info, get_dt_similarity
 
 from .plot import (
@@ -25,7 +24,6 @@ from .plot import (
     plot_all_branches,
     plot_distribution,
     plot_samples_by_level,
-    plot_skewness_heatmaps,
     plot_dts_fidelity_by_size,
     plot_accuracy_by_feature_removed,
 )
@@ -47,11 +45,11 @@ class TrustReport:
         num_quantiles=10,
         train_size=0.7,
         predict_method_name="predict",
-        dagger_num_iter=100,
-        dagger_sample_size=0.5,
-        dagger_max_leaf_nodes=None,
-        dagger_max_depth=None,
-        dagger_ccp_alpha=0.0,
+        trustee_num_iter=100,
+        trustee_sample_size=0.5,
+        trustee_max_leaf_nodes=None,
+        trustee_max_depth=None,
+        trustee_ccp_alpha=0.0,
         skip_retrain=False,
         top_n=10,
         logger=None,
@@ -60,7 +58,7 @@ class TrustReport:
         feature_names=None,
     ):
         """
-        Builds trust report for given black-box model using the Dagger method to extract white-box explanations as Decision Trees.
+        Builds trust report for given black-box model using the Trustee method to extract white-box explanations as Decision Trees.
         """
         self.blackbox = blackbox
         self.X = X
@@ -73,11 +71,11 @@ class TrustReport:
         self.num_quantiles = num_quantiles
         self.train_size = train_size
         self.predict_method_name = predict_method_name
-        self.dagger_num_iter = dagger_num_iter
-        self.dagger_sample_size = dagger_sample_size
-        self.dagger_max_leaf_nodes = dagger_max_leaf_nodes
-        self.dagger_max_depth = dagger_max_depth
-        self.dagger_ccp_alpha = dagger_ccp_alpha
+        self.trustee_num_iter = trustee_num_iter
+        self.trustee_sample_size = trustee_sample_size
+        self.trustee_max_leaf_nodes = trustee_max_leaf_nodes
+        self.trustee_max_depth = trustee_max_depth
+        self.trustee_ccp_alpha = trustee_ccp_alpha
         self.skip_retrain = skip_retrain
         self.top_n = top_n
         self.logger = logger
@@ -88,7 +86,7 @@ class TrustReport:
         self.bb_n_input_features = 0
         self.bb_n_output_classes = 0
 
-        self.dagger = None
+        self.trustee = None
         self.y_pred = None
         self.max_dt = None
         self.max_dt_y_pred = None
@@ -176,26 +174,26 @@ class TrustReport:
 
         whitebox_report = PrettyTable(border=False, header=False)
         whitebox_report.align = "l"
-        whitebox_report.add_row(["Explanation method:", "Dagger"])
+        whitebox_report.add_row(["Explanation method:", "Trustee"])
         whitebox_report.add_row(["Model:", type(self.max_dt).__name__])
-        whitebox_report.add_row(["Iterations:", self.dagger_num_iter])
-        whitebox_report.add_row(["Sample size:", f"{self.dagger_sample_size * 100:.2f}%"])
+        whitebox_report.add_row(["Iterations:", self.trustee_num_iter])
+        whitebox_report.add_row(["Sample size:", f"{self.trustee_sample_size * 100:.2f}%"])
         whitebox_report.add_row(["", ""])
         whitebox_report.add_row(["Decision Tree Info", ""])
         whitebox_report.add_row(["Size:", self.max_dt.tree_.node_count])
         whitebox_report.add_row(["Depth:", self.max_dt.get_depth()])
         whitebox_report.add_row(["Leaves:", self.max_dt.get_n_leaves()])
-        whitebox_report.add_row(["CCP Alpha:", self.dagger_ccp_alpha])
+        whitebox_report.add_row(["CCP Alpha:", self.trustee_ccp_alpha])
         whitebox_report.add_row(
             [
                 "# Input features:",
-                f"{self.dagger.get_n_features()} ({self.dagger.get_n_features() / self.bb_n_input_features * 100:.2f}%)",
+                f"{self.trustee.get_n_features()} ({self.trustee.get_n_features() / self.bb_n_input_features * 100:.2f}%)",
             ]
         )
         whitebox_report.add_row(
             [
                 "# Output classes:",
-                f"{self.dagger.get_n_classes()} ({self.dagger.get_n_classes() / self.bb_n_output_classes * 100:.2f}%)",
+                f"{self.trustee.get_n_classes()} ({self.trustee.get_n_classes() / self.bb_n_output_classes * 100:.2f}%)",
             ]
         )
         whitebox_report.add_row(["", ""])
@@ -218,16 +216,16 @@ class TrustReport:
         if self.min_dt:
             min_whitebox_report = PrettyTable(border=False, header=False)
             min_whitebox_report.align = "l"
-            min_whitebox_report.add_row(["Explanation method:", "Dagger"])
+            min_whitebox_report.add_row(["Explanation method:", "Trustee"])
             min_whitebox_report.add_row(["Model:", type(self.min_dt).__name__])
-            min_whitebox_report.add_row(["Iterations:", self.dagger_num_iter])
-            min_whitebox_report.add_row(["Sample size:", f"{self.dagger_sample_size * 100:.2f}%"])
+            min_whitebox_report.add_row(["Iterations:", self.trustee_num_iter])
+            min_whitebox_report.add_row(["Sample size:", f"{self.trustee_sample_size * 100:.2f}%"])
             min_whitebox_report.add_row(["", ""])
             min_whitebox_report.add_row(["Decision Tree Info", ""])
             min_whitebox_report.add_row(["Size:", self.min_dt.tree_.node_count])
             min_whitebox_report.add_row(["Depth:", self.min_dt.get_depth()])
             min_whitebox_report.add_row(["Leaves:", self.min_dt.get_n_leaves()])
-            min_whitebox_report.add_row(["CCP Alpha:", self.dagger_ccp_alpha])
+            min_whitebox_report.add_row(["CCP Alpha:", self.trustee_ccp_alpha])
             min_whitebox_report.add_row(["# Input features:", "-"])
             min_whitebox_report.add_row(
                 [
@@ -267,7 +265,7 @@ class TrustReport:
             node, node_perc, data_split = (
                 values["count"],
                 (values["count"] / (self.max_dt.tree_.node_count - self.max_dt.tree_.n_leaves)) * 100,
-                (values["samples"] / self.dagger.get_samples_sum()) * 100,
+                (values["samples"] / self.trustee.get_samples_sum()) * 100,
             )
             sum_nodes += node
             sum_nodes_perc += node_perc
@@ -401,7 +399,7 @@ class TrustReport:
 
         prunning_analysis = PrettyTable(title="Prunning Analysis", header=False)
         top_n_prune_performance = PrettyTable(
-            title="Dagger Top-N Iteration",
+            title="Trustee Top-N Iteration",
             field_names=[
                 "N",
                 "DT Size",
@@ -552,7 +550,7 @@ class TrustReport:
                         i["n_features_removed"],
                         i["classification_report"],
                         i["dt"].tree_.node_count,
-                        self.dagger_ccp_alpha,
+                        self.trustee_ccp_alpha,
                         i["fidelity_report"],
                     ]
                 )
@@ -609,13 +607,13 @@ class TrustReport:
         self,
         X_train=None,
         X_test=None,
-        dagger_ccp_alpha=0.0,
-        dagger_max_leaf_nodes=None,
-        dagger_max_depth=None,
-        dagger_use_features=None,
+        trustee_ccp_alpha=0.0,
+        trustee_max_leaf_nodes=None,
+        trustee_max_depth=None,
+        trustee_use_features=None,
     ):
         """
-        Fits blacbox with the given X and y data, and uses Dagger to extract DT explanation
+        Fits blacbox with the given X and y data, and uses Trustee to extract DT explanation
         """
         log = self.logger.log if self.logger else print
 
@@ -665,37 +663,37 @@ class TrustReport:
         log(f"\n{classification_report(self.y_test, y_pred, digits=3)}")
 
         # Decision tree extraction
-        log("Using Classification Dagger algorithm to extract DT...")
-        dagger = ClassificationDagger(expert=blackbox_copy)
+        log("Using Classification Trustee algorithm to extract DT...")
+        trustee = ClassificationTrustee(expert=blackbox_copy)
 
-        dagger.fit(
+        trustee.fit(
             X_train,
             self.y_train,
-            num_iter=self.dagger_num_iter,
-            samples_size=self.dagger_sample_size,
+            num_iter=self.trustee_num_iter,
+            samples_size=self.trustee_sample_size,
             predict_method_name=self.predict_method_name,
-            max_leaf_nodes=dagger_max_leaf_nodes if dagger_max_leaf_nodes else self.dagger_max_leaf_nodes,
-            max_depth=dagger_max_depth if dagger_max_depth else self.dagger_max_depth,
-            ccp_alpha=dagger_ccp_alpha if dagger_ccp_alpha else self.dagger_ccp_alpha,
-            use_features=dagger_use_features,
+            max_leaf_nodes=trustee_max_leaf_nodes if trustee_max_leaf_nodes else self.trustee_max_leaf_nodes,
+            max_depth=trustee_max_depth if trustee_max_depth else self.trustee_max_depth,
+            ccp_alpha=trustee_ccp_alpha if trustee_ccp_alpha else self.trustee_ccp_alpha,
+            use_features=trustee_use_features,
             verbose=self.verbose,
         )
 
         log("#" * 10, "Explanation validation", "#" * 10)
-        dt, reward, idx = dagger.explain()
+        dt, reward, idx = trustee.explain()
         log(f"Model explanation {idx} training fidelity: {reward}")
-        min_dt = dagger.prune(top_n=self.top_n)
+        min_dt = trustee.prune(top_n=self.top_n)
         log(f"Prunned explanation size: {dt.tree_.node_count}")
 
-        if dagger_use_features:
+        if trustee_use_features:
             if isinstance(X_test, pd.DataFrame):
-                X_test = X_test.iloc[:, dagger_use_features]
+                X_test = X_test.iloc[:, trustee_use_features]
             elif isinstance(X_test, np.ndarray):
-                X_test = X_test[:, [dagger_use_features]]
+                X_test = X_test[:, [trustee_use_features]]
             elif torch.is_tensor(X_test):
-                X_test = X_test[:, [dagger_use_features]].clone().detach()
+                X_test = X_test[:, [trustee_use_features]].clone().detach()
             else:
-                X_test = np.array(X_test)[:, dagger_use_features]
+                X_test = np.array(X_test)[:, trustee_use_features]
 
         dt_y_pred = dt.predict(X_test)
         min_dt_y_pred = min_dt.predict(X_test)
@@ -755,12 +753,12 @@ class TrustReport:
 
         self.blackbox = blackbox_copy
 
-        return dagger, y_pred, dt, dt_y_pred, min_dt, min_dt_y_pred
+        return trustee, y_pred, dt, dt_y_pred, min_dt, min_dt_y_pred
 
     def _collect(self):
         """Collects data to build the make report"""
         self._collect_blackbox()
-        self._collect_dagger()
+        self._collect_trustee()
         self._collect_branch_analysis()
         self._collect_top_n_prunning()
         self._collect_ccp_prunning()
@@ -777,10 +775,10 @@ class TrustReport:
         )
         self.bb_n_output_classes = len(np.unique(self.y_train))
 
-    def _collect_dagger(self):
+    def _collect_trustee(self):
         """Uses provided dataset to train a Decision Tree and fetch first decision tree info"""
         (
-            self.dagger,
+            self.trustee,
             self.y_pred,
             self.max_dt,
             self.max_dt_y_pred,
@@ -788,19 +786,19 @@ class TrustReport:
             self.min_dt_y_pred,
         ) = self._fit_and_explain()
 
-        self.max_dt_leaves_by_level = self.dagger.get_leaves_by_level()
-        self.max_dt_samples_by_level = self.dagger.get_samples_by_level()
+        self.max_dt_leaves_by_level = self.trustee.get_leaves_by_level()
+        self.max_dt_samples_by_level = self.trustee.get_samples_by_level()
 
-        self.max_dt_top_nodes = self.dagger.get_top_nodes(top_n=self.top_n)
-        self.max_dt_top_features = self.dagger.get_top_features(top_n=self.top_n)
-        self.max_dt_top_branches = self.dagger.get_top_branches(top_n=self.top_n)
-        self.max_dt_all_branches = self.dagger.get_top_branches(top_n=self.max_dt.get_n_leaves())
+        self.max_dt_top_nodes = self.trustee.get_top_nodes(top_n=self.top_n)
+        self.max_dt_top_features = self.trustee.get_top_features(top_n=self.top_n)
+        self.max_dt_top_branches = self.trustee.get_top_branches(top_n=self.top_n)
+        self.max_dt_all_branches = self.trustee.get_top_branches(top_n=self.max_dt.get_n_leaves())
 
     def _collect_branch_analysis(self):
-        """Uses trained dagger explainer to show how different branches affect fidelity"""
+        """Uses trained trustee explainer to show how different branches affect fidelity"""
         self.branch_iter = []
         for top_n in np.arange(1, self.max_dt.get_n_leaves()):
-            pruned_dt = self.dagger.prune(top_n=top_n)
+            pruned_dt = self.trustee.prune(top_n=top_n)
             pruned_dt_y_pred = pruned_dt.predict(self.X_test)
             pruned_dt_sim, pruned_dt_sim_vec = get_dt_similarity(pruned_dt, self.max_dt)
 
@@ -832,13 +830,13 @@ class TrustReport:
             )
 
     def _collect_top_n_prunning(self):
-        """Uses trained dagger explainer to prune the decision tree with different top_n branches"""
+        """Uses trained trustee explainer to prune the decision tree with different top_n branches"""
         self.top_n_prune_iter = []
         # leaves_arr = np.arange(2, self.max_dt.get_n_leaves())
         # for quantil in np.linspace(0, 1, self.num_quantiles, endpoint=False):
         for top_n in np.arange(1, self.num_quantiles + 1):
             # top_n = int(np.quantile(leaves_arr, quantil))
-            pruned_dt = self.dagger.prune(top_n=top_n)
+            pruned_dt = self.trustee.prune(top_n=top_n)
             pruned_dt_y_pred = pruned_dt.predict(self.X_test)
             pruned_dt_sim, pruned_dt_sim_vec = get_dt_similarity(pruned_dt, self.max_dt)
 
@@ -882,7 +880,7 @@ class TrustReport:
             if ccp_alpha >= 0:
                 gini = impurities[idx]
 
-                _, _, ccp_dt, ccp_dt_y_pred, _, _ = self._fit_and_explain(dagger_ccp_alpha=ccp_alpha)
+                _, _, ccp_dt, ccp_dt_y_pred, _, _ = self._fit_and_explain(trustee_ccp_alpha=ccp_alpha)
                 ccp_dt_sim, ccp_dt_sim_vec = get_dt_similarity(ccp_dt, self.max_dt)
 
                 self.ccp_iter.append(
@@ -921,7 +919,7 @@ class TrustReport:
         for max_depth in np.arange(1, self.num_quantiles + 1):
             # max_depth = int(np.quantile(depth_arr, quantil))
             if max_depth > 0:
-                _, _, max_depth_dt, max_depth_dt_y_pred, _, _ = self._fit_and_explain(dagger_max_depth=max_depth)
+                _, _, max_depth_dt, max_depth_dt_y_pred, _, _ = self._fit_and_explain(trustee_max_depth=max_depth)
 
                 max_depth_dt_sim, max_depth_dt_sim_vec = get_dt_similarity(max_depth_dt, self.max_dt)
                 self.max_depth_iter.append(
@@ -960,7 +958,7 @@ class TrustReport:
             # max_leaves = int(np.quantile(leaves_arr, quantil))
             if max_leaves > 1:
                 _, _, max_leaves_dt, max_leaves_dt_y_pred, _, _ = self._fit_and_explain(
-                    dagger_max_leaf_nodes=max_leaves
+                    trustee_max_leaf_nodes=max_leaves
                 )
 
                 max_leaves_dt_sim, max_leaves_dt_sim_vec = get_dt_similarity(max_leaves_dt, self.max_dt)
@@ -1146,7 +1144,7 @@ class TrustReport:
 
         plot_top_features(
             self.max_dt_top_features,
-            self.dagger.get_samples_sum(),
+            self.trustee.get_samples_sum(),
             (self.max_dt.tree_.node_count - self.max_dt.tree_.n_leaves),
             plots_output_dir,
             feature_names=self.feature_names,
@@ -1184,7 +1182,7 @@ class TrustReport:
                 {"type": "CCP", "iter": self.ccp_iter},
                 {"type": "Max Depth", "iter": self.max_depth_iter},
                 {"type": "Max Leaves", "iter": self.max_leaves_iter},
-                {"type": "Dagger Top-N", "iter": self.top_n_prune_iter},
+                {"type": "Trustee Top-N", "iter": self.top_n_prune_iter},
             ],
             plots_output_dir,
         )

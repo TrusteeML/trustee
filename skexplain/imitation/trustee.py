@@ -1,5 +1,4 @@
 import abc
-import json
 import torch
 import numpy as np
 import pandas as pd
@@ -9,7 +8,6 @@ import functools
 from sklearn.metrics import f1_score, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.tree._tree import TREE_LEAF, TREE_UNDEFINED
 
 
 from skexplain.helpers import get_dt_info, prune_index, get_dt_dict
@@ -17,21 +15,21 @@ from skexplain.helpers import get_dt_info, prune_index, get_dt_dict
 
 def _check_if_trained(func):
     """
-    Check whether the dagger is already fitted and self.best_student exists
+    Check whether the Trustee is already fitted and self.best_student exists
     """
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         if not self.best_student:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explainer first.")
+            raise ValueError("No student models have been trained yet. Please fit() Trustee explainer first.")
         return func(self, *args, **kwargs)
 
     return wrapper
 
 
-class Dagger(abc.ABC):
+class Trustee(abc.ABC):
     """
-    Implements the Dataset Aggregation (Dagger) algorithm to train
+    Implements the Trust-oriented Decision Tree Extraction (Trustee) algorithm to train
     student model based on observations from an Expert model.
     """
 
@@ -91,9 +89,9 @@ class Dagger(abc.ABC):
 
         if verbose:
             self.log(f"Expert model score: {self.score(y, targets)}")
-            self.log(f"Initializing Dagger loop with {num_iter} iterations")
+            self.log(f"Initializing Trustee loop with {num_iter} iterations")
 
-        # Dagger loop
+        # Trustee loop
         for i in range(num_iter):
             if verbose:
                 self.log("#" * 10, f"Iteration {i}/{num_iter}", "#" * 10)
@@ -185,7 +183,7 @@ class Dagger(abc.ABC):
     def explain(self):
         """Returns explainable model that best imitates Expert model, based on calculated rewards."""
         if not self.students:
-            raise ValueError("No student models have been trained yet. Please fit() dagger explaimer first.")
+            raise ValueError("No student models have been trained yet. Please fit() Trustee explaimer first.")
 
         return max(self.students, key=lambda item: item[1])
 
@@ -303,9 +301,9 @@ class Dagger(abc.ABC):
         return prunned_student
 
 
-class ClassificationDagger(Dagger):
+class ClassificationTrustee(Trustee):
     """
-    Implements the Dataset Aggregation (Dagger) algorithm to train a student Decision Tree Classifier
+    Implements the Trust-oriented Decision Tree Extraction (Trustee) algorithm to train a student Decision Tree Classifier
     based on observations from an Expert classification model.
     """
 
@@ -318,9 +316,9 @@ class ClassificationDagger(Dagger):
         return f1_score(y_true, y_pred, average=average)
 
 
-class RegressionDagger(Dagger):
+class RegressionTrustee(Trustee):
     """
-    Implements the Dataset Aggregation (Dagger) algorithm to train a student Decision Tree Regressor
+    Implements the Trust-oriented Decision Tree Extraction (Trustee) algorithm to train a student Decision Tree Regressor
     based on observations from an Expert regression model.
     """
 

@@ -8,7 +8,7 @@ import rootpath
 from keras.layers import Dense, Dropout
 from keras.models import Sequential, load_model
 from keras.utils import np_utils
-from skexplain.imitation import ClassificationDagger, RegressionDagger
+from skexplain.imitation import ClassificationTrustee, RegressionTrustee
 from skexplain.utils import dataset, log
 from skexplain.utils.const import (
     CIC_IDS_2017_DATASET_META,
@@ -21,10 +21,10 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 
-RESULTS_FILE_NAME = "{}/res/results/dagger_test_dnn.csv"
+RESULTS_FILE_NAME = "{}/res/results/trustee_test_dnn.csv"
 
 
-def dagger_test_dnn(
+def trustee_test_dnn(
     dataset_meta,
     validate_dataset_path="",
     resampler=None,
@@ -35,7 +35,7 @@ def dagger_test_dnn(
 ):
     """Test using Reinforcement Learning to extract Decision Tree from a generic Blackbox model"""
     logger = log.Logger(
-        "{}/res/log/{}/dagger_test_dnn_{}_{}.log".format(
+        "{}/res/log/{}/trustee_test_dnn_{}_{}.log".format(
             rootpath.detect(),
             dataset_meta["name"],
             "DNN",
@@ -128,13 +128,13 @@ def dagger_test_dnn(
     logger.log("#" * 10, "Done", "#" * 10)
 
     if dataset_meta["type"] == "classification":
-        logger.log("Using Classification Dagger algorithm...")
-        dagger = ClassificationDagger(expert=blackbox, logger=logger)
+        logger.log("Using Classification Trustee algorithm...")
+        trustee = ClassificationTrustee(expert=blackbox, logger=logger)
     else:
-        logger.log("Using Regression Dagger algorithm...")
-        dagger = RegressionDagger(expert=blackbox, logger=logger)
+        logger.log("Using Regression Trustee algorithm...")
+        trustee = RegressionTrustee(expert=blackbox, logger=logger)
 
-    dagger.fit(
+    trustee.fit(
         X,
         y,
         num_iter=100,
@@ -147,7 +147,7 @@ def dagger_test_dnn(
     with open(RESULTS_FILE_NAME.format(rootpath.detect()), "a") as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=",")
         logger.log("#" * 10, "Explanation validation", "#" * 10)
-        (dt, reward, idx) = dagger.explain()
+        (dt, reward, idx) = trustee.explain()
         logger.log(f"Model explanation {idx} local fidelity: {reward}")
         dt_y_pred = dt.predict(X_test)
 
@@ -194,7 +194,7 @@ def dagger_test_dnn(
             "{}/res/img/{}/{}/dt_{}_{}".format(
                 rootpath.detect(),
                 dataset_meta["name"],
-                "dagger",
+                "trustee",
                 resampler.__name__ if resampler else "Raw",
                 dt.get_n_leaves(),
             )
@@ -225,7 +225,7 @@ def main():
     # read already undersampled dataset from disk instead of doing the oversampling every time
     CIC_IDS_2017_DATASET_META["path"] = CIC_IDS_2017_DATASET_META["oversampled_path"]
     CIC_IDS_2017_DATASET_META["is_dir"] = False
-    dagger_test_dnn(CIC_IDS_2017_DATASET_META, num_samples=100000, as_df=True)
+    trustee_test_dnn(CIC_IDS_2017_DATASET_META, num_samples=100000, as_df=True)
 
 
 if __name__ == "__main__":

@@ -4,16 +4,12 @@ import math
 import numbers
 import numpy as np
 import pandas as pd
-import pingouin as pg
 from scipy.stats import kurtosis, skew
-from numpy.core.defchararray import isdigit
 from pandas.api.types import is_numeric_dtype
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 
-
-from scipy import spatial
 
 from skexplain.utils import plot
 
@@ -306,18 +302,6 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
         non_opt_df = non_opt_df.groupby(grouper, axis=1).apply(
             lambda x: x.astype(str).apply("".join, axis=1).apply(bin_to_int)
         )
-        # print(non_opt_df)
-
-        # grouper = [next(p for p in opt_prefixes if p in c) for c in opt_df.columns]
-        # opt_df = opt_df.groupby(grouper, axis=1).apply(lambda x: x.astype(str).apply("".join, axis=1))
-        # for col in opt_df.columns:
-        #     for idx, start in enumerate(range(0, 320, 32)):
-        #         print(idx, start)
-        #         opt_df[f"{col}_{idx}"] = opt_df[col].str.slice(start, start + 32)
-
-        #     print(opt_df[col].str.extract("(.{32,32})" * 10, expand=True))
-
-        # print(opt_df)
         df = pd.concat([non_opt_df, opt_df], axis=1)
 
     df["label"] = y

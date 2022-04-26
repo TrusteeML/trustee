@@ -3,7 +3,7 @@ import csv
 import graphviz
 import pandas as pd
 import rootpath
-from skexplain.imitation import ClassificationDagger, RegressionDagger
+from skexplain.imitation import ClassificationTrustee, RegressionTrustee
 from skexplain.utils import dataset, log, persist
 from skexplain.utils.const import (
     IOT_DATASET_META,
@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 
 
-def dagger_leaves_eval(
+def trustee_leaves_eval(
     dataset_meta,
     model=RandomForestClassifier,
     resampler=None,
@@ -24,7 +24,7 @@ def dagger_leaves_eval(
 ):
     """Test using Reinforcement Learning to extract Decision Tree from a generic Blackbox model"""
     logger = log.Logger(
-        "{}/res/log/dagger_leaves_eval_{}_{}_{}.log".format(
+        "{}/res/log/trustee_leaves_eval_{}_{}_{}.log".format(
             rootpath.detect(),
             model.__name__,
             resampler.__name__ if resampler else "Raw",
@@ -52,7 +52,9 @@ def dagger_leaves_eval(
 
     # Step 2: Train black-box model with loaded dataset
     logger.log("#" * 10, "Model train", "#" * 10)
-    model_path = f"../res/weights/{model.__name__}_{resampler.__name__ if resampler else 'Raw'}_{dataset_meta['name']}.joblib"
+    model_path = (
+        f"../res/weights/{model.__name__}_{resampler.__name__ if resampler else 'Raw'}_{dataset_meta['name']}.joblib"
+    )
     logger.log(f"Looking for pre-trained model: {model_path}...")
     blackbox = persist.load_model(model_path)
     if not blackbox:
@@ -76,7 +78,7 @@ def dagger_leaves_eval(
 
     logger.log("#" * 10, "Done", "#" * 10)
 
-    with open(f"{rootpath.detect()}/res/results/dagger_leaves_eval.csv", "w") as csv_file:
+    with open(f"{rootpath.detect()}/res/results/trustee_leaves_eval.csv", "w") as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(
             [
@@ -91,13 +93,13 @@ def dagger_leaves_eval(
         )
         for num_leaves in [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]:
             if dataset_meta["type"] == "classification":
-                logger.log("Using Classification Dagger algorithm...")
-                dagger = ClassificationDagger(expert=blackbox, logger=logger)
+                logger.log("Using Classification Trustee algorithm...")
+                trustee = ClassificationTrustee(expert=blackbox, logger=logger)
             else:
-                logger.log("Using Regression Dagger algorithm...")
-                dagger = RegressionDagger(expert=blackbox, logger=logger)
+                logger.log("Using Regression Trustee algorithm...")
+                trustee = RegressionTrustee(expert=blackbox, logger=logger)
 
-            dagger.fit(
+            trustee.fit(
                 X,
                 y,
                 num_iter=100,
@@ -107,7 +109,7 @@ def dagger_leaves_eval(
             )
 
             logger.log("#" * 10, "Explanation validation", "#" * 10)
-            (dt, reward, idx) = dagger.explain()
+            (dt, reward, idx) = trustee.explain()
             logger.log(f"Model explanation {idx} local fidelity: {reward}")
             dt_y_pred = dt.predict(X_test)
 
@@ -149,7 +151,7 @@ def dagger_leaves_eval(
             graph.render(
                 "{}/res/img/leaves_eval/{}/dt_{}_{}_{}".format(
                     rootpath.detect(),
-                    "dagger",
+                    "trustee",
                     num_leaves,
                     dataset_meta["name"],
                     resampler.__name__ if resampler else "Raw",
@@ -160,7 +162,7 @@ def dagger_leaves_eval(
 
 def main():
     """Main block"""
-    dagger_leaves_eval(IOT_DATASET_META, model=MLPClassifier, resampler=None, num_samples=10000)
+    trustee_leaves_eval(IOT_DATASET_META, model=MLPClassifier, resampler=None, num_samples=10000)
 
 
 if __name__ == "__main__":

@@ -9,8 +9,8 @@ import rootpath
 # from imblearn.over_sampling import RandomOverSampler
 # from imblearn.under_sampling import RandomUnderSampler
 from skexplain.imitation import (
-    ClassificationDagger,
-    RegressionDagger,
+    ClassificationTrustee,
+    RegressionTrustee,
 )
 from skexplain.utils import dataset, log, persist
 from skexplain.utils.const import (
@@ -28,10 +28,10 @@ from sklearn.model_selection import train_test_split
 # from sklearn.neural_network import MLPClassifier, MLPRegressor
 # from sklearn.svm import LinearSVC
 
-RESULTS_FILE_NAME = "{}/res/results/dagger_test.csv"
+RESULTS_FILE_NAME = "{}/res/results/trustee_test.csv"
 
 
-def dagger_test(
+def trustee_test(
     dataset_meta,
     validate_dataset_path="",
     model=RandomForestClassifier,
@@ -43,7 +43,7 @@ def dagger_test(
 ):
     """Test using Reinforcement Learning to extract Decision Tree from a generic Blackbox model"""
     logger = log.Logger(
-        "{}/res/log/{}/dagger_test_{}_{}.log".format(
+        "{}/res/log/{}/trustee_test_{}_{}.log".format(
             rootpath.detect(),
             dataset_meta["name"],
             model.__name__,
@@ -116,7 +116,9 @@ def dagger_test(
     if validate_dataset_path:
         # Step 2.a (optional): Test trained model with a validation dataset
         logger.log("Reading validation dataset fromn CSV...")
-        X_validate, y_validate, _, _, _ = dataset.read(validate_dataset_path, metadata=dataset_meta, verbose=True, logger=logger)
+        X_validate, y_validate, _, _, _ = dataset.read(
+            validate_dataset_path, metadata=dataset_meta, verbose=True, logger=logger
+        )
         logger.log("Done!")
 
         logger.log("#" * 10, "Model validation", "#" * 10)
@@ -132,13 +134,13 @@ def dagger_test(
         logger.log("#" * 10, "Done", "#" * 10)
 
     if dataset_meta["type"] == "classification":
-        logger.log("Using Classification Dagger algorithm...")
-        dagger = ClassificationDagger(expert=blackbox, logger=logger)
+        logger.log("Using Classification Trustee algorithm...")
+        trustee = ClassificationTrustee(expert=blackbox, logger=logger)
     else:
-        logger.log("Using Regression Dagger algorithm...")
-        dagger = RegressionDagger(expert=blackbox, logger=logger)
+        logger.log("Using Regression Trustee algorithm...")
+        trustee = RegressionTrustee(expert=blackbox, logger=logger)
 
-    dagger.fit(
+    trustee.fit(
         X,
         y,
         num_iter=100,
@@ -151,7 +153,7 @@ def dagger_test(
     with open(RESULTS_FILE_NAME.format(rootpath.detect()), "a") as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=",")
         logger.log("#" * 10, "Explanation validation", "#" * 10)
-        (dt, reward, idx) = dagger.explain()
+        (dt, reward, idx) = trustee.explain()
         logger.log(f"Model explanation {idx} local fidelity: {reward}")
         dt_y_pred = dt.predict(X_test)
 
@@ -209,7 +211,7 @@ def dagger_test(
             "{}/res/img/{}/{}/dt_{}_{}".format(
                 rootpath.detect(),
                 dataset_meta["name"],
-                "dagger",
+                "trustee",
                 resampler.__name__ if resampler else "Raw",
                 dt.get_n_leaves(),
             )
@@ -226,77 +228,77 @@ def main():
     #     csv_writer.writerow(['dataset', 'dataset size', 'model', 'resampler',
     #                          'num leaves', 'ccp alpha', 'blackbox f1/r2', 'DT f1/r2', 'fidelity'])
     #
-    # dagger_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=None, num_samples=10000)
-    # dagger_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=RandomOverSampler, num_samples=100000)
-    # dagger_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=RandomUnderSampler, num_samples=1000)
+    # trustee_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=None, num_samples=10000)
+    # trustee_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=RandomOverSampler, num_samples=100000)
+    # trustee_test(IOT_DATASET_META, model=RandomForestClassifier, resampler=RandomUnderSampler, num_samples=1000)
     #
-    # dagger_test(IOT_DATASET_META, model=MLPClassifier, resampler=None, num_samples=100000)
-    # dagger_test(IOT_DATASET_META, model=MLPClassifier, resampler=RandomOverSampler, num_samples=100000)
-    # dagger_test(IOT_DATASET_META, model=MLPClassifier, resampler=RandomUnderSampler, num_samples=1000)
+    # trustee_test(IOT_DATASET_META, model=MLPClassifier, resampler=None, num_samples=100000)
+    # trustee_test(IOT_DATASET_META, model=MLPClassifier, resampler=RandomOverSampler, num_samples=100000)
+    # trustee_test(IOT_DATASET_META, model=MLPClassifier, resampler=RandomUnderSampler, num_samples=1000)
     #
-    # dagger_test(WINE_DATASET_META, model=RandomForestRegressor, num_samples=1000)
-    # dagger_test(WINE_DATASET_META, model=RandomForestRegressor, resampler=RandomOverSampler, num_samples=3000)
-    # dagger_test(WINE_DATASET_META, model=RandomForestRegressor, resampler=RandomUnderSampler, num_samples=10)
+    # trustee_test(WINE_DATASET_META, model=RandomForestRegressor, num_samples=1000)
+    # trustee_test(WINE_DATASET_META, model=RandomForestRegressor, resampler=RandomOverSampler, num_samples=3000)
+    # trustee_test(WINE_DATASET_META, model=RandomForestRegressor, resampler=RandomUnderSampler, num_samples=10)
     #
-    # dagger_test(WINE_DATASET_META, model=MLPRegressor, num_samples=1000)
-    # dagger_test(WINE_DATASET_META, model=MLPRegressor, resampler=RandomOverSampler, num_samples=3000)
-    # dagger_test(WINE_DATASET_META, model=MLPRegressor, resampler=RandomUnderSampler, num_samples=10)
+    # trustee_test(WINE_DATASET_META, model=MLPRegressor, num_samples=1000)
+    # trustee_test(WINE_DATASET_META, model=MLPRegressor, resampler=RandomOverSampler, num_samples=3000)
+    # trustee_test(WINE_DATASET_META, model=MLPRegressor, resampler=RandomUnderSampler, num_samples=10)
     #
-    # dagger_test(BOSTON_DATASET_META, model=RandomForestRegressor, num_samples=500)
-    # dagger_test(BOSTON_DATASET_META, model=MLPRegressor, num_samples=500)
+    # trustee_test(BOSTON_DATASET_META, model=RandomForestRegressor, num_samples=500)
+    # trustee_test(BOSTON_DATASET_META, model=MLPRegressor, num_samples=500)
     #
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=50, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=50, num_samples=100000)
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
     #             max_leaves=50, resampler=RandomOverSampler, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
     #             max_leaves=50, resampler=RandomUnderSampler, num_samples=100)
     #
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=50, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=50,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=50, num_samples=100000)
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=50,
     #             resampler=RandomOverSampler, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=50,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=50,
     #             resampler=RandomUnderSampler, num_samples=100)
     #
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=100, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=100,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=100, num_samples=100000)
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=100,
     #             resampler=RandomOverSampler, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=100,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=100,
     #             resampler=RandomUnderSampler, num_samples=100)
     #
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=100, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=100,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=100, num_samples=100000)
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=100,
     #             resampler=RandomOverSampler, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=100,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=MLPClassifier, max_leaves=100,
     #             resampler=RandomUnderSampler, num_samples=100)
     #
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=200, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, max_leaves=200, num_samples=100000)
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
     #             max_leaves=200, resampler=RandomOverSampler, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
     #             max_leaves=200, resampler=RandomUnderSampler, num_samples=100)
 
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, num_samples=100000)
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
     #             resampler=RandomOverSampler, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier,
     #             resampler=RandomUnderSampler, num_samples=100)
 
     # read already undersampled dataset from disk instead of doing the oversampling every time
     CIC_IDS_2017_DATASET_META["path"] = CIC_IDS_2017_DATASET_META["oversampled_path"]
     CIC_IDS_2017_DATASET_META["is_dir"] = False
-    dagger_test(
+    trustee_test(
         CIC_IDS_2017_DATASET_META,
         model=RandomForestClassifier,
         ccp_alpha=0.00020,
         num_samples=100000,
         as_df=True,
     )
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, ccp_alpha=0.00012,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, ccp_alpha=0.00012,
     #             resampler=RandomOverSampler, num_samples=100000)
-    # dagger_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, ccp_alpha=0.00012,
+    # trustee_test(CIC_IDS_2017_DATASET_META, model=RandomForestClassifier, ccp_alpha=0.00012,
     #             resampler=RandomUnderSampler, num_samples=100)
 
-    # dagger_leaves_eval(IOT_DATASET_META, model=MLPClassifier, resampler=None, num_samples=10000)
+    # trustee_leaves_eval(IOT_DATASET_META, model=MLPClassifier, resampler=None, num_samples=10000)
 
 
 if __name__ == "__main__":
