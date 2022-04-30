@@ -5,9 +5,12 @@ import matplotlib.patches as mpatches
 
 from matplotlib import rcParams
 
+FONT_NAME = "Roboto"
+FONT_WEIGHT = "light"
+
 rcParams["font.family"] = "serif"
-rcParams["font.serif"] = ["Roboto"]
-rcParams["font.weight"] = "light"
+rcParams["font.serif"] = [FONT_NAME]
+rcParams["font.weight"] = FONT_WEIGHT
 
 
 def plot_heatmap(matrix, labels=[], path=None):
@@ -36,9 +39,9 @@ def plot_heatmap(matrix, labels=[], path=None):
     plt.close()
 
 
-def plot_lines(x, y, ylim=None, labels=[], title=None, xlabel=None, ylabel=None, path=None):
+def plot_lines(x, y, xlim=None, ylim=None, labels=[], title=None, xlabel=None, ylabel=None, path=None):
     """Util function to plot lines"""
-    plt.figure(figsize=(10, 3))  # width:20, height:3
+    plt.figure(figsize=(3, 2))  # width:20, height:3
     markers = [
         "o",
         "v",
@@ -83,7 +86,7 @@ def plot_lines(x, y, ylim=None, labels=[], title=None, xlabel=None, ylabel=None,
                 x_values,
                 y_values,
                 color=colors[idx] if idx < len(colors) else None,
-                marker=markers[idx] if idx < len(markers) else None,
+                # marker=markers[idx] if idx < len(markers) else None,
                 label=labels[idx] if idx < len(labels) else "",
             )
     else:
@@ -92,20 +95,24 @@ def plot_lines(x, y, ylim=None, labels=[], title=None, xlabel=None, ylabel=None,
                 x,
                 values,
                 color=colors[idx] if idx < len(colors) else None,
-                marker=markers[idx] if idx < len(markers) else None,
+                # marker=markers[idx] if idx < len(markers) else None,
                 label=labels[idx] if idx < len(labels) else "",
             )
 
     _, end = plt.xlim()
     end = int(end)
-    plt.xticks(np.arange(0, end, max(1, int(end / 50))), rotation=60)
-    plt.legend()
+    plt.xticks(np.arange(0, end + 1, max(1, int(end / 5))), rotation=60)
+    if len(labels) > 1:
+        plt.legend()
 
     if xlabel:
-        plt.xlabel(xlabel)
+        plt.xlabel(xlabel, fontname=FONT_NAME, fontweight=FONT_WEIGHT)
 
     if ylabel:
-        plt.ylabel(ylabel)
+        plt.ylabel(ylabel, fontname=FONT_NAME, fontweight=FONT_WEIGHT)
+
+    if xlim:
+        plt.xlim(xlim)
 
     if ylim:
         plt.ylim(ylim)

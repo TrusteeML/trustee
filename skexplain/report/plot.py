@@ -4,6 +4,8 @@ import math
 import numbers
 import numpy as np
 import pandas as pd
+
+from pprint import pprint
 from scipy.stats import kurtosis, skew
 from pandas.api.types import is_numeric_dtype
 
@@ -208,14 +210,14 @@ def plot_dts_fidelity_by_size(pruning_list, output_dir, filename="dts"):
 
             num_leaves[pr["type"]].append(i["dt"].get_n_leaves())
             depth[pr["type"]].append(i["dt"].get_depth())
-            fidelity[pr["type"]].append(i["fidelity"] * 100)
+            fidelity[pr["type"]].append(i["fidelity"])
 
     plot.plot_lines(
         list(num_leaves.values()),
         list(fidelity.values()),
-        ylim=(0, 100),
-        xlabel="Number of leaves",
-        ylabel="Fidelity (%)",
+        ylim=(0, 1),
+        xlabel="Top-k Branches",
+        ylabel="Fidelity",
         labels=list(num_leaves.keys()),
         path=f"{output_dir}/{filename}_fidelity_x_leaves.pdf",
     )
@@ -223,11 +225,111 @@ def plot_dts_fidelity_by_size(pruning_list, output_dir, filename="dts"):
     plot.plot_lines(
         list(depth.values()),
         list(fidelity.values()),
-        ylim=(0, 100),
+        ylim=(0, 1),
         xlabel="Depth",
-        ylabel="Fidelity (%)",
+        ylabel="Fidelity",
         labels=list(depth.keys()),
         path=f"{output_dir}/{filename}_fidelity_x_depth.pdf",
+    )
+
+
+def plot_stability_by_top_k(stability_iter, top_k, output_dir):
+    """Uses stabitlity information to plot most stable branches over multiple iterations"""
+    top_k_branches = {}
+    top_k_branches_wo_order = {}
+
+    heartbleed_branches = []
+    similar_branches = {}
+    for it in stability_iter:
+        for k in range(top_k):
+            top_k_branch = it["top_branches"][k]
+            feature_list = [f"{feat} {op} {thresh}" for (_, feat, op, thresh) in top_k_branch["path"]]
+            sorted_feature_list = [
+                f"{feat} {op} {thresh}" for (_, feat, op, thresh) in sorted(top_k_branch["path"], key=lambda x: x[1])
+            ]
+            sorted_feature_list_with_thresh = [
+                f"{feat} {op} {thresh}" for (_, feat, op, thresh) in sorted(top_k_branch["path"], key=lambda x: x[1])
+            ]
+
+            if top_k_branch["class"] == 8:
+                heartbleed_branches.append(sorted_feature_list_with_thresh)
+
+            branch = f"{','.join(feature_list)} = {top_k_branch['class']}"
+            top_k_branches.setdefault(branch, 0)
+            top_k_branches[branch] += 1
+
+            sorted_branch = f"{','.join(sorted_feature_list)} = {top_k_branch['class']}"
+            top_k_branches_wo_order.setdefault(sorted_branch, 0)
+            top_k_branches_wo_order[sorted_branch] += 1
+
+            similar_branches.setdefault(sorted_branch, [])
+            similar_branches[sorted_branch].append(sorted_feature_list_with_thresh)
+
+    top_10_branches = {}
+    top_20_branches = {}
+    top_30_branches = {}
+    for it in stability_iter:
+        for k in range(30):
+            top_k_branch = it["top_branches"][k]
+            feature_list = [f"{feat} {op}" for (_, feat, op, _) in top_k_branch["path"]]
+            sorted_feature_list = [
+                f"{feat} {op}" for (_, feat, op, _) in sorted(top_k_branch["path"], key=lambda x: x[1])
+            ]
+            sorted_branch = f"{','.join(sorted_feature_list)} = {top_k_branch['class']}"
+            top_30_branches.setdefault(sorted_branch, 0)
+            top_30_branches[sorted_branch] += 1
+
+            if k < 20:
+                top_20_branches.setdefault(sorted_branch, 0)
+                top_20_branches[sorted_branch] += 1
+
+            if k < 10:
+                top_10_branches.setdefault(sorted_branch, 0)
+                top_10_branches[sorted_branch] += 1
+
+    top_branches = sorted(top_k_branches.items(), key=lambda item: item[1], reverse=True)
+    branch_stability = [(x[1] / len(stability_iter)) * 100 for x in top_branches][:top_k]
+    top_branches_wo_order = sorted(top_k_branches_wo_order.items(), key=lambda item: item[1], reverse=True)
+    branch_stability_wo_order = [(x[1] / len(stability_iter)) * 100 for x in top_branches_wo_order][:top_k]
+
+    plot.plot_lines(
+        range(1, top_k + 1),
+        [branch_stability, branch_stability_wo_order],
+        ylim=(0, 100),
+        xlabel="Top Branches",
+        ylabel="Stability (%)",
+        labels=["W/ Feature Order", "W/O Feature Order"],
+        path=f"{output_dir}/branch_stability.pdf",
+    )
+
+    branch_stability = [(x[1] / len(stability_iter)) * 100 for x in top_branches]
+    branch_stability_wo_order = [(x[1] / len(stability_iter)) * 100 for x in top_branches_wo_order]
+    plot.plot_lines(
+        [range(1, len(branch_stability) + 1), range(1, len(branch_stability_wo_order) + 1)],
+        [branch_stability, branch_stability_wo_order],
+        ylim=(0, 100),
+        xlabel="Top Branches",
+        ylabel="Stability (%)",
+        labels=["W/ Feature Order", "W/O Feature Order"],
+        path=f"{output_dir}/branch_stability_uncapped.pdf",
+    )
+
+    num_branches = 50
+    top_10 = sorted(top_10_branches.items(), key=lambda item: item[1], reverse=True)
+    top_20 = sorted(top_20_branches.items(), key=lambda item: item[1], reverse=True)
+    top_30 = sorted(top_30_branches.items(), key=lambda item: item[1], reverse=True)
+    branch_stability_top_10 = [(x[1] / len(stability_iter)) * 100 for x in top_10][:num_branches]
+    branch_stability_top_20 = [(x[1] / len(stability_iter)) * 100 for x in top_20][:num_branches]
+    branch_stability_top_30 = [(x[1] / len(stability_iter)) * 100 for x in top_30][:num_branches]
+
+    plot.plot_lines(
+        range(1, num_branches + 1),
+        [branch_stability_top_10, branch_stability_top_20, branch_stability_top_30],
+        ylim=(0, 100),
+        xlabel="Top Branches",
+        ylabel="Stability (%)",
+        labels=["Top-10", "Top-20", "Top-30"],
+        path=f"{output_dir}/branch_stability_multitop.pdf",
     )
 
 

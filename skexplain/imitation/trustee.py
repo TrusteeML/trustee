@@ -218,25 +218,25 @@ class Trustee(abc.ABC):
         return np.sum([n_samples if left[node] != right[node] else 0 for node, n_samples in enumerate(samples)])
 
     @_check_if_trained
-    def get_top_branches(self, top_n=10):
+    def get_top_branches(self, top_k=10):
         """Returns list of top branches of the best student."""
 
         if not self.branches:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
 
-        return sorted(self.branches, key=lambda p: p["samples"], reverse=True)[:top_n]
+        return sorted(self.branches, key=lambda p: p["samples"], reverse=True)[:top_k]
 
     @_check_if_trained
-    def get_top_features(self, top_n=10):
+    def get_top_features(self, top_k=10):
         """Returns list of top features of the best student."""
 
         if not self.features:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
 
-        return sorted(self.features.items(), key=lambda p: p[1]["samples"], reverse=True)[:top_n]
+        return sorted(self.features.items(), key=lambda p: p[1]["samples"], reverse=True)[:top_k]
 
     @_check_if_trained
-    def get_top_nodes(self, top_n=10):
+    def get_top_nodes(self, top_k=10):
         """Returns list of top nodes of the best student."""
 
         if not self.nodes:
@@ -244,7 +244,7 @@ class Trustee(abc.ABC):
 
         return sorted(
             self.nodes, key=lambda p: p["samples"] * abs(p["gini_split"][0] - p["gini_split"][1]), reverse=True
-        )[:top_n]
+        )[:top_k]
 
     @_check_if_trained
     def get_samples_by_level(self):
@@ -279,10 +279,10 @@ class Trustee(abc.ABC):
         return leaves_by_level
 
     @_check_if_trained
-    def prune(self, top_n=10, max_impurity=0.10):
+    def prune(self, top_k=10, max_impurity=0.10):
         """Prunes and returns the best student model explanation from the list of students."""
 
-        top_branches = self.get_top_branches(top_n=top_n)
+        top_branches = self.get_top_branches(top_k=top_k)
         prunned_student = deepcopy(self.best_student)
 
         nodes_to_keep = set({})

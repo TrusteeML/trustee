@@ -24,6 +24,7 @@ from .plot import (
     plot_all_branches,
     plot_distribution,
     plot_samples_by_level,
+    plot_stability_by_top_k,
     plot_dts_fidelity_by_size,
     plot_accuracy_by_feature_removed,
 )
@@ -51,7 +52,7 @@ class TrustReport:
         trustee_max_depth=None,
         trustee_ccp_alpha=0.0,
         skip_retrain=False,
-        top_n=10,
+        top_k=10,
         logger=None,
         verbose=False,
         class_names=None,
@@ -77,7 +78,7 @@ class TrustReport:
         self.trustee_max_depth = trustee_max_depth
         self.trustee_ccp_alpha = trustee_ccp_alpha
         self.skip_retrain = skip_retrain
-        self.top_n = top_n
+        self.top_k = top_k
         self.logger = logger
         self.verbose = verbose
         self.class_names = class_names
@@ -103,10 +104,11 @@ class TrustReport:
         self.min_dt_y_pred = None
 
         self.branch_iter = []
+        self.stability_iter = []
         self.ccp_iter = []
         self.max_depth_iter = []
         self.max_leaves_iter = []
-        self.top_n_prune_iter = []
+        self.top_k_prune_iter = []
         self.whitebox_iter = []
 
         self._prepare_data()
@@ -397,133 +399,134 @@ class TrustReport:
 
         single_analysis.add_column("Single Analysis", [top_features, single_analysis_first_row])
 
-        prunning_analysis = PrettyTable(title="Prunning Analysis", header=False)
-        top_n_prune_performance = PrettyTable(
-            title="Trustee Top-N Iteration",
-            field_names=[
-                "N",
-                "DT Size",
-                "DT Depth",
-                "DT Num Leaves",
-                "Similarity",
-                "Performance",
-                "Fidelity",
-            ],
-        )
-        top_n_prune_performance.align = "l"
-        top_n_prune_performance.valign = "m"
-
-        for i in self.top_n_prune_iter:
-            joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
-            top_n_prune_performance.add_row(
-                [
-                    i["top_n"],
-                    i["dt"].tree_.node_count,
-                    i["dt"].get_depth(),
-                    i["dt"].get_n_leaves(),
-                    f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
-                    i["classification_report"],
-                    i["fidelity_report"],
-                ]
+        if self.num_quantiles > 0:
+            prunning_analysis = PrettyTable(title="Prunning Analysis", header=False)
+            top_k_prune_performance = PrettyTable(
+                title="Trustee Top-N Iteration",
+                field_names=[
+                    "N",
+                    "DT Size",
+                    "DT Depth",
+                    "DT Num Leaves",
+                    "Similarity",
+                    "Performance",
+                    "Fidelity",
+                ],
             )
-            top_n_prune_performance.add_row(["", "", "", "", "", "", ""])
+            top_k_prune_performance.align = "l"
+            top_k_prune_performance.valign = "m"
 
-        alpha_performance = PrettyTable(
-            title="CCP Alpha Iteration",
-            field_names=[
-                "Alpha",
-                "Gini",
-                "DT Size",
-                "DT Depth",
-                "DT Num Leaves",
-                "Similarity",
-                "Performance",
-                "Fidelity",
-            ],
-        )
-        alpha_performance.align = "l"
-        alpha_performance.valign = "m"
+            for i in self.top_k_prune_iter:
+                joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
+                top_k_prune_performance.add_row(
+                    [
+                        i["top_k"],
+                        i["dt"].tree_.node_count,
+                        i["dt"].get_depth(),
+                        i["dt"].get_n_leaves(),
+                        f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
+                        i["classification_report"],
+                        i["fidelity_report"],
+                    ]
+                )
+                top_k_prune_performance.add_row(["", "", "", "", "", "", ""])
 
-        for i in self.ccp_iter:
-            joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
-            alpha_performance.add_row(
-                [
-                    i["ccp_alpha"],
-                    f"{i['gini']:.3f}",
-                    i["dt"].tree_.node_count,
-                    i["dt"].get_depth(),
-                    i["dt"].get_n_leaves(),
-                    f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
-                    i["classification_report"],
-                    i["fidelity_report"],
-                ]
+            alpha_performance = PrettyTable(
+                title="CCP Alpha Iteration",
+                field_names=[
+                    "Alpha",
+                    "Gini",
+                    "DT Size",
+                    "DT Depth",
+                    "DT Num Leaves",
+                    "Similarity",
+                    "Performance",
+                    "Fidelity",
+                ],
             )
-            alpha_performance.add_row(["", "", "", "", "", "", "", ""])
+            alpha_performance.align = "l"
+            alpha_performance.valign = "m"
 
-        max_depth_performance = PrettyTable(
-            title="Max Depth Iteration",
-            field_names=[
-                "Max Depth",
-                "DT Size",
-                "DT Depth",
-                "DT Num Leaves",
-                "Similarity",
-                "Performance",
-                "Fidelity",
-            ],
-        )
-        max_depth_performance.align = "l"
-        max_depth_performance.valign = "m"
+            for i in self.ccp_iter:
+                joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
+                alpha_performance.add_row(
+                    [
+                        i["ccp_alpha"],
+                        f"{i['gini']:.3f}",
+                        i["dt"].tree_.node_count,
+                        i["dt"].get_depth(),
+                        i["dt"].get_n_leaves(),
+                        f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
+                        i["classification_report"],
+                        i["fidelity_report"],
+                    ]
+                )
+                alpha_performance.add_row(["", "", "", "", "", "", "", ""])
 
-        for i in self.max_depth_iter:
-            joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
-            max_depth_performance.add_row(
-                [
-                    i["max_depth"],
-                    i["dt"].tree_.node_count,
-                    i["dt"].get_depth(),
-                    i["dt"].get_n_leaves(),
-                    f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
-                    i["classification_report"],
-                    i["fidelity_report"],
-                ]
+            max_depth_performance = PrettyTable(
+                title="Max Depth Iteration",
+                field_names=[
+                    "Max Depth",
+                    "DT Size",
+                    "DT Depth",
+                    "DT Num Leaves",
+                    "Similarity",
+                    "Performance",
+                    "Fidelity",
+                ],
             )
-            max_depth_performance.add_row(["", "", "", "", "", "", ""])
+            max_depth_performance.align = "l"
+            max_depth_performance.valign = "m"
 
-        max_leaves_performance = PrettyTable(
-            title="Max Leaves Iteration",
-            field_names=[
-                "Max Leaves",
-                "DT Size",
-                "DT Depth",
-                "DT Num Leaves",
-                "Similarity",
-                "Performance",
-                "Fidelity",
-            ],
-        )
-        max_leaves_performance.align = "l"
-        max_leaves_performance.valign = "m"
+            for i in self.max_depth_iter:
+                joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
+                max_depth_performance.add_row(
+                    [
+                        i["max_depth"],
+                        i["dt"].tree_.node_count,
+                        i["dt"].get_depth(),
+                        i["dt"].get_n_leaves(),
+                        f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
+                        i["classification_report"],
+                        i["fidelity_report"],
+                    ]
+                )
+                max_depth_performance.add_row(["", "", "", "", "", "", ""])
 
-        for i in self.max_leaves_iter:
-            joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
-            max_leaves_performance.add_row(
-                [
-                    i["max_leaves"],
-                    i["dt"].tree_.node_count,
-                    i["dt"].get_depth(),
-                    i["dt"].get_n_leaves(),
-                    f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
-                    i["classification_report"],
-                    i["fidelity_report"],
-                ]
+            max_leaves_performance = PrettyTable(
+                title="Max Leaves Iteration",
+                field_names=[
+                    "Max Leaves",
+                    "DT Size",
+                    "DT Depth",
+                    "DT Num Leaves",
+                    "Similarity",
+                    "Performance",
+                    "Fidelity",
+                ],
             )
-            max_leaves_performance.add_row(["", "", "", "", "", "", ""])
+            max_leaves_performance.align = "l"
+            max_leaves_performance.valign = "m"
 
-        prunning_analysis.add_column(
-            "Prunning Iteration",
-            [top_n_prune_performance, alpha_performance, max_depth_performance, max_leaves_performance],
-        )
+            for i in self.max_leaves_iter:
+                joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
+                max_leaves_performance.add_row(
+                    [
+                        i["max_leaves"],
+                        i["dt"].tree_.node_count,
+                        i["dt"].get_depth(),
+                        i["dt"].get_n_leaves(),
+                        f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
+                        i["classification_report"],
+                        i["fidelity_report"],
+                    ]
+                )
+                max_leaves_performance.add_row(["", "", "", "", "", "", ""])
+
+            prunning_analysis.add_column(
+                "Prunning Iteration",
+                [top_k_prune_performance, alpha_performance, max_depth_performance, max_leaves_performance],
+            )
 
         if not self.skip_retrain:
             repeated_analysis = PrettyTable(title="Repeated-run Analysis", header=False)
@@ -560,7 +563,9 @@ class TrustReport:
 
         report.add_column(
             "Report",
-            [summary, single_analysis, prunning_analysis] + ([repeated_analysis] if not self.skip_retrain else []),
+            [summary, single_analysis]
+            + [prunning_analysis if self.num_quantiles > 0 else []]
+            + ([repeated_analysis] if not self.skip_retrain else []),
         )
 
         return f"\n{report}"
@@ -682,7 +687,7 @@ class TrustReport:
         log("#" * 10, "Explanation validation", "#" * 10)
         dt, reward, idx = trustee.explain()
         log(f"Model explanation {idx} training fidelity: {reward}")
-        min_dt = trustee.prune(top_n=self.top_n)
+        min_dt = trustee.prune(top_k=self.top_k)
         log(f"Prunned explanation size: {dt.tree_.node_count}")
 
         if trustee_use_features:
@@ -759,11 +764,15 @@ class TrustReport:
         """Collects data to build the make report"""
         self._collect_blackbox()
         self._collect_trustee()
+
+        self._collect_top_k_prunning()
         self._collect_branch_analysis()
-        self._collect_top_n_prunning()
-        self._collect_ccp_prunning()
-        self._collect_max_depth_prunning()
-        self._collect_max_leaves_prunning()
+        self._collect_stability_analysis()
+
+        if self.num_quantiles > 0:
+            self._collect_ccp_prunning()
+            self._collect_max_depth_prunning()
+            self._collect_max_leaves_prunning()
 
         if not self.skip_retrain:
             self._collect_features_iter_removal()
@@ -789,22 +798,22 @@ class TrustReport:
         self.max_dt_leaves_by_level = self.trustee.get_leaves_by_level()
         self.max_dt_samples_by_level = self.trustee.get_samples_by_level()
 
-        self.max_dt_top_nodes = self.trustee.get_top_nodes(top_n=self.top_n)
-        self.max_dt_top_features = self.trustee.get_top_features(top_n=self.top_n)
-        self.max_dt_top_branches = self.trustee.get_top_branches(top_n=self.top_n)
-        self.max_dt_all_branches = self.trustee.get_top_branches(top_n=self.max_dt.get_n_leaves())
+        self.max_dt_top_nodes = self.trustee.get_top_nodes(top_k=self.top_k)
+        self.max_dt_top_features = self.trustee.get_top_features(top_k=self.top_k)
+        self.max_dt_top_branches = self.trustee.get_top_branches(top_k=self.top_k)
+        self.max_dt_all_branches = self.trustee.get_top_branches(top_k=self.max_dt.get_n_leaves())
 
     def _collect_branch_analysis(self):
         """Uses trained trustee explainer to show how different branches affect fidelity"""
         self.branch_iter = []
-        for top_n in np.arange(1, self.max_dt.get_n_leaves()):
-            pruned_dt = self.trustee.prune(top_n=top_n)
+        for top_k in np.arange(1, self.max_dt.get_n_leaves()):
+            pruned_dt = self.trustee.prune(top_k=top_k)
             pruned_dt_y_pred = pruned_dt.predict(self.X_test)
             pruned_dt_sim, pruned_dt_sim_vec = get_dt_similarity(pruned_dt, self.max_dt)
 
             self.branch_iter.append(
                 {
-                    "top_n": top_n,
+                    "top_k": top_k,
                     "dt": pruned_dt,
                     "similarity": pruned_dt_sim,
                     "similarity_vec": pruned_dt_sim_vec,
@@ -829,20 +838,33 @@ class TrustReport:
                 }
             )
 
-    def _collect_top_n_prunning(self):
-        """Uses trained trustee explainer to prune the decision tree with different top_n branches"""
-        self.top_n_prune_iter = []
+    def _collect_stability_analysis(self):
+        """Uses trained trustee explainer to analyze the stability of top-k branches over multiple iterations"""
+        self.stability_iter = []
+        for i in range(self.max_iter):
+            (trustee, _, max_dt, _, _, _) = self._fit_and_explain()
+            top_branches = trustee.get_top_branches(top_k=max_dt.get_n_leaves())
+            self.stability_iter.append(
+                {
+                    "iteration": i,
+                    "top_branches": top_branches,
+                }
+            )
+
+    def _collect_top_k_prunning(self):
+        """Uses trained trustee explainer to prune the decision tree with different top_k branches"""
+        self.top_k_prune_iter = []
         # leaves_arr = np.arange(2, self.max_dt.get_n_leaves())
         # for quantil in np.linspace(0, 1, self.num_quantiles, endpoint=False):
-        for top_n in np.arange(1, self.num_quantiles + 1):
-            # top_n = int(np.quantile(leaves_arr, quantil))
-            pruned_dt = self.trustee.prune(top_n=top_n)
+        for top_k in np.arange(1, self.num_quantiles + 1):
+            # top_k = int(np.quantile(leaves_arr, quantil))
+            pruned_dt = self.trustee.prune(top_k=top_k)
             pruned_dt_y_pred = pruned_dt.predict(self.X_test)
             pruned_dt_sim, pruned_dt_sim_vec = get_dt_similarity(pruned_dt, self.max_dt)
 
-            self.top_n_prune_iter.append(
+            self.top_k_prune_iter.append(
                 {
-                    "top_n": top_n,
+                    "top_k": top_k,
                     "dt": pruned_dt,
                     "similarity": pruned_dt_sim,
                     "similarity_vec": pruned_dt_sim_vec,
@@ -1052,7 +1074,7 @@ class TrustReport:
 
             iter_dt_features, _, _ = get_dt_info(dt)
             iter_dt_top_features = sorted(iter_dt_features.items(), key=lambda p: p[1]["samples"], reverse=True)[
-                : self.top_n
+                : self.top_k
             ]
             top_feature_to_remove = iter_dt_top_features[0][0]
             i += 1
@@ -1182,15 +1204,17 @@ class TrustReport:
                 {"type": "CCP", "iter": self.ccp_iter},
                 {"type": "Max Depth", "iter": self.max_depth_iter},
                 {"type": "Max Leaves", "iter": self.max_leaves_iter},
-                {"type": "Trustee Top-N", "iter": self.top_n_prune_iter},
+                {"type": "Trustee Top-N", "iter": self.top_k_prune_iter},
             ],
             plots_output_dir,
         )
         plot_dts_fidelity_by_size(
-            [{"type": "Top-N Branches", "iter": self.branch_iter}],
+            [{"type": "Top-k Branches", "iter": self.branch_iter}],
             plots_output_dir,
             filename="branches",
         )
+
+        plot_stability_by_top_k(self.stability_iter, self.top_k, plots_output_dir)
 
         plot_distribution(
             self.X if self.X is not None else self.X_train,
