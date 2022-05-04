@@ -101,7 +101,7 @@ def plot_lines(x, y, xlim=None, ylim=None, labels=[], title=None, xlabel=None, y
 
     _, end = plt.xlim()
     end = int(end)
-    plt.xticks(np.arange(0, end + 1, max(1, int(end / 5))), rotation=60)
+    plt.xticks(np.arange(0, end + 1, max(1, int(end / 10))), rotation=60)
     if len(labels) > 1:
         plt.legend()
 

@@ -125,6 +125,15 @@ def plot_top_branches(
         samples.append((branch["samples"] / dt_samples) * 100)
         colors_by_samples.append(colors_by_class[class_label])
 
+    plot.plot_lines(
+        range(len(top_branches[:600])),
+        [np.cumsum(samples[:600])],
+        ylim=(0, 100),
+        xlabel="Top-k Branches",
+        ylabel="% of Samples",
+        path=f"{output_dir}/{filename}.pdf",
+    )
+
     plot.plot_stacked_bars(
         [f"Top {idx + 1}" for idx in range(len(top_branches))] if len(top_branches) < 20 else range(len(top_branches)),
         [np.cumsum(samples)],
@@ -132,7 +141,7 @@ def plot_top_branches(
         ylim=(0, 100),
         xlabel="Branches",
         ylabel="% of total samples",
-        path=f"{output_dir}/{filename}.pdf",
+        path=f"{output_dir}/{filename}_bars.pdf",
     )
 
     plot.plot_stacked_bars(
@@ -241,14 +250,15 @@ def plot_stability_by_top_k(stability_iter, top_k, output_dir):
     heartbleed_branches = []
     similar_branches = {}
     for it in stability_iter:
-        for k in range(top_k):
+        num_branches = len(it["top_branches"])
+        for k in range(min(top_k, num_branches)):
             top_k_branch = it["top_branches"][k]
-            feature_list = [f"{feat} {op} {thresh}" for (_, feat, op, thresh) in top_k_branch["path"]]
+            feature_list = [f"{feat} {op} " for (_, feat, op, _) in top_k_branch["path"]]
             sorted_feature_list = [
-                f"{feat} {op} {thresh}" for (_, feat, op, thresh) in sorted(top_k_branch["path"], key=lambda x: x[1])
+                f"{feat} {op}" for (_, feat, op, _) in sorted(top_k_branch["path"], key=lambda x: x[1])
             ]
             sorted_feature_list_with_thresh = [
-                f"{feat} {op} {thresh}" for (_, feat, op, thresh) in sorted(top_k_branch["path"], key=lambda x: x[1])
+                f"{feat} {op}" for (_, feat, op, _) in sorted(top_k_branch["path"], key=lambda x: x[1])
             ]
 
             if top_k_branch["class"] == 8:
@@ -269,23 +279,23 @@ def plot_stability_by_top_k(stability_iter, top_k, output_dir):
     top_20_branches = {}
     top_30_branches = {}
     for it in stability_iter:
-        for k in range(30):
+        num_branches = len(it["top_branches"])
+        for k in range(min(30, num_branches)):
             top_k_branch = it["top_branches"][k]
-            feature_list = [f"{feat} {op}" for (_, feat, op, _) in top_k_branch["path"]]
             sorted_feature_list = [
-                f"{feat} {op}" for (_, feat, op, _) in sorted(top_k_branch["path"], key=lambda x: x[1])
+                f"{feat} {op}" for (_, feat, op, _) in sorted(top_k_branch["path"][:-1], key=lambda x: x[1])
             ]
-            sorted_branch = f"{','.join(sorted_feature_list)} = {top_k_branch['class']}"
-            top_30_branches.setdefault(sorted_branch, 0)
-            top_30_branches[sorted_branch] += 1
+            branch = f"{','.join(sorted_feature_list)} = {top_k_branch['class']}"
+            top_30_branches.setdefault(branch, 0)
+            top_30_branches[branch] += 1
 
             if k < 20:
-                top_20_branches.setdefault(sorted_branch, 0)
-                top_20_branches[sorted_branch] += 1
+                top_20_branches.setdefault(branch, 0)
+                top_20_branches[branch] += 1
 
             if k < 10:
-                top_10_branches.setdefault(sorted_branch, 0)
-                top_10_branches[sorted_branch] += 1
+                top_10_branches.setdefault(branch, 0)
+                top_10_branches[branch] += 1
 
     top_branches = sorted(top_k_branches.items(), key=lambda item: item[1], reverse=True)
     branch_stability = [(x[1] / len(stability_iter)) * 100 for x in top_branches][:top_k]
@@ -293,7 +303,7 @@ def plot_stability_by_top_k(stability_iter, top_k, output_dir):
     branch_stability_wo_order = [(x[1] / len(stability_iter)) * 100 for x in top_branches_wo_order][:top_k]
 
     plot.plot_lines(
-        range(1, top_k + 1),
+        range(1, min(top_k + 1, len(branch_stability) + 1)),
         [branch_stability, branch_stability_wo_order],
         ylim=(0, 100),
         xlabel="Top Branches",
@@ -322,8 +332,11 @@ def plot_stability_by_top_k(stability_iter, top_k, output_dir):
     branch_stability_top_20 = [(x[1] / len(stability_iter)) * 100 for x in top_20][:num_branches]
     branch_stability_top_30 = [(x[1] / len(stability_iter)) * 100 for x in top_30][:num_branches]
 
+    print(branch_stability_top_10)
+    print(branch_stability_top_20)
+    print(branch_stability_top_30)
     plot.plot_lines(
-        range(1, num_branches + 1),
+        range(1, min(num_branches + 1, len(branch_stability_top_30) + 1)),
         [branch_stability_top_10, branch_stability_top_20, branch_stability_top_30],
         ylim=(0, 100),
         xlabel="Top Branches",
@@ -532,6 +545,146 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
                 bbox_inches="tight",
             )
             plt.close()
+
+
+def plot_heartbleed_distribution(X, y, output_dir, feature_names=[], class_names=[]):
+    plots_output_dir = f"{output_dir}/dist"
+    if not os.path.exists(plots_output_dir):
+        os.makedirs(plots_output_dir)
+
+    plt.rcParams["figure.figsize"] = (5, 2)
+    colors = [
+        "#d75d5b",
+        "#524a47",
+        "#8a4444",
+        "#edeef0",
+        "#c8c5c3",
+        "#f5f0ed",
+        "#a7c3cd",
+    ]
+
+    df = pd.DataFrame(X, columns=feature_names if feature_names else None)
+    if isinstance(df.columns[0], numbers.Number):
+        df.columns = [str(i) for i in range(len(df.columns))]
+
+    df["label"] = y
+    if class_names and is_numeric_dtype(df["label"]):
+        df["label"] = df["label"].map(lambda x: class_names[int(x)])
+
+    grouped_df = df.groupby("label")
+    heartbleed_df = grouped_df.get_group("Heartbleed")
+    others_df = df.drop(heartbleed_df.index)
+
+    fig, axes = plt.subplots(nrows=1, ncols=2)
+    axes = axes.flatten()
+
+    column = "Bwd Packet Length Max"
+    filtered_other_df = others_df[others_df[column] > 12332]
+    filtered_heartbleed_df = heartbleed_df[heartbleed_df[column] > 12332]
+
+    ax = axes[0]
+    ax.hist(
+        others_df[column].values,
+        # bins=50,
+        histtype="bar",
+        label="Others",
+        color=colors[0],
+    )
+    ax.hist(
+        filtered_other_df[column].values,
+        # bins=50,
+        histtype="bar",
+        label=f"Branch (Heartbleed)",
+        color=colors[-1],
+    )
+    ax.yaxis.set_major_formatter(PercentFormatter(xmax=others_df.shape[0]))
+    ax.tick_params(axis="both", labelsize=10)
+    ax.set_title("Others", fontsize=12, fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
+
+    ax = axes[1]
+    ax.hist(
+        heartbleed_df[column].values,
+        # bins=50,
+        histtype="bar",
+        # label="Others",
+        color=colors[0],
+    )
+    ax.hist(
+        filtered_heartbleed_df[column].values,
+        # bins=50,
+        histtype="bar",
+        # label=f"Branch (Heartbleed)",
+        color=colors[-1],
+    )
+    ax.yaxis.set_major_formatter(PercentFormatter(xmax=heartbleed_df.shape[0]))
+    ax.tick_params(axis="both", labelsize=10)
+    ax.set_title("Heartbleed", fontsize=12, fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
+
+    tlt = fig.suptitle(f"{column} > 12332", fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
+    lgd = fig.legend(loc="lower center", bbox_to_anchor=(0.5, -0.05), fancybox=True, ncol=5)
+    plt.tight_layout()
+    plt.savefig(
+        f"{plots_output_dir}/heartbleed_{column.replace('/', '_')}_hist.pdf",
+        bbox_extra_artists=(lgd, tlt),
+        bbox_inches="tight",
+    )
+    plt.close()
+
+    fig, axes = plt.subplots(nrows=1, ncols=2)
+    axes = axes.flatten()
+
+    column = "Bwd IAT Total"
+    filtered_other_df = others_df[others_df[column] > 110000000]
+    filtered_heartbleed_df = heartbleed_df[heartbleed_df[column] > 110000000]
+
+    ax = axes[0]
+    ax.hist(
+        others_df[column].values,
+        # bins=50,
+        histtype="bar",
+        label="Others",
+        color=colors[0],
+    )
+    ax.hist(
+        filtered_other_df[column].values,
+        # bins=50,
+        histtype="bar",
+        label=f"Branch (Heartbleed)",
+        color=colors[-1],
+    )
+    ax.yaxis.set_major_formatter(PercentFormatter(xmax=others_df.shape[0]))
+    ax.tick_params(axis="both", labelsize=10)
+    ax.set_title("Others", fontsize=12, fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
+
+    ax = axes[1]
+    ax.hist(
+        heartbleed_df[column].values,
+        # bins=50,
+        histtype="bar",
+        # label="Others",
+        color=colors[0],
+    )
+    ax.hist(
+        filtered_heartbleed_df[column].values,
+        # bins=50,
+        histtype="bar",
+        range=[0, 120000000],
+        # label=f"Branch (Heartbleed)",
+        color=colors[-1],
+    )
+    ax.yaxis.set_major_formatter(PercentFormatter(xmax=heartbleed_df.shape[0]))
+    ax.tick_params(axis="both", labelsize=10)
+    ax.set_title("Heartbleed", fontsize=12, fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
+
+    tlt = fig.suptitle(f"{column} > 1.1e8", fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
+    lgd = fig.legend(loc="lower center", bbox_to_anchor=(0.5, -0.05), fancybox=True, ncol=5)
+    plt.tight_layout()
+    plt.savefig(
+        f"{plots_output_dir}/heartbleed_{column.replace('/', '_')}_hist.pdf",
+        bbox_extra_artists=(lgd, tlt),
+        bbox_inches="tight",
+    )
+    plt.close()
 
 
 def plot_skewness_heatmaps(X, top_features, output_dir, feature_names=[]):

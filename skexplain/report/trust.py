@@ -118,12 +118,14 @@ class TrustReport:
         state = self.__dict__.copy()
         del state["logger"]
         del state["blackbox"]
+        del state["trustee"].expert
         return state
 
     def __setstate__(self, state):
         self.__dict__.update(state)
         self.logger = None
         self.blackbox = None
+        self.trustee.expert = None
 
     def __str__(self):
         """Formats collected data into a reporto using PrettyTable"""
@@ -622,6 +624,7 @@ class TrustReport:
         """
         log = self.logger.log if self.logger else print
 
+        print("X_train", X_train)
         X_train = X_train if X_train is not None else self.X_train
         X_test = X_test if X_test is not None else self.X_test
 
@@ -1226,13 +1229,6 @@ class TrustReport:
             aggregate=aggregate,
         )
 
-        # plot_skewness_heatmaps(
-        #     self.X if self.X is not None else self.X_train,
-        #     self.max_dt_top_features,
-        #     plots_output_dir,
-        #     feature_names=self.feature_names,
-        # )
-
         if not self.skip_retrain:
             plot_accuracy_by_feature_removed(
                 self.whitebox_iter,
@@ -1272,8 +1268,8 @@ class TrustReport:
             with open(f"{report_output_dir}/trust_report.txt", "w", encoding="utf-8") as file:
                 file.write(f"\n{str(self)}")
 
-            with open(f"{report_output_dir}/trust_report.obj", "wb") as file:
-                pickle.dump(self, file)
-
             self._save_dts(report_output_dir)
             self.plot(report_output_dir, aggregate=aggregate)
+
+            with open(f"{report_output_dir}/trust_report.obj", "wb") as file:
+                pickle.dump(self, file)

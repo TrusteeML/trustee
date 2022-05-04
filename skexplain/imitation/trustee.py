@@ -1,9 +1,9 @@
 import abc
 import torch
+import functools
 import numpy as np
 import pandas as pd
 from copy import deepcopy
-import functools
 
 from sklearn.metrics import f1_score, r2_score
 from sklearn.model_selection import train_test_split
