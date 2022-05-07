@@ -80,7 +80,7 @@ def plot_lines(x, y, xlim=None, ylim=None, labels=[], title=None, xlabel=None, y
     if np.shape(x)[0] == 1:
         x = np.ravel(x)
 
-    if np.shape(x) and np.shape(x)[0] > 1 and not isinstance(x[0], str) and np.shape(x[0]) and np.shape(x[0])[0] > 1:
+    if np.shape(x) and np.shape(x)[0] > 1 and not isinstance(x[0], str) and np.shape(x[0]) and np.shape(x[0])[0] >= 1:
         for idx, (x_values, y_values) in enumerate(zip(x, y)):
             plt.plot(
                 x_values,

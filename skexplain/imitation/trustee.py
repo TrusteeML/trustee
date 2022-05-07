@@ -78,7 +78,6 @@ class Trustee(abc.ABC):
 
         if hasattr(targets, "shape") and len(targets.shape) >= 2:
             targets = targets.argmax(axis=-1)
-            # targets = targets.ravel()
 
         student = self.student_class(
             random_state=0,

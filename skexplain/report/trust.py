@@ -1,18 +1,18 @@
 import os
-import graphviz
 import copy
 import torch
 import pickle
+import graphviz
 import numpy as np
 import pandas as pd
 
 from sklearn import tree
-from sklearn.metrics import classification_report, f1_score
-from sklearn.model_selection import train_test_split
 from sklearn.base import clone
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, f1_score
 
-from autogluon.tabular import TabularPredictor
 from prettytable import PrettyTable
+from autogluon.tabular import TabularPredictor
 
 from skexplain.imitation import ClassificationTrustee
 from skexplain.helpers import get_dt_info, get_dt_similarity
@@ -43,7 +43,7 @@ class TrustReport:
         y_train=None,
         y_test=None,
         max_iter=10,
-        num_quantiles=10,
+        num_pruning_iter=10,
         train_size=0.7,
         predict_method_name="predict",
         trustee_num_iter=100,
@@ -51,6 +51,8 @@ class TrustReport:
         trustee_max_leaf_nodes=None,
         trustee_max_depth=None,
         trustee_ccp_alpha=0.0,
+        analyze_branches=False,
+        analyze_stability=False,
         skip_retrain=False,
         top_k=10,
         logger=None,
@@ -68,21 +70,51 @@ class TrustReport:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-        self.max_iter = max_iter
-        self.num_quantiles = num_quantiles
         self.train_size = train_size
+        self.max_iter = max_iter
+        self.num_pruning_iter = num_pruning_iter
         self.predict_method_name = predict_method_name
         self.trustee_num_iter = trustee_num_iter
         self.trustee_sample_size = trustee_sample_size
         self.trustee_max_leaf_nodes = trustee_max_leaf_nodes
         self.trustee_max_depth = trustee_max_depth
         self.trustee_ccp_alpha = trustee_ccp_alpha
+        self.analyze_branches = analyze_branches
+        self.analyze_stability = analyze_stability
         self.skip_retrain = skip_retrain
         self.top_k = top_k
         self.logger = logger
         self.verbose = verbose
         self.class_names = class_names
         self.feature_names = feature_names
+
+        self.step = 0
+        """
+            total_steps = 
+                _prepare_data (1) + 
+                _collect_blackbox (1) +
+                _collect_trustee (1) + 
+                _collect_top_k_prunning (1) + 
+                _collect_ccp_prunning (num_pruning_iter) +
+                _collect_max_depth_prunning (num_pruning_iter) +
+                _collect_max_leaves_prunning (num_pruning_iter) +
+                _collect_features_iter_removal (max_iter)
+        """
+        self.total_steps = 4 + (num_pruning_iter * 3) + (max_iter if not skip_retrain else 0)
+        """
+            if analyze_branches:
+                total_steps += _collect_branch_analysis (num_leaves = trustee_max_leaf_nodes or guess 100)
+
+        """
+        if analyze_branches:
+            self.total_steps += trustee_max_leaf_nodes if trustee_max_leaf_nodes else 100
+
+        """
+            if analyze_stability:
+                total_steps += _collect_stability_analysis (max_iter) 
+        """
+        if analyze_stability:
+            self.total_steps += max_iter
 
         self.bb_n_input_features = 0
         self.bb_n_output_classes = 0
@@ -111,6 +143,8 @@ class TrustReport:
         self.top_k_prune_iter = []
         self.whitebox_iter = []
 
+        log = self.logger.log if self.logger else print
+        log("Running Trust Report...")
         self._prepare_data()
         self._collect()
 
@@ -129,9 +163,6 @@ class TrustReport:
 
     def __str__(self):
         """Formats collected data into a reporto using PrettyTable"""
-        ################################################
-        #                    REPORT                    #
-        ################################################
         report = PrettyTable(title="Classification Trust Report", header=False)
 
         summary = PrettyTable(title="Summary")
@@ -163,15 +194,7 @@ class TrustReport:
         performance_report = PrettyTable(title="Performance", header=False)
         performance_report.add_column(
             "Performance",
-            [
-                classification_report(
-                    self.y_test,
-                    self.y_pred,
-                    digits=3,
-                    # labels=range(len(self.class_names)) if self.class_names else None,
-                    # target_names=self.class_names,
-                )
-            ],
+            [classification_report(self.y_test, self.y_pred, digits=3)],
         )
 
         summary.add_column("Blackbox", [blackbox_report, performance_report])
@@ -187,7 +210,6 @@ class TrustReport:
         whitebox_report.add_row(["Size:", self.max_dt.tree_.node_count])
         whitebox_report.add_row(["Depth:", self.max_dt.get_depth()])
         whitebox_report.add_row(["Leaves:", self.max_dt.get_n_leaves()])
-        whitebox_report.add_row(["CCP Alpha:", self.trustee_ccp_alpha])
         whitebox_report.add_row(
             [
                 "# Input features:",
@@ -205,15 +227,7 @@ class TrustReport:
         fidelity_report = PrettyTable(title="Fidelity", header=False)
         fidelity_report.add_column(
             "Fidelity",
-            [
-                classification_report(
-                    self.y_pred,
-                    self.max_dt_y_pred,
-                    digits=3,
-                    # labels=range(len(self.class_names)) if self.class_names else None,
-                    # target_names=self.class_names,
-                )
-            ],
+            [classification_report(self.y_pred, self.max_dt_y_pred, digits=3, zero_division=0)],
         )
         summary.add_column("Whitebox", [whitebox_report, fidelity_report])
 
@@ -229,7 +243,7 @@ class TrustReport:
             min_whitebox_report.add_row(["Size:", self.min_dt.tree_.node_count])
             min_whitebox_report.add_row(["Depth:", self.min_dt.get_depth()])
             min_whitebox_report.add_row(["Leaves:", self.min_dt.get_n_leaves()])
-            min_whitebox_report.add_row(["CCP Alpha:", self.trustee_ccp_alpha])
+            min_whitebox_report.add_row(["Top-k:", self.top_k])
             min_whitebox_report.add_row(["# Input features:", "-"])
             min_whitebox_report.add_row(
                 [
@@ -242,17 +256,9 @@ class TrustReport:
             min_fidelity_report = PrettyTable(title="Fidelity", header=False)
             min_fidelity_report.add_column(
                 "Fidelity",
-                [
-                    classification_report(
-                        self.y_pred,
-                        self.min_dt_y_pred,
-                        digits=3,
-                        # labels=range(len(self.class_names)) if self.class_names else None,
-                        # target_names=self.class_names,
-                    )
-                ],
+                [classification_report(self.y_pred, self.min_dt_y_pred, digits=3, zero_division=0)],
             )
-            summary.add_column("Minimal Whitebox", [min_whitebox_report, min_fidelity_report])
+            summary.add_column("Top-k Whitebox", [min_whitebox_report, min_fidelity_report])
 
         single_analysis = PrettyTable(title="Single-run Analysis", header=False)
         single_analysis_first_row = PrettyTable(header=False, border=False)
@@ -308,7 +314,6 @@ class TrustReport:
         for node in self.max_dt_top_nodes:
             top_nodes.add_row(
                 [
-                    # node["idx"],
                     "{} <= {}".format(
                         self.feature_names[node["feature"]] if self.feature_names else node["feature"],
                         node["threshold"],
@@ -401,12 +406,12 @@ class TrustReport:
 
         single_analysis.add_column("Single Analysis", [top_features, single_analysis_first_row])
 
-        if self.num_quantiles > 0:
+        if self.num_pruning_iter > 0:
             prunning_analysis = PrettyTable(title="Prunning Analysis", header=False)
             top_k_prune_performance = PrettyTable(
-                title="Trustee Top-N Iteration",
+                title="Trustee Top-k Iteration",
                 field_names=[
-                    "N",
+                    "k",
                     "DT Size",
                     "DT Depth",
                     "DT Num Leaves",
@@ -540,7 +545,6 @@ class TrustReport:
                     "# Features Removed",
                     "Performance",
                     "Decision Tree Size",
-                    "CCP Alpha",
                     "Fidelity",
                 ],
             )
@@ -555,26 +559,48 @@ class TrustReport:
                         i["n_features_removed"],
                         i["classification_report"],
                         i["dt"].tree_.node_count,
-                        self.trustee_ccp_alpha,
                         i["fidelity_report"],
                     ]
                 )
-                iter_performance.add_row(["", "", "", "", "", "", ""])
+                iter_performance.add_row(["", "", "", "", "", ""])
 
             repeated_analysis.add_column("Iterative Feature Removal", [iter_performance])
 
         report.add_column(
             "Report",
             [summary, single_analysis]
-            + [prunning_analysis if self.num_quantiles > 0 else []]
+            + [prunning_analysis if self.num_pruning_iter > 0 else []]
             + ([repeated_analysis] if not self.skip_retrain else []),
         )
 
         return f"\n{report}"
 
+    def _progress(self, finish=False, length=100, fill="█", end="\r"):
+        """
+        Call in a loop to create terminal progress bar
+        @params:
+            length      - Optional  : character length of bar (Int)
+            fill        - Optional  : bar fill character (Str)
+            end         - Optional  : end character (e.g. "\r", "\r\n") (Str)
+        """
+        self.step = self.step + 1
+        if self.step > self.total_steps or finish:
+            self.step = self.total_steps
+
+        percent = ("{0:.1f}").format(100 * (self.step / float(self.total_steps)))
+        filled_length = int(length * self.step // self.total_steps)
+        progress_bar = fill * filled_length + "-" * (length - filled_length)
+        print(f"\rProgress |{progress_bar}| {percent}% Complete", end=end)
+        if self.step == self.total_steps or self.verbose:
+            # if it's running verbose, log messages will get in the way, so we better print the bar multiple times
+            print()
+
     def _prepare_data(self):
         """Data preparation for trust report"""
         log = self.logger.log if self.logger else print
+
+        if self.verbose:
+            log("Preparing data...")
 
         if (self.X is None and (self.X_train is None or self.X_test is None)) or (
             self.y is None and (self.y_train is None or self.y_test is None)
@@ -583,7 +609,8 @@ class TrustReport:
 
         if self.X_train is None:
             # if data split is not given as a param, split the dataset randomly
-            log("Splitting dataset for training and testing...")
+            if self.verbose:
+                log("Splitting dataset for training and testing...")
             if isinstance(self.X, pd.DataFrame):
                 X_indexes = np.arange(0, self.X.shape[0])
                 self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
@@ -599,8 +626,9 @@ class TrustReport:
                 self.X_train = np.array(self.X)[self.X_train]
                 self.X_test = np.array(self.X)[self.X_test]
 
-            log(f"X size: {len(self.X)}; y size: {len(self.y)}")
-            log("Done!")
+            if self.verbose:
+                log(f"X size: {len(self.X)}; y size: {len(self.y)}")
+                log("Done!")
 
         self.dataset_size = len(self.X_train) + len(self.X_test)
         self.train_size = len(self.X_train) / self.dataset_size
@@ -609,6 +637,11 @@ class TrustReport:
             self.feature_names = list(self.feature_names)
             if isinstance(self.X_train, pd.DataFrame):
                 self.feature_names = list(self.X_train.columns)
+
+        if self.verbose:
+            log("Done!")
+
+        self._progress()
 
     def _fit_and_explain(
         self,
@@ -624,7 +657,9 @@ class TrustReport:
         """
         log = self.logger.log if self.logger else print
 
-        print("X_train", X_train)
+        if self.verbose:
+            log(f"Fitting blackbox model...")
+
         X_train = X_train if X_train is not None else self.X_train
         X_test = X_test if X_test is not None else self.X_test
 
@@ -636,7 +671,8 @@ class TrustReport:
                 # scikit-learn models
                 blackbox_copy = clone(self.blackbox)
             except Exception as warn1:
-                log("warning", warn1)
+                if self.verbose:
+                    log("WARNING", warn1)
                 try:
                     # pytorch models
                     blackbox_copy = copy.copy(self.blackbox)
@@ -647,7 +683,8 @@ class TrustReport:
                     else:
                         raise Exception("Not a pytorch model")
                 except Exception as warn2:
-                    log("warning", warn2)
+                    if self.verbose:
+                        log("WARNING", warn2)
                     # AutoGluon and any other models
                     blackbox_copy = (
                         self.blackbox.__class__(self.blackbox._learner.label)
@@ -661,17 +698,20 @@ class TrustReport:
                 training_data = X_train.assign(**args)
                 blackbox_copy.fit(training_data)
             else:
-                blackbox_copy.fit(X_train, self.y_train)
+                blackbox_copy.fit(X_train, self.y_train.values.ravel())
 
             del self.blackbox
 
+        if self.verbose:
+            log("Done!")
+
         y_pred = getattr(blackbox_copy, self.predict_method_name)(X_test)
 
-        log("Blackbox model classification report with training data:")
-        log(f"\n{classification_report(self.y_test, y_pred, digits=3)}")
+        if self.verbose:
+            log("Blackbox model classification report with training data:")
+            log(f"\n{classification_report(self.y_test, y_pred, digits=3, zero_division=0) }")
+            log("Using Classification Trustee algorithm to extract DT...")
 
-        # Decision tree extraction
-        log("Using Classification Trustee algorithm to extract DT...")
         trustee = ClassificationTrustee(expert=blackbox_copy)
 
         trustee.fit(
@@ -687,11 +727,14 @@ class TrustReport:
             verbose=self.verbose,
         )
 
-        log("#" * 10, "Explanation validation", "#" * 10)
+        if self.verbose:
+            log("Done!")
+
         dt, reward, idx = trustee.explain()
-        log(f"Model explanation {idx} training fidelity: {reward}")
         min_dt = trustee.prune(top_k=self.top_k)
-        log(f"Prunned explanation size: {dt.tree_.node_count}")
+        if self.verbose:
+            log(f"Model explanation {idx} training fidelity: {reward}")
+            log(f"Top-k Prunned explanation size: {dt.tree_.node_count}")
 
         if trustee_use_features:
             if isinstance(X_test, pd.DataFrame):
@@ -706,58 +749,16 @@ class TrustReport:
         dt_y_pred = dt.predict(X_test)
         min_dt_y_pred = min_dt.predict(X_test)
 
-        log("Model explanation global fidelity report:")
-        log(
-            "\n{}".format(
-                classification_report(
-                    y_pred,
-                    dt_y_pred,
-                    digits=3,
-                    # labels=range(len(self.class_names)) if self.class_names else None,
-                    # target_names=self.class_names,
-                )
-            )
-        )
+        if self.verbose:
+            log("Model explanation global fidelity report:")
+            log("\n{}".format(classification_report(y_pred, dt_y_pred, digits=3, zero_division=0)))
+            log("Top-k Model explanation global fidelity report:")
+            log("\n{}".format(classification_report(y_pred, min_dt_y_pred, digits=3, zero_division=0)))
 
-        log("Minimal Model explanation global fidelity report:")
-        log(
-            "\n{}".format(
-                classification_report(
-                    y_pred,
-                    min_dt_y_pred,
-                    digits=3,
-                    # labels=range(len(self.class_names)) if self.class_names else None,
-                    # target_names=self.class_names,
-                )
-            )
-        )
-
-        log("Model explanation classification report:")
-        log(
-            "\n{}".format(
-                classification_report(
-                    self.y_test,
-                    dt_y_pred,
-                    digits=3,
-                    # labels=range(len(self.class_names)) if self.class_names else None,
-                    # target_names=self.class_names,
-                )
-            )
-        )
-        log("Minimal model explanation classification report:")
-        log(
-            "\n{}".format(
-                classification_report(
-                    self.y_test,
-                    min_dt_y_pred,
-                    digits=3,
-                    # labels=range(len(self.class_names)) if self.class_names else None,
-                    # target_names=self.class_names,
-                )
-            )
-        )
-
-        log("#" * 10, "Done", "#" * 10)
+            log("Model explanation classification report:")
+            log("\n{}".format(classification_report(self.y_test, dt_y_pred, digits=3, zero_division=0)))
+            log("Top-k Model explanation classification report:")
+            log("\n{}".format(classification_report(self.y_test, min_dt_y_pred, digits=3, zero_division=0)))
 
         self.blackbox = blackbox_copy
 
@@ -769,10 +770,13 @@ class TrustReport:
         self._collect_trustee()
 
         self._collect_top_k_prunning()
-        self._collect_branch_analysis()
-        self._collect_stability_analysis()
 
-        if self.num_quantiles > 0:
+        if self.analyze_branches:
+            self._collect_branch_analysis()
+        if self.analyze_stability:
+            self._collect_stability_analysis()
+
+        if self.num_pruning_iter > 0:
             self._collect_ccp_prunning()
             self._collect_max_depth_prunning()
             self._collect_max_leaves_prunning()
@@ -780,15 +784,29 @@ class TrustReport:
         if not self.skip_retrain:
             self._collect_features_iter_removal()
 
+        self._progress(finish=100)
+
     def _collect_blackbox(self):
         """Collects information on analyzed blackbox"""
+        log = self.logger.log if self.logger else print
+        if self.verbose:
+            log("Collecting blackbox information...")
+
         self.bb_n_input_features = (
             len(self.X_train.columns) if isinstance(self.X_train, pd.DataFrame) else len(self.X_train[0])
         )
         self.bb_n_output_classes = len(np.unique(self.y_train))
+        if self.verbose:
+            log("Done!")
+
+        self._progress()
 
     def _collect_trustee(self):
         """Uses provided dataset to train a Decision Tree and fetch first decision tree info"""
+        log = self.logger.log if self.logger else print
+        if self.verbose:
+            log("Collecting trustee information...")
+
         (
             self.trustee,
             self.y_pred,
@@ -806,10 +824,27 @@ class TrustReport:
         self.max_dt_top_branches = self.trustee.get_top_branches(top_k=self.top_k)
         self.max_dt_all_branches = self.trustee.get_top_branches(top_k=self.max_dt.get_n_leaves())
 
+        if self.analyze_branches:
+            # removes initial guess value and updates total steps with the correct number of branches
+            initial_guess = self.trustee_max_leaf_nodes if self.trustee_max_leaf_nodes else 100
+            self.total_steps += len(self.max_dt_all_branches) - initial_guess
+
+        if self.verbose:
+            log("Done!")
+
+        self._progress()
+
     def _collect_branch_analysis(self):
         """Uses trained trustee explainer to show how different branches affect fidelity"""
+        log = self.logger.log if self.logger else print
+        if self.verbose:
+            log("Collecting branch analysis information...")
+
         self.branch_iter = []
         for top_k in np.arange(1, self.max_dt.get_n_leaves()):
+            if self.verbose:
+                log(f"Iteration {top_k}/{self.max_dt.get_n_leaves()}")
+
             pruned_dt = self.trustee.prune(top_k=top_k)
             pruned_dt_y_pred = pruned_dt.predict(self.X_test)
             pruned_dt_sim, pruned_dt_sim_vec = get_dt_similarity(pruned_dt, self.max_dt)
@@ -822,29 +857,30 @@ class TrustReport:
                     "similarity_vec": pruned_dt_sim_vec,
                     "y_pred": self.y_pred,
                     "dt_y_pred": pruned_dt_y_pred,
-                    "f1": f1_score(self.y_test, pruned_dt_y_pred, average="macro"),
+                    "f1": f1_score(self.y_test, pruned_dt_y_pred, average="macro", zero_division=0),
                     "classification_report": classification_report(
-                        self.y_test,
-                        pruned_dt_y_pred,
-                        digits=3,
-                        # labels=range(len(self.class_names)) if self.class_names else None,
-                        # target_names=self.class_names,
+                        self.y_test, pruned_dt_y_pred, digits=3, zero_division=0
                     ),
-                    "fidelity": f1_score(self.y_pred, pruned_dt_y_pred, average="macro"),
-                    "fidelity_report": classification_report(
-                        self.y_pred,
-                        pruned_dt_y_pred,
-                        digits=3,
-                        # labels=range(len(self.class_names)) if self.class_names else None,
-                        # target_names=self.class_names,
-                    ),
+                    "fidelity": f1_score(self.y_pred, pruned_dt_y_pred, average="macro", zero_division=0),
+                    "fidelity_report": classification_report(self.y_pred, pruned_dt_y_pred, digits=3, zero_division=0),
                 }
             )
+            self._progress()
+
+        if self.verbose:
+            log("Done!")
 
     def _collect_stability_analysis(self):
         """Uses trained trustee explainer to analyze the stability of top-k branches over multiple iterations"""
+        log = self.logger.log if self.logger else print
+        if self.verbose:
+            log("Collecting stability analysis information...")
+
         self.stability_iter = []
         for i in range(self.max_iter):
+            if self.verbose:
+                log(f"Iteration {i}/{self.max_iter}")
+
             (trustee, _, max_dt, _, _, _) = self._fit_and_explain()
             top_branches = trustee.get_top_branches(top_k=max_dt.get_n_leaves())
             self.stability_iter.append(
@@ -853,14 +889,22 @@ class TrustReport:
                     "top_branches": top_branches,
                 }
             )
+            self._progress()
+
+        if self.verbose:
+            log("Done!")
 
     def _collect_top_k_prunning(self):
         """Uses trained trustee explainer to prune the decision tree with different top_k branches"""
+        log = self.logger.log if self.logger else print
+        if self.verbose:
+            log("Collecting top-k prunning information...")
+
         self.top_k_prune_iter = []
-        # leaves_arr = np.arange(2, self.max_dt.get_n_leaves())
-        # for quantil in np.linspace(0, 1, self.num_quantiles, endpoint=False):
-        for top_k in np.arange(1, self.num_quantiles + 1):
-            # top_k = int(np.quantile(leaves_arr, quantil))
+        for top_k in np.arange(1, self.num_pruning_iter + 1):
+            if self.verbose:
+                log(f"Iteration {top_k}/{self.num_pruning_iter}")
+
             pruned_dt = self.trustee.prune(top_k=top_k)
             pruned_dt_y_pred = pruned_dt.predict(self.X_test)
             pruned_dt_sim, pruned_dt_sim_vec = get_dt_similarity(pruned_dt, self.max_dt)
@@ -873,38 +917,36 @@ class TrustReport:
                     "similarity_vec": pruned_dt_sim_vec,
                     "y_pred": self.y_pred,
                     "dt_y_pred": pruned_dt_y_pred,
-                    "f1": f1_score(self.y_test, pruned_dt_y_pred, average="macro"),
+                    "f1": f1_score(self.y_test, pruned_dt_y_pred, average="macro", zero_division=0),
                     "classification_report": classification_report(
-                        self.y_test,
-                        pruned_dt_y_pred,
-                        digits=3,
-                        # labels=range(len(self.class_names)) if self.class_names else None,
-                        # target_names=self.class_names,
+                        self.y_test, pruned_dt_y_pred, digits=3, zero_division=0
                     ),
-                    "fidelity": f1_score(self.y_pred, pruned_dt_y_pred, average="macro"),
-                    "fidelity_report": classification_report(
-                        self.y_pred,
-                        pruned_dt_y_pred,
-                        digits=3,
-                        # labels=range(len(self.class_names)) if self.class_names else None,
-                        # target_names=self.class_names,
-                    ),
+                    "fidelity": f1_score(self.y_pred, pruned_dt_y_pred, average="macro", zero_division=0),
+                    "fidelity_report": classification_report(self.y_pred, pruned_dt_y_pred, digits=3, zero_division=0),
                 }
             )
+            self._progress()
+
+        if self.verbose:
+            log("Done!")
 
     def _collect_ccp_prunning(self):
         """Uses provided dataset to train multiple Decision Trees and fetch CCP prunning info"""
+        log = self.logger.log if self.logger else print
+        if self.verbose:
+            log("Collecting CCP prunning information...")
+
         ccp_clf = tree.DecisionTreeClassifier(random_state=0)
         ccp_path = ccp_clf.cost_complexity_pruning_path(self.X_train, self.y_train)
         ccp_alphas, impurities = ccp_path.ccp_alphas, ccp_path.impurities
 
         self.ccp_iter = []
-        # for quantil in np.linspace(0, 1, self.num_quantiles, endpoint=False):
-        for idx, ccp_alpha in enumerate(ccp_alphas[-self.num_quantiles :]):
-            # ccp_alpha = np.quantile(ccp_alphas, quantil)
+        for idx, ccp_alpha in enumerate(ccp_alphas[-self.num_pruning_iter :]):
             if ccp_alpha >= 0:
-                gini = impurities[idx]
+                if self.verbose:
+                    log(f"Iteration {idx}/{self.num_pruning_iter}")
 
+                gini = impurities[idx]
                 _, _, ccp_dt, ccp_dt_y_pred, _, _ = self._fit_and_explain(trustee_ccp_alpha=ccp_alpha)
                 ccp_dt_sim, ccp_dt_sim_vec = get_dt_similarity(ccp_dt, self.max_dt)
 
@@ -917,33 +959,31 @@ class TrustReport:
                         "similarity_vec": ccp_dt_sim_vec,
                         "y_pred": self.y_pred,
                         "dt_y_pred": ccp_dt_y_pred,
-                        "f1": f1_score(self.y_test, ccp_dt_y_pred, average="macro"),
+                        "f1": f1_score(self.y_test, ccp_dt_y_pred, average="macro", zero_division=0),
                         "classification_report": classification_report(
-                            self.y_test,
-                            ccp_dt_y_pred,
-                            digits=3,
-                            # labels=range(len(self.class_names)) if self.class_names else None,
-                            # target_names=self.class_names,
+                            self.y_test, ccp_dt_y_pred, digits=3, zero_division=0
                         ),
-                        "fidelity": f1_score(self.y_pred, ccp_dt_y_pred, average="macro"),
-                        "fidelity_report": classification_report(
-                            self.y_pred,
-                            ccp_dt_y_pred,
-                            digits=3,
-                            # labels=range(len(self.class_names)) if self.class_names else None,
-                            # target_names=self.class_names,
-                        ),
+                        "fidelity": f1_score(self.y_pred, ccp_dt_y_pred, average="macro", zero_division=0),
+                        "fidelity_report": classification_report(self.y_pred, ccp_dt_y_pred, digits=3, zero_division=0),
                     }
                 )
+                self._progress()
+
+        if self.verbose:
+            log("Done!")
 
     def _collect_max_depth_prunning(self):
         """Uses provided dataset to train multiple Decision Trees and fetch max depth prunning info"""
+        log = self.logger.log if self.logger else print
+        if self.verbose:
+            log("Collecting max depth prunning information...")
+
         self.max_depth_iter = []
-        # depth_arr = np.arange(1, self.max_dt.get_depth())
-        # for quantil in np.linspace(0, 1, self.num_quantiles, endpoint=False):
-        for max_depth in np.arange(1, self.num_quantiles + 1):
-            # max_depth = int(np.quantile(depth_arr, quantil))
+        for max_depth in np.arange(1, self.num_pruning_iter + 1):
             if max_depth > 0:
+                if self.verbose:
+                    log(f"Iteration {max_depth}/{self.num_pruning_iter}")
+
                 _, _, max_depth_dt, max_depth_dt_y_pred, _, _ = self._fit_and_explain(trustee_max_depth=max_depth)
 
                 max_depth_dt_sim, max_depth_dt_sim_vec = get_dt_similarity(max_depth_dt, self.max_dt)
@@ -955,33 +995,33 @@ class TrustReport:
                         "similarity_vec": max_depth_dt_sim_vec,
                         "y_pred": self.y_pred,
                         "dt_y_pred": max_depth_dt_y_pred,
-                        "f1": f1_score(self.y_test, max_depth_dt_y_pred, average="macro"),
+                        "f1": f1_score(self.y_test, max_depth_dt_y_pred, average="macro", zero_division=0),
                         "classification_report": classification_report(
-                            self.y_test,
-                            max_depth_dt_y_pred,
-                            digits=3,
-                            # labels=range(len(self.class_names)) if self.class_names else None,
-                            # target_names=self.class_names,
+                            self.y_test, max_depth_dt_y_pred, digits=3, zero_division=0
                         ),
-                        "fidelity": f1_score(self.y_pred, max_depth_dt_y_pred, average="macro"),
+                        "fidelity": f1_score(self.y_pred, max_depth_dt_y_pred, average="macro", zero_division=0),
                         "fidelity_report": classification_report(
-                            self.y_pred,
-                            max_depth_dt_y_pred,
-                            digits=3,
-                            # labels=range(len(self.class_names)) if self.class_names else None,
-                            # target_names=self.class_names,
+                            self.y_pred, max_depth_dt_y_pred, digits=3, zero_division=0
                         ),
                     }
                 )
+                self._progress()
+
+        if self.verbose:
+            log("Done!")
 
     def _collect_max_leaves_prunning(self):
         """Uses provided dataset to train multiple Decision Trees and fetch max leaves prunning info"""
+        log = self.logger.log if self.logger else print
+        if self.verbose:
+            log("Collecting max leaves prunning information...")
+
         self.max_leaves_iter = []
-        # leaves_arr = np.arange(2, self.max_dt.get_n_leaves() + 2)
-        # for quantil in np.linspace(0, 1, self.num_quantiles, endpoint=False):
-        for max_leaves in np.arange(2, self.num_quantiles + 2):
-            # max_leaves = int(np.quantile(leaves_arr, quantil))
+        for max_leaves in np.arange(2, self.num_pruning_iter + 2):
             if max_leaves > 1:
+                if self.verbose:
+                    log(f"Iteration {max_leaves}/{self.num_pruning_iter}")
+
                 _, _, max_leaves_dt, max_leaves_dt_y_pred, _, _ = self._fit_and_explain(
                     trustee_max_leaf_nodes=max_leaves
                 )
@@ -995,27 +1035,26 @@ class TrustReport:
                         "similarity_vec": max_leaves_dt_sim_vec,
                         "y_pred": self.y_pred,
                         "dt_y_pred": max_leaves_dt_y_pred,
-                        "f1": f1_score(self.y_test, max_leaves_dt_y_pred, average="macro"),
+                        "f1": f1_score(self.y_test, max_leaves_dt_y_pred, average="macro", zero_division=0),
                         "classification_report": classification_report(
-                            self.y_test,
-                            max_leaves_dt_y_pred,
-                            digits=3,
-                            # labels=range(len(self.class_names)) if self.class_names else None,
-                            # target_names=self.class_names,
+                            self.y_test, max_leaves_dt_y_pred, digits=3, zero_division=0
                         ),
-                        "fidelity": f1_score(self.y_pred, max_leaves_dt_y_pred, average="macro"),
+                        "fidelity": f1_score(self.y_pred, max_leaves_dt_y_pred, average="macro", zero_division=0),
                         "fidelity_report": classification_report(
-                            self.y_pred,
-                            max_leaves_dt_y_pred,
-                            digits=3,
-                            # labels=range(len(self.class_names)) if self.class_names else None,
-                            # target_names=self.class_names,
+                            self.y_pred, max_leaves_dt_y_pred, digits=3, zero_division=0
                         ),
                     }
                 )
+                self._progress()
+
+        if self.verbose:
+            log("Done!")
 
     def _collect_features_iter_removal(self):
         """Uses provided dataset to train multiple Decision Trees by iteratively removing the most important features from the dataset"""
+        log = self.logger.log if self.logger else print
+        if self.verbose:
+            log("Collecting features prunning information...")
 
         self.whitebox_iter = []
 
@@ -1033,6 +1072,9 @@ class TrustReport:
             X_test_iter = np.copy(self.X_test)
 
         while i < self.max_iter and n_features_removed < self.bb_n_input_features:
+            if self.verbose:
+                log(f"Iteration {i + 1}/{max(self.max_iter, self.bb_n_input_features)}")
+
             # remove most significant feature
             if isinstance(self.X_train, pd.DataFrame):
                 X_train_iter.iloc[:, top_feature_to_remove] = 0
@@ -1056,22 +1098,10 @@ class TrustReport:
                     "dt_y_pred": dt_y_pred,
                     "feature_removed": top_feature_to_remove,
                     "n_features_removed": n_features_removed,
-                    "f1": f1_score(self.y_test, y_pred, average="macro"),
-                    "classification_report": classification_report(
-                        self.y_test,
-                        y_pred,
-                        digits=3,
-                        # labels=range(len(self.class_names)) if self.class_names else None,
-                        # target_names=self.class_names,
-                    ),
-                    "fidelity": f1_score(y_pred, dt_y_pred, average="macro"),
-                    "fidelity_report": classification_report(
-                        y_pred,
-                        dt_y_pred,
-                        digits=3,
-                        # labels=range(len(self.class_names)) if self.class_names else None,
-                        # target_names=self.class_names,
-                    ),
+                    "f1": f1_score(self.y_test, y_pred, average="macro", zero_division=0),
+                    "classification_report": classification_report(self.y_test, y_pred, digits=3, zero_division=0),
+                    "fidelity": f1_score(y_pred, dt_y_pred, average="macro", zero_division=0),
+                    "fidelity_report": classification_report(y_pred, dt_y_pred, digits=3, zero_division=0),
                 }
             )
 
@@ -1081,6 +1111,10 @@ class TrustReport:
             ]
             top_feature_to_remove = iter_dt_top_features[0][0]
             i += 1
+            self._progress()
+
+        if self.verbose:
+            log("Done!")
 
     def _save_dts(self, output_dir):
         """
@@ -1091,6 +1125,10 @@ class TrustReport:
         output_dir : str
             The output directory to save the decision trees.
         """
+        log = self.logger.log if self.logger else print
+        if self.verbose:
+            log("Saving decision trees...")
+
         dot_data = tree.export_graphviz(
             self.max_dt,
             class_names=self.class_names,
@@ -1154,6 +1192,9 @@ class TrustReport:
             graph = graphviz.Source(dot_data)
             graph.render(f"{prunning_output_dir}/max_leaves_dt_{idx}_{i['dt'].tree_.node_count}")
 
+        if self.verbose:
+            log("Done!")
+
     def plot(self, output_dir, aggregate=False):
         """
         Plot the analysis results.
@@ -1163,6 +1204,10 @@ class TrustReport:
         output_dir : str
             The output directory to save the plots.
         """
+        log = self.logger.log if self.logger else print
+        if self.verbose:
+            log("Plotting...")
+
         plots_output_dir = f"{output_dir}/plots"
         if not os.path.exists(plots_output_dir):
             os.makedirs(plots_output_dir)
@@ -1207,7 +1252,7 @@ class TrustReport:
                 {"type": "CCP", "iter": self.ccp_iter},
                 {"type": "Max Depth", "iter": self.max_depth_iter},
                 {"type": "Max Leaves", "iter": self.max_leaves_iter},
-                {"type": "Trustee Top-N", "iter": self.top_k_prune_iter},
+                {"type": "Trustee Top-k", "iter": self.top_k_prune_iter},
             ],
             plots_output_dir,
         )
@@ -1236,6 +1281,9 @@ class TrustReport:
                 feature_names=self.feature_names,
             )
 
+        if self.verbose:
+            log("Done!")
+
     @classmethod
     def load(cls, path):
         """
@@ -1252,12 +1300,13 @@ class TrustReport:
 
         return report
 
-    def save(self, output_dir, aggregate=False):
+    def save(self, output_dir, aggregate=False, save_dts=False):
         """Saves report and plots to output dir"""
-        ################################################
-        #                    OUTPUT                    #
-        ################################################
         if output_dir:
+            log = self.logger.log if self.logger else print
+            if self.verbose:
+                log("Saving...")
+
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
@@ -1268,8 +1317,13 @@ class TrustReport:
             with open(f"{report_output_dir}/trust_report.txt", "w", encoding="utf-8") as file:
                 file.write(f"\n{str(self)}")
 
-            self._save_dts(report_output_dir)
-            self.plot(report_output_dir, aggregate=aggregate)
-
             with open(f"{report_output_dir}/trust_report.obj", "wb") as file:
                 pickle.dump(self, file)
+
+            if save_dts:
+                self._save_dts(report_output_dir)
+
+            self.plot(report_output_dir, aggregate=aggregate)
+
+            if self.verbose:
+                log("Done!")

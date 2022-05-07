@@ -18,6 +18,9 @@ from skexplain.utils import plot
 
 def plot_top_features(top_features, dt_sum_samples, dt_nodes, output_dir, feature_names=[]):
     """Uses top features information and plots CDF with it"""
+    if not np.array(top_features).size or not np.array(dt_sum_samples).size or not np.array(dt_nodes).size:
+        return
+
     features = [feature_names[feat] if feature_names else str(feat) for (feat, _) in top_features]
     count = [(values["count"] / dt_nodes) * 100 for (_, values) in top_features]
     count_sum = np.cumsum(count)
@@ -57,6 +60,9 @@ def plot_top_features(top_features, dt_sum_samples, dt_nodes, output_dir, featur
 
 def plot_top_nodes(top_nodes, dt_samples_by_class, dt_samples, output_dir, feature_names=[], class_names=[]):
     """Uses top features information and plots CDF with it"""
+    if not np.array(top_nodes).size or not np.array(dt_samples_by_class).size or not np.array(dt_samples).size:
+        return
+
     plot.plot_stacked_bars_split(
         [
             "{} <= {:.2f}".format(
@@ -103,6 +109,9 @@ def plot_top_branches(
     top_branches, dt_samples_by_class, dt_samples, output_dir, filename="top_branches", class_names=[]
 ):
     """Uses top features information and plots CDF with it"""
+    if not np.array(top_branches).size or not np.array(dt_samples_by_class).size or not np.array(dt_samples).size:
+        return
+
     colors = [
         "#d75d5b",
         "#524a47",
@@ -182,6 +191,9 @@ def plot_all_branches(top_branches, dt_samples_by_class, dt_samples, output_dir,
 
 def plot_samples_by_level(dt_samples_by_level, dt_nodes_by_level, dt_samples, output_dir):
     """Uses dt information to plot number of samples per level"""
+    if not np.array(dt_nodes_by_level).size or not np.array(dt_nodes_by_level).size or not np.array(dt_samples).size:
+        return
+
     samples = []
     for idx, level_samples in enumerate(dt_samples_by_level):
         if idx < len(dt_samples_by_level) - 1:
@@ -206,6 +218,9 @@ def plot_samples_by_level(dt_samples_by_level, dt_nodes_by_level, dt_samples, ou
 
 def plot_dts_fidelity_by_size(pruning_list, output_dir, filename="dts"):
     """Uses pruning information to plot fidelity vs size of decision trees"""
+    if not np.array(pruning_list).size:
+        return
+
     num_leaves = {}
     depth = {}
     fidelity = {}
@@ -244,6 +259,9 @@ def plot_dts_fidelity_by_size(pruning_list, output_dir, filename="dts"):
 
 def plot_stability_by_top_k(stability_iter, top_k, output_dir):
     """Uses stabitlity information to plot most stable branches over multiple iterations"""
+    if not np.array(stability_iter).size:
+        return
+
     top_k_branches = {}
     top_k_branches_wo_order = {}
 
@@ -331,12 +349,12 @@ def plot_stability_by_top_k(stability_iter, top_k, output_dir):
     branch_stability_top_10 = [(x[1] / len(stability_iter)) * 100 for x in top_10][:num_branches]
     branch_stability_top_20 = [(x[1] / len(stability_iter)) * 100 for x in top_20][:num_branches]
     branch_stability_top_30 = [(x[1] / len(stability_iter)) * 100 for x in top_30][:num_branches]
-
-    print(branch_stability_top_10)
-    print(branch_stability_top_20)
-    print(branch_stability_top_30)
     plot.plot_lines(
-        range(1, min(num_branches + 1, len(branch_stability_top_30) + 1)),
+        [
+            range(1, len(branch_stability_top_10) + 1),
+            range(1, len(branch_stability_top_20) + 1),
+            range(1, len(branch_stability_top_30) + 1),
+        ],
         [branch_stability_top_10, branch_stability_top_20, branch_stability_top_30],
         ylim=(0, 100),
         xlabel="Top Branches",
@@ -348,6 +366,9 @@ def plot_stability_by_top_k(stability_iter, top_k, output_dir):
 
 def plot_accuracy_by_feature_removed(whitebox_iter, output_dir, feature_names=[]):
     """Uses iterative analysis information to plot f1-score from the trained blackbox vs number of features removed"""
+    if not np.array(whitebox_iter).size:
+        return
+
     blackbox_f1_scores = [i["f1"] * 100 for i in whitebox_iter]
     fidelity = [i["fidelity"] * 100 for i in whitebox_iter]
     features = [feature_names[i["feature_removed"]] if feature_names else i["feature_removed"] for i in whitebox_iter]
@@ -364,6 +385,9 @@ def plot_accuracy_by_feature_removed(whitebox_iter, output_dir, feature_names=[]
 
 def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_names=[], class_names=[]):
     """Plots the distribution of the data based on the top branches"""
+    if not np.array(X).size or not np.array(y).size or not np.array(top_branches).size:
+        return
+
     plots_output_dir = f"{output_dir}/dist" if not aggregate else f"{output_dir}/aggr_dist"
     if not os.path.exists(plots_output_dir):
         os.makedirs(plots_output_dir)
@@ -548,6 +572,9 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
 
 
 def plot_heartbleed_distribution(X, y, output_dir, feature_names=[], class_names=[]):
+    if not np.array(X).size or not np.array(y).size:
+        return
+
     plots_output_dir = f"{output_dir}/dist"
     if not os.path.exists(plots_output_dir):
         os.makedirs(plots_output_dir)
@@ -689,6 +716,9 @@ def plot_heartbleed_distribution(X, y, output_dir, feature_names=[], class_names
 
 def plot_skewness_heatmaps(X, top_features, output_dir, feature_names=[]):
     """Combines all top features into pairs and calculate kurtosis metric with each pair to form a heatmap."""
+    if not np.array(X).size or not np.array(top_features).size:
+        return
+
     df = pd.DataFrame(X, columns=feature_names if feature_names else None)
     if isinstance(df.columns[0], numbers.Number):
         df.columns = [str(i) for i in range(len(df.columns))]
