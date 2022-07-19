@@ -5,15 +5,15 @@ import numbers
 import numpy as np
 import pandas as pd
 
-from pprint import pprint
-from scipy.stats import kurtosis, skew
+from copy import deepcopy
 from pandas.api.types import is_numeric_dtype
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
-
+from sklearn.metrics import classification_report, f1_score
 
 from skexplain.utils import plot
+from skexplain.helpers import get_dt_info
 
 
 def plot_top_features(top_features, dt_sum_samples, dt_nodes, output_dir, feature_names=[]):
@@ -257,111 +257,175 @@ def plot_dts_fidelity_by_size(pruning_list, output_dir, filename="dts"):
     )
 
 
-def plot_stability_by_top_k(stability_iter, top_k, output_dir):
-    """Uses stabitlity information to plot most stable branches over multiple iterations"""
+def plot_stability(stability_iter, X_test, y_test, base_tree, base_tree_key, top_branches, output_dir, class_names=[]):
+    """Uses stability information to plot the edit-distance between decision trees"""
     if not np.array(stability_iter).size:
         return
 
-    top_k_branches = {}
-    top_k_branches_wo_order = {}
+    agreement = []
+    agreement_by_class = {}
+    nodes = {}
+    features = {}
+    features_by_it = {}
+    total_nodes = 0
+    number_of_splits = []
+    fidelity = []
+    X_test_values = X_test.values if isinstance(X_test, pd.DataFrame) else X_test
+    base_y_pred = base_tree.predict(X_test_values)
+    base_df = pd.DataFrame(deepcopy(X_test))
+    base_df["label"] = y_test
+    grouped_df = base_df.groupby("label")
 
-    heartbleed_branches = []
-    similar_branches = {}
-    for it in stability_iter:
-        num_branches = len(it["top_branches"])
-        for k in range(min(top_k, num_branches)):
-            top_k_branch = it["top_branches"][k]
-            feature_list = [f"{feat} {op} " for (_, feat, op, _) in top_k_branch["path"]]
-            sorted_feature_list = [
-                f"{feat} {op}" for (_, feat, op, _) in sorted(top_k_branch["path"], key=lambda x: x[1])
-            ]
-            sorted_feature_list_with_thresh = [
-                f"{feat} {op}" for (_, feat, op, _) in sorted(top_k_branch["path"], key=lambda x: x[1])
-            ]
+    for idx, it in enumerate(stability_iter):
+        iter_tree = it[f"{base_tree_key}"]
+        _, splits, _ = get_dt_info(iter_tree)
+        total_nodes += len(splits)
+        features_by_it[idx] = 0
+        number_of_splits.append(len(splits))
 
-            if top_k_branch["class"] == 8:
-                heartbleed_branches.append(sorted_feature_list_with_thresh)
+        for split in splits:
+            split_str = f"{split['feature']}-{split['threshold']}"
+            if split_str not in nodes:
+                nodes[split_str] = 0
+            nodes[split_str] += 1
 
-            branch = f"{','.join(feature_list)} = {top_k_branch['class']}"
-            top_k_branches.setdefault(branch, 0)
-            top_k_branches[branch] += 1
+            if split["feature"] not in features:
+                features[split["feature"]] = {}
 
-            sorted_branch = f"{','.join(sorted_feature_list)} = {top_k_branch['class']}"
-            top_k_branches_wo_order.setdefault(sorted_branch, 0)
-            top_k_branches_wo_order[sorted_branch] += 1
+            if idx not in features[split["feature"]]:
+                features[split["feature"]][idx] = 0
+                features_by_it[idx] += 1
+            features[split["feature"]][idx] += 1
 
-            similar_branches.setdefault(sorted_branch, [])
-            similar_branches[sorted_branch].append(sorted_feature_list_with_thresh)
+        y_pred = iter_tree.predict(X_test_values)
+        fidelity.append(it[f"{base_tree_key}_fidelity"])
+        agreement.append(f1_score(y_pred, base_y_pred, average="weighted"))
 
-    top_10_branches = {}
-    top_20_branches = {}
-    top_30_branches = {}
-    for it in stability_iter:
-        num_branches = len(it["top_branches"])
-        for k in range(min(30, num_branches)):
-            top_k_branch = it["top_branches"][k]
-            sorted_feature_list = [
-                f"{feat} {op}" for (_, feat, op, _) in sorted(top_k_branch["path"][:-1], key=lambda x: x[1])
-            ]
-            branch = f"{','.join(sorted_feature_list)} = {top_k_branch['class']}"
-            top_30_branches.setdefault(branch, 0)
-            top_30_branches[branch] += 1
+        for group, data in grouped_df:
+            y_pred_class = iter_tree.predict(data.drop("label", axis=1).values)
+            base_y_pred_class = base_tree.predict(data.drop("label", axis=1).values)
+            if group not in agreement_by_class:
+                agreement_by_class[group] = []
 
-            if k < 20:
-                top_20_branches.setdefault(branch, 0)
-                top_20_branches[branch] += 1
-
-            if k < 10:
-                top_10_branches.setdefault(branch, 0)
-                top_10_branches[branch] += 1
-
-    top_branches = sorted(top_k_branches.items(), key=lambda item: item[1], reverse=True)
-    branch_stability = [(x[1] / len(stability_iter)) * 100 for x in top_branches][:top_k]
-    top_branches_wo_order = sorted(top_k_branches_wo_order.items(), key=lambda item: item[1], reverse=True)
-    branch_stability_wo_order = [(x[1] / len(stability_iter)) * 100 for x in top_branches_wo_order][:top_k]
+            agreement_by_class[group].append(f1_score(y_pred_class, base_y_pred_class, average="weighted"))
 
     plot.plot_lines(
-        range(1, min(top_k + 1, len(branch_stability) + 1)),
-        [branch_stability, branch_stability_wo_order],
-        ylim=(0, 100),
-        xlabel="Top Branches",
-        ylabel="Stability (%)",
-        labels=["W/ Feature Order", "W/O Feature Order"],
-        path=f"{output_dir}/branch_stability.pdf",
+        range(len(number_of_splits)),
+        [number_of_splits],
+        xlabel="Iteration",
+        ylabel="Number of Splits",
+        path=f"{output_dir}/{base_tree_key}_num_nodes_stability.pdf",
     )
 
-    branch_stability = [(x[1] / len(stability_iter)) * 100 for x in top_branches]
-    branch_stability_wo_order = [(x[1] / len(stability_iter)) * 100 for x in top_branches_wo_order]
     plot.plot_lines(
-        [range(1, len(branch_stability) + 1), range(1, len(branch_stability_wo_order) + 1)],
-        [branch_stability, branch_stability_wo_order],
-        ylim=(0, 100),
-        xlabel="Top Branches",
-        ylabel="Stability (%)",
-        labels=["W/ Feature Order", "W/O Feature Order"],
-        path=f"{output_dir}/branch_stability_uncapped.pdf",
+        range(len(features_by_it.keys())),
+        [features_by_it.values()],
+        xlabel="Iteration",
+        ylabel="Stability",
+        labels=["Features"],
+        path=f"{output_dir}/{base_tree_key}_feature_stability.pdf",
     )
 
-    num_branches = 50
-    top_10 = sorted(top_10_branches.items(), key=lambda item: item[1], reverse=True)
-    top_20 = sorted(top_20_branches.items(), key=lambda item: item[1], reverse=True)
-    top_30 = sorted(top_30_branches.items(), key=lambda item: item[1], reverse=True)
-    branch_stability_top_10 = [(x[1] / len(stability_iter)) * 100 for x in top_10][:num_branches]
-    branch_stability_top_20 = [(x[1] / len(stability_iter)) * 100 for x in top_20][:num_branches]
-    branch_stability_top_30 = [(x[1] / len(stability_iter)) * 100 for x in top_30][:num_branches]
     plot.plot_lines(
-        [
-            range(1, len(branch_stability_top_10) + 1),
-            range(1, len(branch_stability_top_20) + 1),
-            range(1, len(branch_stability_top_30) + 1),
+        range(len(stability_iter)),
+        [agreement, fidelity],
+        ylim=(0, 1),
+        xlabel="Iteration",
+        ylabel="F1-Score",
+        labels=["Agreement", "Fidelity"],
+        path=f"{output_dir}/{base_tree_key}_stability.pdf",
+    )
+
+    top_branch_agreement = {}
+    for branch in top_branches[:5]:
+        class_name = class_names[branch["class"]] if class_names else branch["class"]
+        class_id = class_name if class_name in agreement_by_class else branch["class"]
+        top_branch_agreement[class_id] = agreement_by_class[class_id]
+
+    plot.plot_lines(
+        range(len(stability_iter)),
+        [agreement for _, agreement in top_branch_agreement.items()],
+        ylim=(0, 1),
+        xlabel="Iteration",
+        ylabel="Agreement (F1-Score)",
+        labels=[
+            class_names[group] if class_names and not isinstance(group, str) else group
+            for group, _ in top_branch_agreement.items()
         ],
-        [branch_stability_top_10, branch_stability_top_20, branch_stability_top_30],
-        ylim=(0, 100),
-        xlabel="Top Branches",
-        ylabel="Stability (%)",
-        labels=["Top-10", "Top-20", "Top-30"],
-        path=f"{output_dir}/branch_stability_multitop.pdf",
+        path=f"{output_dir}/{base_tree_key}_stability_by_class.pdf",
+        size=(6, 4),
     )
+
+
+def plot_stability_heatmap(stability_iter, X_test, y_test, tree_key, top_branches, output_dir, class_names=[]):
+    """Uses stability information to plot the edit-distance between decision trees"""
+    if not np.array(stability_iter).size:
+        return
+
+    heatmap_size = 30
+    agreement = []
+    fidelity = []
+    mean_agreement = []
+    agreement_by_class = {}
+    base_df = pd.DataFrame(deepcopy(X_test))
+    base_df["label"] = y_test
+    grouped_df = base_df.groupby("label")
+
+    for i in range(len(stability_iter)):
+        base_tree = stability_iter[i][f"{tree_key}"]
+        fidelity.append(stability_iter[i][f"{tree_key}_fidelity"])
+        agreement.append([])
+
+        for j in range(len(stability_iter)):
+            iter_tree = stability_iter[j][f"{tree_key}"]
+
+            X_test_values = X_test.values if isinstance(X_test, pd.DataFrame) else X_test
+            iter_y_pred = iter_tree.predict(X_test_values)
+            base_y_pred = base_tree.predict(X_test_values)
+
+            agreement[i].append(f1_score(iter_y_pred, base_y_pred, average="weighted"))
+
+            for group, data in grouped_df:
+                y_pred_class = iter_tree.predict(data.drop("label", axis=1).values)
+                base_y_pred_class = base_tree.predict(data.drop("label", axis=1).values)
+                if group not in agreement_by_class:
+                    agreement_by_class[group] = []
+
+                if i >= len(agreement_by_class[group]):
+                    agreement_by_class[group].append([])
+
+                agreement_by_class[group][i].append(f1_score(y_pred_class, base_y_pred_class, average="weighted"))
+
+        mean_agreement.append(np.mean(agreement[i]))
+
+    plot.plot_lines(
+        range(len(stability_iter)),
+        [mean_agreement, fidelity],
+        ylim=(0, 1),
+        xlabel="Iteration",
+        ylabel="F1-Score",
+        labels=["Mean Agreement", "Fidelity"],
+        path=f"{output_dir}/{tree_key}_mean_stability.pdf",
+    )
+
+    plot.plot_heatmap(
+        np.array([arr[:heatmap_size] for arr in agreement[:heatmap_size]]),
+        labels=range(min(len(stability_iter), heatmap_size)),
+        path=f"{output_dir}/{tree_key}_stability_heatmap.pdf",
+    )
+
+    top_branch_agreement = {}
+    for branch in top_branches[:5]:
+        class_name = class_names[branch["class"]] if class_names else branch["class"]
+        class_id = class_name if class_name in agreement_by_class else branch["class"]
+        top_branch_agreement[class_id] = agreement_by_class[class_id]
+
+    for group, group_agreement in top_branch_agreement.items():
+        plot.plot_heatmap(
+            np.array(group_agreement[:heatmap_size]),
+            labels=range(min(len(stability_iter), heatmap_size)),
+            path=f"{output_dir}/{tree_key}_{class_names[group] if class_names and not isinstance(group, str) else group}_stability_heatmap.pdf",
+        )
 
 
 def plot_accuracy_by_feature_removed(whitebox_iter, output_dir, feature_names=[]):
@@ -712,49 +776,3 @@ def plot_heartbleed_distribution(X, y, output_dir, feature_names=[], class_names
         bbox_inches="tight",
     )
     plt.close()
-
-
-def plot_skewness_heatmaps(X, top_features, output_dir, feature_names=[]):
-    """Combines all top features into pairs and calculate kurtosis metric with each pair to form a heatmap."""
-    if not np.array(X).size or not np.array(top_features).size:
-        return
-
-    df = pd.DataFrame(X, columns=feature_names if feature_names else None)
-    if isinstance(df.columns[0], numbers.Number):
-        df.columns = [str(i) for i in range(len(df.columns))]
-
-    skew_matrix = np.zeros((len(top_features), len(top_features)))
-    kurtosis_matrix = np.zeros((len(top_features), len(top_features)))
-    # multivariate_normal_matrix = np.zeros((len(top_features), len(top_features)))
-    features = []
-    print(len(top_features))
-    for i in range(len(top_features)):
-        for j in range(len(top_features)):
-            feat_i = top_features[i][0]
-            feat_j = top_features[j][0]
-            feat_names = feature_names[top_features[i][0]] if feature_names else top_features[i][0]
-            if feat_names not in features:
-                features.append(feat_names)
-
-            print(df.iloc[:, [feat_i, feat_j]])
-            print(f"Skew ({feat_i},{feat_j})", skew(df.iloc[:, [feat_i, feat_j]].values))
-            print(f"Kurtosis ({feat_i},{feat_j})", kurtosis(df.iloc[:, [feat_i, feat_j]].values))
-            # print(
-            #     f"Multivariate normal ({feat_i},{feat_j})",
-            #     pg.multivariate_normality(df.head(10000).iloc[:, [feat_i, feat_j]], alpha=0.05),
-            # )
-            skew_matrix[i, j] = np.mean(skew(df.iloc[:, [feat_i, feat_j]].values))
-            kurtosis_matrix[i, j] = np.mean(kurtosis(df.iloc[:, [feat_i, feat_j]].values))
-            # multivariate_normal_matrix[i, j] = pg.multivariate_normality(df.iloc[:, [feat_i, feat_j]], alpha=0.05)
-
-    plot.plot_heatmap(
-        skew_matrix,
-        labels=features,
-        path=f"{output_dir}/skew.pdf",
-    )
-
-    plot.plot_heatmap(
-        kurtosis_matrix,
-        labels=features,
-        path=f"{output_dir}/kurtosis.pdf",
-    )

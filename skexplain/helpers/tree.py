@@ -1,5 +1,4 @@
 import numpy as np
-from pprint import pprint
 
 from scipy import spatial
 from sklearn.tree._tree import TREE_LEAF, TREE_UNDEFINED
@@ -114,6 +113,30 @@ def get_dt_dict(dt):
     }
 
     return dt_dict
+
+
+# def get_zss_tree(dt):
+#     """Converts scikit-learn Decision Tree to ZSS Decision Tree"""
+#     children_left = dt.tree_.children_left
+#     children_right = dt.tree_.children_right
+#     features = dt.tree_.feature
+#     thresholds = dt.tree_.threshold
+
+#     def build_zss_tree(node):
+#         """Recursively iterates through all nodes in given decision tree to convert them to ZSS tree."""
+#         left = children_left[node]
+#         right = children_right[node]
+
+#         node = Node(f"{features[node]} <= {thresholds[node]}")
+#         if left != right:  # if not  leaf node
+#             node.addkid(build_zss_tree(left))
+#             node.addkid(build_zss_tree(right))
+
+#         return node
+
+#     zss_tree = build_zss_tree(0)
+
+#     return zss_tree
 
 
 def get_dt_info(dt):

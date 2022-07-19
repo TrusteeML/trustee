@@ -15,8 +15,8 @@ rcParams["font.weight"] = FONT_WEIGHT
 
 def plot_heatmap(matrix, labels=[], path=None):
     """Util function to plot confusion matrix"""
-    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#a7c3cd", "#d75d5b"])
-    fig, ax = plt.subplots(figsize=(7.5, 7.5))
+    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#d75d5b", "#a7c3cd"])
+    fig, ax = plt.subplots(figsize=(15, 15))
     ax.matshow(matrix, cmap=cmap, alpha=0.3)
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
@@ -26,7 +26,7 @@ def plot_heatmap(matrix, labels=[], path=None):
                 s=f"{matrix[i, j]:.2f}",
                 va="center",
                 ha="center",
-                size="xx-large",
+                # size="xx-large",
             )
 
     plt.xticks(ticks=range(len(labels)), labels=labels)
@@ -39,9 +39,9 @@ def plot_heatmap(matrix, labels=[], path=None):
     plt.close()
 
 
-def plot_lines(x, y, xlim=None, ylim=None, labels=[], title=None, xlabel=None, ylabel=None, path=None):
+def plot_lines(x, y, xlim=None, ylim=None, labels=[], title=None, xlabel=None, ylabel=None, size=(), path=None):
     """Util function to plot lines"""
-    plt.figure(figsize=(3, 2))  # width:20, height:3
+    plt.figure(figsize=size if size else (3, 2))  # width:20, height:3
     markers = [
         "o",
         "v",

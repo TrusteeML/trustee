@@ -24,7 +24,8 @@ from .plot import (
     plot_all_branches,
     plot_distribution,
     plot_samples_by_level,
-    plot_stability_by_top_k,
+    plot_stability,
+    plot_stability_heatmap,
     plot_dts_fidelity_by_size,
     plot_accuracy_by_feature_removed,
 )
@@ -768,21 +769,21 @@ class TrustReport:
         """Collects data to build the make report"""
         self._collect_blackbox()
         self._collect_trustee()
-
         self._collect_top_k_prunning()
+
+        if self.analyze_stability:
+            self._collect_stability_analysis()
 
         if self.analyze_branches:
             self._collect_branch_analysis()
-        if self.analyze_stability:
-            self._collect_stability_analysis()
 
         if self.num_pruning_iter > 0:
             self._collect_ccp_prunning()
             self._collect_max_depth_prunning()
             self._collect_max_leaves_prunning()
 
-        if not self.skip_retrain:
-            self._collect_features_iter_removal()
+        # if not self.skip_retrain:
+        #     self._collect_features_iter_removal()
 
         self._progress(finish=100)
 
@@ -881,10 +882,14 @@ class TrustReport:
             if self.verbose:
                 log(f"Iteration {i}/{self.max_iter}")
 
-            (trustee, _, max_dt, _, _, _) = self._fit_and_explain()
+            (trustee, y_pred, max_dt, max_dt_y_pred, min_dt, min_dt_y_pred) = self._fit_and_explain()
             top_branches = trustee.get_top_branches(top_k=max_dt.get_n_leaves())
             self.stability_iter.append(
                 {
+                    "max_dt": max_dt,
+                    "min_dt": min_dt,
+                    "max_dt_fidelity": f1_score(y_pred, max_dt_y_pred, average="macro", zero_division=0),
+                    "min_dt_fidelity": f1_score(y_pred, min_dt_y_pred, average="macro", zero_division=0),
                     "iteration": i,
                     "top_branches": top_branches,
                 }
@@ -1152,6 +1157,40 @@ class TrustReport:
             graph = graphviz.Source(dot_data)
             graph.render(f"{output_dir}/trust_report_dt_min")
 
+        stability_output_dir = f"{output_dir}/stability_max"
+        if not os.path.exists(stability_output_dir):
+            os.makedirs(stability_output_dir)
+
+        log("Saving stability decision trees...")
+        for idx, i in enumerate(self.stability_iter):
+            dot_data = tree.export_graphviz(
+                i["max_dt"],
+                class_names=self.class_names,
+                feature_names=self.feature_names,
+                filled=True,
+                rounded=True,
+                special_characters=True,
+            )
+            graph = graphviz.Source(dot_data)
+            graph.render(f"{stability_output_dir}/stability_dt_{idx}")
+
+        stability_output_dir = f"{output_dir}/stability_min"
+        if not os.path.exists(stability_output_dir):
+            os.makedirs(stability_output_dir)
+
+        log("Saving stability decision trees...")
+        for idx, i in enumerate(self.stability_iter):
+            dot_data = tree.export_graphviz(
+                i["min_dt"],
+                class_names=self.class_names,
+                feature_names=self.feature_names,
+                filled=True,
+                rounded=True,
+                special_characters=True,
+            )
+            graph = graphviz.Source(dot_data)
+            graph.render(f"{stability_output_dir}/stability_dt_{idx}")
+
         prunning_output_dir = f"{output_dir}/prunning"
         if not os.path.exists(prunning_output_dir):
             os.makedirs(prunning_output_dir)
@@ -1262,7 +1301,47 @@ class TrustReport:
             filename="branches",
         )
 
-        plot_stability_by_top_k(self.stability_iter, self.top_k, plots_output_dir)
+        plot_stability(
+            self.stability_iter,
+            self.X_test,
+            self.y_test,
+            self.max_dt,
+            "max_dt",
+            self.max_dt_top_branches,
+            plots_output_dir,
+            class_names=self.class_names,
+        )
+
+        plot_stability(
+            self.stability_iter,
+            self.X_test,
+            self.y_test,
+            self.min_dt,
+            "min_dt",
+            self.max_dt_top_branches,
+            plots_output_dir,
+            class_names=self.class_names,
+        )
+
+        plot_stability_heatmap(
+            self.stability_iter,
+            self.X_test,
+            self.y_test,
+            "max_dt",
+            self.max_dt_top_branches,
+            plots_output_dir,
+            class_names=self.class_names,
+        )
+
+        plot_stability_heatmap(
+            self.stability_iter,
+            self.X_test,
+            self.y_test,
+            "min_dt",
+            self.max_dt_top_branches,
+            plots_output_dir,
+            class_names=self.class_names,
+        )
 
         plot_distribution(
             self.X if self.X is not None else self.X_train,
@@ -1283,6 +1362,34 @@ class TrustReport:
 
         if self.verbose:
             log("Done!")
+
+    def get_stable_explanations(self, threshold=0.9):
+        """Filters out explanations from Trustee sability analysis with less than threshold agreement."""
+        if not self.analyze_stability:
+            return [{"dt": self.max_dt, "mean_agreement": 0}]
+
+        stable = []
+        agreement = []
+
+        for i in range(len(self.stability_iter)):
+            agreement.append([])
+            for j in range(len(self.stability_iter)):
+                base_tree = self.stability_iter[i]["min_dt"]
+                iter_tree = self.stability_iter[j]["min_dt"]
+
+                X_test_values = self.X_test.values if isinstance(self.X_test, pd.DataFrame) else self.X_test
+                iter_y_pred = iter_tree.predict(X_test_values)
+                base_y_pred = base_tree.predict(X_test_values)
+
+                agreement[i].append(f1_score(iter_y_pred, base_y_pred, average="weighted"))
+
+            print("Stability Iter", i)
+            mean_agreement = np.mean(agreement[i])
+            print("Mean Agreement", agreement[i], mean_agreement)
+            if mean_agreement >= threshold:
+                stable.append({"mean_agreement": mean_agreement, "dt": self.stability_iter[i]["min_dt"]})
+
+        return sorted(stable, key=lambda p: p["mean_agreement"], reverse=True)
 
     @classmethod
     def load(cls, path):
