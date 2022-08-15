@@ -41,7 +41,8 @@ def plot_heatmap(matrix, labels=[], path=None):
 
 def plot_lines(x, y, xlim=None, ylim=None, labels=[], title=None, xlabel=None, ylabel=None, size=(), path=None):
     """Util function to plot lines"""
-    plt.figure(figsize=size if size else (3, 2))  # width:20, height:3
+    plt.figure(figsize=size if size else (4, 1.5))  # width:20, height:3
+    # plt.figure(figsize=size if size else (3, 2))  # width:20, height:3
     markers = [
         "o",
         "v",
@@ -68,10 +69,10 @@ def plot_lines(x, y, xlim=None, ylim=None, labels=[], title=None, xlabel=None, y
         "_",
     ]
     colors = [
-        "#d75d5b",
         "#a7c3cd",
-        "#524a47",
         "#8a4444",
+        "#524a47",
+        "#d75d5b",
         "#c8c5c3",
         "#f5f0ed",
         "#edeef0",
@@ -99,11 +100,8 @@ def plot_lines(x, y, xlim=None, ylim=None, labels=[], title=None, xlabel=None, y
                 label=labels[idx] if idx < len(labels) else "",
             )
 
-    _, end = plt.xlim()
-    end = int(end)
-    plt.xticks(np.arange(0, end + 1, max(1, int(end / 10))), rotation=60)
     if len(labels) > 1:
-        plt.legend()
+        plt.legend(loc="lower right", ncol=2)
 
     if xlabel:
         plt.xlabel(xlabel, fontname=FONT_NAME, fontweight=FONT_WEIGHT)
@@ -119,6 +117,10 @@ def plot_lines(x, y, xlim=None, ylim=None, labels=[], title=None, xlabel=None, y
 
     if title:
         plt.title(title)
+
+    _, end = plt.xlim()
+    end = int(end)
+    plt.xticks(np.arange(0, end + 1, max(1, int(end / 10))))
 
     plt.tight_layout()
     if path:

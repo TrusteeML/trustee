@@ -9,8 +9,7 @@ from sklearn.metrics import f1_score, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-
-from skexplain.helpers import get_dt_info, prune_index, get_dt_dict
+from trustee.utils.tree import get_dt_info, get_dt_dict, prune_index
 
 
 def _check_if_trained(func):
@@ -90,7 +89,8 @@ class Trustee(abc.ABC):
             self.log(f"Expert model score: {self.score(y, targets)}")
             self.log(f"Initializing Trustee loop with {num_iter} iterations")
 
-        # Trustee loop
+        # Trustee inner-loop
+        # The outer-loop was implemented as part of the trust report, see report/trust.py -> get_stable_explanations()
         for i in range(num_iter):
             if verbose:
                 self.log("#" * 10, f"Iteration {i}/{num_iter}", "#" * 10)
@@ -99,11 +99,7 @@ class Trustee(abc.ABC):
             size = int(int(len(X)) * samples_size) if samples_size else num_samples
             # Step 1: Sample predictions from training dataset
             if verbose:
-                self.log(
-                    "Sampling {} points from training dataset with ({}, {}) entries".format(
-                        size, len(features), len(targets)
-                    )
-                )
+                self.log(f"Sampling {size} points from training dataset with ({len(features)}, {len(targets)}) entries")
 
             samples_idxs = np.random.choice(dataset_size, size=size, replace=False)
 
@@ -140,9 +136,7 @@ class Trustee(abc.ABC):
 
             if verbose:
                 self.log(
-                    "Student model {} trained with depth {} and {} leaves:".format(
-                        i, student.get_depth(), student.get_n_leaves()
-                    )
+                    f"Student model {i} trained with depth {student.get_depth()} and {student.get_n_leaves()} leaves:"
                 )
                 self.log(f"Student model score: {self.score(y_test, student_pred)}")
 

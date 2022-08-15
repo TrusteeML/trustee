@@ -10,10 +10,10 @@ from pandas.api.types import is_numeric_dtype
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
-from sklearn.metrics import classification_report, f1_score
+from sklearn.metrics import f1_score, r2_score
 
-from skexplain.utils import plot
-from skexplain.helpers import get_dt_info
+from trustee.utils import plot
+from trustee.utils.tree import get_dt_info
 
 
 def plot_top_features(top_features, dt_sum_samples, dt_nodes, output_dir, feature_names=[]):
@@ -100,13 +100,19 @@ def plot_top_nodes(top_nodes, dt_samples_by_class, dt_samples, output_dir, featu
         ylim=(0, 100),
         xlabel="Node",
         ylabel="% of total samples",
-        labels=class_names,
+        labels=class_names if class_names else [],
         path=f"{output_dir}/top_nodes_by_class.pdf",
     )
 
 
 def plot_top_branches(
-    top_branches, dt_samples_by_class, dt_samples, output_dir, filename="top_branches", class_names=[]
+    top_branches,
+    dt_samples_by_class,
+    dt_samples,
+    output_dir,
+    filename="top_branches",
+    class_names=[],
+    is_classify=True,
 ):
     """Uses top features information and plots CDF with it"""
     if not np.array(top_branches).size or not np.array(dt_samples_by_class).size or not np.array(dt_samples).size:
@@ -143,32 +149,6 @@ def plot_top_branches(
         path=f"{output_dir}/{filename}.pdf",
     )
 
-    plot.plot_stacked_bars(
-        [f"Top {idx + 1}" for idx in range(len(top_branches))] if len(top_branches) < 20 else range(len(top_branches)),
-        [np.cumsum(samples)],
-        y_placeholder=[100],
-        ylim=(0, 100),
-        xlabel="Branches",
-        ylabel="% of total samples",
-        path=f"{output_dir}/{filename}_bars.pdf",
-    )
-
-    plot.plot_stacked_bars(
-        [f"Top {idx + 1}" for idx in range(len(top_branches))] if len(top_branches) < 20 else range(len(top_branches)),
-        [
-            np.cumsum(
-                [((branch["samples"] / dt_samples) * 100) if idx == branch["class"] else 0 for branch in top_branches]
-            )
-            for idx, _ in enumerate(dt_samples_by_class)
-        ],
-        y_placeholder=[(samples / dt_samples) * 100 for samples in dt_samples_by_class],
-        ylim=(0, 100),
-        xlabel="Branches",
-        ylabel="% of total samples",
-        labels=class_names,
-        path=f"{output_dir}/cum_{filename}_by_class.pdf",
-    )
-
     plot.plot_lines_and_bars(
         [f"Top {idx + 1}" for idx in range(len(top_branches))] if len(top_branches) < 20 else range(len(top_branches)),
         [np.cumsum(samples)],
@@ -180,6 +160,41 @@ def plot_top_branches(
         colors_by_x=colors_by_samples,
         path=f"{output_dir}/{filename}_by_class.pdf",
     )
+
+    # TODO: This only works for classification problems, fix for refression in the future.
+    if is_classify:
+        plot.plot_stacked_bars(
+            [f"Top {idx + 1}" for idx in range(len(top_branches))]
+            if len(top_branches) < 20
+            else range(len(top_branches)),
+            [np.cumsum(samples)],
+            y_placeholder=[100],
+            ylim=(0, 100),
+            xlabel="Branches",
+            ylabel="% of total samples",
+            path=f"{output_dir}/{filename}_bars.pdf",
+        )
+
+        plot.plot_stacked_bars(
+            [f"Top {idx + 1}" for idx in range(len(top_branches))]
+            if len(top_branches) < 20
+            else range(len(top_branches)),
+            [
+                np.cumsum(
+                    [
+                        ((branch["samples"] / dt_samples) * 100) if idx == branch["class"] else 0
+                        for branch in top_branches
+                    ]
+                )
+                for idx, _ in enumerate(dt_samples_by_class)
+            ],
+            y_placeholder=[(samples / dt_samples) * 100 for samples in dt_samples_by_class],
+            ylim=(0, 100),
+            xlabel="Branches",
+            ylabel="% of total samples",
+            labels=class_names,
+            path=f"{output_dir}/cum_{filename}_by_class.pdf",
+        )
 
 
 def plot_all_branches(top_branches, dt_samples_by_class, dt_samples, output_dir, class_names=[]):
@@ -240,7 +255,8 @@ def plot_dts_fidelity_by_size(pruning_list, output_dir, filename="dts"):
         list(num_leaves.values()),
         list(fidelity.values()),
         ylim=(0, 1),
-        xlabel="Top-k Branches",
+        xlim=(0, 50),
+        xlabel="Number of Branches",
         ylabel="Fidelity",
         labels=list(num_leaves.keys()),
         path=f"{output_dir}/{filename}_fidelity_x_leaves.pdf",
@@ -257,7 +273,17 @@ def plot_dts_fidelity_by_size(pruning_list, output_dir, filename="dts"):
     )
 
 
-def plot_stability(stability_iter, X_test, y_test, base_tree, base_tree_key, top_branches, output_dir, class_names=[]):
+def plot_stability(
+    stability_iter,
+    X_test,
+    y_test,
+    base_tree,
+    base_tree_key,
+    top_branches,
+    output_dir,
+    class_names=[],
+    is_classify=True,
+):
     """Uses stability information to plot the edit-distance between decision trees"""
     if not np.array(stability_iter).size:
         return
@@ -299,7 +325,9 @@ def plot_stability(stability_iter, X_test, y_test, base_tree, base_tree_key, top
 
         y_pred = iter_tree.predict(X_test_values)
         fidelity.append(it[f"{base_tree_key}_fidelity"])
-        agreement.append(f1_score(y_pred, base_y_pred, average="weighted"))
+        agreement.append(
+            f1_score(y_pred, base_y_pred, average="weighted") if is_classify else r2_score(y_pred, base_y_pred)
+        )
 
         for group, data in grouped_df:
             y_pred_class = iter_tree.predict(data.drop("label", axis=1).values)
@@ -307,7 +335,11 @@ def plot_stability(stability_iter, X_test, y_test, base_tree, base_tree_key, top
             if group not in agreement_by_class:
                 agreement_by_class[group] = []
 
-            agreement_by_class[group].append(f1_score(y_pred_class, base_y_pred_class, average="weighted"))
+            agreement_by_class[group].append(
+                f1_score(y_pred_class, base_y_pred_class, average="weighted")
+                if is_classify
+                else r2_score(y_pred_class, base_y_pred_class)
+            )
 
     plot.plot_lines(
         range(len(number_of_splits)),
@@ -331,7 +363,7 @@ def plot_stability(stability_iter, X_test, y_test, base_tree, base_tree_key, top
         [agreement, fidelity],
         ylim=(0, 1),
         xlabel="Iteration",
-        ylabel="F1-Score",
+        ylabel="Score",
         labels=["Agreement", "Fidelity"],
         path=f"{output_dir}/{base_tree_key}_stability.pdf",
     )
@@ -347,7 +379,7 @@ def plot_stability(stability_iter, X_test, y_test, base_tree, base_tree_key, top
         [agreement for _, agreement in top_branch_agreement.items()],
         ylim=(0, 1),
         xlabel="Iteration",
-        ylabel="Agreement (F1-Score)",
+        ylabel="Agreement (Score)",
         labels=[
             class_names[group] if class_names and not isinstance(group, str) else group
             for group, _ in top_branch_agreement.items()
@@ -357,7 +389,16 @@ def plot_stability(stability_iter, X_test, y_test, base_tree, base_tree_key, top
     )
 
 
-def plot_stability_heatmap(stability_iter, X_test, y_test, tree_key, top_branches, output_dir, class_names=[]):
+def plot_stability_heatmap(
+    stability_iter,
+    X_test,
+    y_test,
+    tree_key,
+    top_branches,
+    output_dir,
+    class_names=[],
+    is_classify=True,
+):
     """Uses stability information to plot the edit-distance between decision trees"""
     if not np.array(stability_iter).size:
         return
@@ -371,19 +412,23 @@ def plot_stability_heatmap(stability_iter, X_test, y_test, tree_key, top_branche
     base_df["label"] = y_test
     grouped_df = base_df.groupby("label")
 
-    for i in range(len(stability_iter)):
+    for i, _ in enumerate(stability_iter):
         base_tree = stability_iter[i][f"{tree_key}"]
         fidelity.append(stability_iter[i][f"{tree_key}_fidelity"])
         agreement.append([])
 
-        for j in range(len(stability_iter)):
+        for j, _ in enumerate(stability_iter):
             iter_tree = stability_iter[j][f"{tree_key}"]
 
             X_test_values = X_test.values if isinstance(X_test, pd.DataFrame) else X_test
             iter_y_pred = iter_tree.predict(X_test_values)
             base_y_pred = base_tree.predict(X_test_values)
 
-            agreement[i].append(f1_score(iter_y_pred, base_y_pred, average="weighted"))
+            agreement[i].append(
+                f1_score(iter_y_pred, base_y_pred, average="weighted")
+                if is_classify
+                else r2_score(iter_y_pred, base_y_pred)
+            )
 
             for group, data in grouped_df:
                 y_pred_class = iter_tree.predict(data.drop("label", axis=1).values)
@@ -394,16 +439,22 @@ def plot_stability_heatmap(stability_iter, X_test, y_test, tree_key, top_branche
                 if i >= len(agreement_by_class[group]):
                     agreement_by_class[group].append([])
 
-                agreement_by_class[group][i].append(f1_score(y_pred_class, base_y_pred_class, average="weighted"))
+                agreement_by_class[group][i].append(
+                    f1_score(y_pred_class, base_y_pred_class, average="weighted")
+                    if is_classify
+                    else r2_score(y_pred_class, base_y_pred_class)
+                )
 
+        print("mean agreement", i, np.mean(agreement[i]))
         mean_agreement.append(np.mean(agreement[i]))
 
     plot.plot_lines(
         range(len(stability_iter)),
         [mean_agreement, fidelity],
         ylim=(0, 1),
+        xlim=(0, 50),
         xlabel="Iteration",
-        ylabel="F1-Score",
+        ylabel="Score",
         labels=["Mean Agreement", "Fidelity"],
         path=f"{output_dir}/{tree_key}_mean_stability.pdf",
     )
@@ -433,16 +484,16 @@ def plot_accuracy_by_feature_removed(whitebox_iter, output_dir, feature_names=[]
     if not np.array(whitebox_iter).size:
         return
 
-    blackbox_f1_scores = [i["f1"] * 100 for i in whitebox_iter]
+    blackbox_scores = [i["score"] * 100 for i in whitebox_iter]
     fidelity = [i["fidelity"] * 100 for i in whitebox_iter]
     features = [feature_names[i["feature_removed"]] if feature_names else i["feature_removed"] for i in whitebox_iter]
     plot.plot_lines(
         features,
-        [blackbox_f1_scores, fidelity],
+        [blackbox_scores, fidelity],
         ylim=(0, 100),
         xlabel="Features removed",
         ylabel="Metric (%)",
-        labels=["Blackbox F1-Score", "DT Fidelity"],
+        labels=["Blackbox Score", "DT Fidelity"],
         path=f"{output_dir}/accuracy_by_feature_removed.pdf",
     )
 
@@ -516,7 +567,7 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
 
     for idx, branch in enumerate(top_branches):
         branch_class = class_names[branch["class"]] if class_names else branch["class"]
-        branch_output_dir = f"{plots_output_dir}/{idx}_branch_{branch_class.strip()}"
+        branch_output_dir = f"{plots_output_dir}/{idx}_branch_{branch_class}"
 
         if not os.path.exists(branch_output_dir):
             os.makedirs(branch_output_dir)
@@ -550,7 +601,6 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
                 ax = axes[df_idx]
                 ax.hist(
                     split_df[column].values,
-                    # bins=50,
                     histtype="bar",
                     label="All" if df_idx == 0 else None,
                     color=colors[0],
@@ -579,7 +629,6 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
                 ax = axes[df_idx]
                 ax.hist(
                     filtered_dfs[df_idx][column].values,
-                    # bins=50,
                     histtype="bar",
                     label=f"Branch ({branch_class.strip()})" if df_idx == 0 else None,
                     color=colors[-1],
@@ -608,14 +657,12 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
                 ax = axes[df_idx]
                 ax.hist(
                     split_df[column].values,
-                    # bins=50,
                     histtype="bar",
                     label="All" if df_idx == 0 else None,
                     color=colors[0],
                 )
                 ax.hist(
                     filtered_dfs[df_idx][column].values,
-                    # bins=50,
                     histtype="bar",
                     label=f"Branch ({branch_class.strip()})" if df_idx == 0 else None,
                     color=colors[-1],
@@ -633,146 +680,3 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
                 bbox_inches="tight",
             )
             plt.close()
-
-
-def plot_heartbleed_distribution(X, y, output_dir, feature_names=[], class_names=[]):
-    if not np.array(X).size or not np.array(y).size:
-        return
-
-    plots_output_dir = f"{output_dir}/dist"
-    if not os.path.exists(plots_output_dir):
-        os.makedirs(plots_output_dir)
-
-    plt.rcParams["figure.figsize"] = (5, 2)
-    colors = [
-        "#d75d5b",
-        "#524a47",
-        "#8a4444",
-        "#edeef0",
-        "#c8c5c3",
-        "#f5f0ed",
-        "#a7c3cd",
-    ]
-
-    df = pd.DataFrame(X, columns=feature_names if feature_names else None)
-    if isinstance(df.columns[0], numbers.Number):
-        df.columns = [str(i) for i in range(len(df.columns))]
-
-    df["label"] = y
-    if class_names and is_numeric_dtype(df["label"]):
-        df["label"] = df["label"].map(lambda x: class_names[int(x)])
-
-    grouped_df = df.groupby("label")
-    heartbleed_df = grouped_df.get_group("Heartbleed")
-    others_df = df.drop(heartbleed_df.index)
-
-    fig, axes = plt.subplots(nrows=1, ncols=2)
-    axes = axes.flatten()
-
-    column = "Bwd Packet Length Max"
-    filtered_other_df = others_df[others_df[column] > 12332]
-    filtered_heartbleed_df = heartbleed_df[heartbleed_df[column] > 12332]
-
-    ax = axes[0]
-    ax.hist(
-        others_df[column].values,
-        # bins=50,
-        histtype="bar",
-        label="Others",
-        color=colors[0],
-    )
-    ax.hist(
-        filtered_other_df[column].values,
-        # bins=50,
-        histtype="bar",
-        label=f"Branch (Heartbleed)",
-        color=colors[-1],
-    )
-    ax.yaxis.set_major_formatter(PercentFormatter(xmax=others_df.shape[0]))
-    ax.tick_params(axis="both", labelsize=10)
-    ax.set_title("Others", fontsize=12, fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
-
-    ax = axes[1]
-    ax.hist(
-        heartbleed_df[column].values,
-        # bins=50,
-        histtype="bar",
-        # label="Others",
-        color=colors[0],
-    )
-    ax.hist(
-        filtered_heartbleed_df[column].values,
-        # bins=50,
-        histtype="bar",
-        # label=f"Branch (Heartbleed)",
-        color=colors[-1],
-    )
-    ax.yaxis.set_major_formatter(PercentFormatter(xmax=heartbleed_df.shape[0]))
-    ax.tick_params(axis="both", labelsize=10)
-    ax.set_title("Heartbleed", fontsize=12, fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
-
-    tlt = fig.suptitle(f"{column} > 12332", fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
-    lgd = fig.legend(loc="lower center", bbox_to_anchor=(0.5, -0.05), fancybox=True, ncol=5)
-    plt.tight_layout()
-    plt.savefig(
-        f"{plots_output_dir}/heartbleed_{column.replace('/', '_')}_hist.pdf",
-        bbox_extra_artists=(lgd, tlt),
-        bbox_inches="tight",
-    )
-    plt.close()
-
-    fig, axes = plt.subplots(nrows=1, ncols=2)
-    axes = axes.flatten()
-
-    column = "Bwd IAT Total"
-    filtered_other_df = others_df[others_df[column] > 110000000]
-    filtered_heartbleed_df = heartbleed_df[heartbleed_df[column] > 110000000]
-
-    ax = axes[0]
-    ax.hist(
-        others_df[column].values,
-        # bins=50,
-        histtype="bar",
-        label="Others",
-        color=colors[0],
-    )
-    ax.hist(
-        filtered_other_df[column].values,
-        # bins=50,
-        histtype="bar",
-        label=f"Branch (Heartbleed)",
-        color=colors[-1],
-    )
-    ax.yaxis.set_major_formatter(PercentFormatter(xmax=others_df.shape[0]))
-    ax.tick_params(axis="both", labelsize=10)
-    ax.set_title("Others", fontsize=12, fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
-
-    ax = axes[1]
-    ax.hist(
-        heartbleed_df[column].values,
-        # bins=50,
-        histtype="bar",
-        # label="Others",
-        color=colors[0],
-    )
-    ax.hist(
-        filtered_heartbleed_df[column].values,
-        # bins=50,
-        histtype="bar",
-        range=[0, 120000000],
-        # label=f"Branch (Heartbleed)",
-        color=colors[-1],
-    )
-    ax.yaxis.set_major_formatter(PercentFormatter(xmax=heartbleed_df.shape[0]))
-    ax.tick_params(axis="both", labelsize=10)
-    ax.set_title("Heartbleed", fontsize=12, fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
-
-    tlt = fig.suptitle(f"{column} > 1.1e8", fontweight=plot.FONT_WEIGHT, fontname=plot.FONT_NAME)
-    lgd = fig.legend(loc="lower center", bbox_to_anchor=(0.5, -0.05), fancybox=True, ncol=5)
-    plt.tight_layout()
-    plt.savefig(
-        f"{plots_output_dir}/heartbleed_{column.replace('/', '_')}_hist.pdf",
-        bbox_extra_artists=(lgd, tlt),
-        bbox_inches="tight",
-    )
-    plt.close()

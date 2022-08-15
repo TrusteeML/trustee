@@ -9,13 +9,13 @@ import pandas as pd
 from sklearn import tree
 from sklearn.base import clone
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, f1_score
+from sklearn.metrics import classification_report, f1_score, r2_score
 
 from prettytable import PrettyTable
 from autogluon.tabular import TabularPredictor
 
-from skexplain.imitation import ClassificationTrustee
-from skexplain.helpers import get_dt_info, get_dt_similarity
+from trustee import ClassificationTrustee, RegressionTrustee
+from trustee.utils.tree import get_dt_info
 
 from .plot import (
     plot_top_nodes,
@@ -60,6 +60,7 @@ class TrustReport:
         verbose=False,
         class_names=None,
         feature_names=None,
+        is_classify=True,
     ):
         """
         Builds trust report for given black-box model using the Trustee method to extract white-box explanations as Decision Trees.
@@ -88,6 +89,7 @@ class TrustReport:
         self.verbose = verbose
         self.class_names = class_names
         self.feature_names = feature_names
+        self.is_classify = is_classify
 
         self.step = 0
         """
@@ -195,7 +197,7 @@ class TrustReport:
         performance_report = PrettyTable(title="Performance", header=False)
         performance_report.add_column(
             "Performance",
-            [classification_report(self.y_test, self.y_pred, digits=3)],
+            [self._score_report(self.y_test, self.y_pred)],
         )
 
         summary.add_column("Blackbox", [blackbox_report, performance_report])
@@ -228,7 +230,7 @@ class TrustReport:
         fidelity_report = PrettyTable(title="Fidelity", header=False)
         fidelity_report.add_column(
             "Fidelity",
-            [classification_report(self.y_pred, self.max_dt_y_pred, digits=3, zero_division=0)],
+            [self._score_report(self.y_pred, self.max_dt_y_pred)],
         )
         summary.add_column("Whitebox", [whitebox_report, fidelity_report])
 
@@ -257,7 +259,7 @@ class TrustReport:
             min_fidelity_report = PrettyTable(title="Fidelity", header=False)
             min_fidelity_report.add_column(
                 "Fidelity",
-                [classification_report(self.y_pred, self.min_dt_y_pred, digits=3, zero_division=0)],
+                [self._score_report(self.y_pred, self.min_dt_y_pred)],
             )
             summary.add_column("Top-k Whitebox", [min_whitebox_report, min_fidelity_report])
 
@@ -313,24 +315,22 @@ class TrustReport:
         top_nodes.valign = "m"
 
         for node in self.max_dt_top_nodes:
+            samples_by_class = [
+                (
+                    self.class_names[idx] if self.class_names and idx < len(self.class_names) else idx,
+                    (count_left / self.max_dt.tree_.value[0][0][idx]) * 100,
+                    (count_right / self.max_dt.tree_.value[0][0][idx]) * 100,
+                )
+                for idx, (count_left, count_right) in enumerate(node["data_split_by_class"])
+            ]
+            samples_left = (node["data_split"][0] / self.max_dt.tree_.n_node_samples[0]) * 100
+            samples_right = (node["data_split"][1] / self.max_dt.tree_.n_node_samples[0]) * 100
             top_nodes.add_row(
                 [
-                    "{} <= {}".format(
-                        self.feature_names[node["feature"]] if self.feature_names else node["feature"],
-                        node["threshold"],
-                    ),
+                    f"{self.feature_names[node['feature']] if self.feature_names else node['feature']} <= {node['threshold']}",
                     f"Left: {node['gini_split'][0]:.2f} \nRight: {node['gini_split'][1]:.2f}",
-                    f"Left: {((node['data_split'][0] / self.max_dt.tree_.n_node_samples[0]) * 100):.2f}% \nRight: {((node['data_split'][1] / self.max_dt.tree_.n_node_samples[0]) * 100):.2f}%",
-                    "\n".join(
-                        [
-                            "{}: {:.2f}% / {:.2f}%".format(
-                                self.class_names[idx] if self.class_names and idx < len(self.class_names) else idx,
-                                (count_left / self.max_dt.tree_.value[0][0][idx]) * 100,
-                                (count_right / self.max_dt.tree_.value[0][0][idx]) * 100,
-                            )
-                            for idx, (count_left, count_right) in enumerate(node["data_split_by_class"])
-                        ]
-                    ),
+                    f"Left: {samples_left:.2f}% \nRight: {samples_right:.2f}%",
+                    "\n".join(f"{row[0]}: {row[1]:.2f}% / {row[2]:.2f}%" for row in samples_by_class),
                 ]
             )
             top_nodes.add_row(["", "", "", ""])
@@ -349,7 +349,7 @@ class TrustReport:
             samples, samples_perc, class_samples_perc = (
                 branch["samples"],
                 (branch["samples"] / self.max_dt.tree_.n_node_samples[0]) * 100,
-                (branch["samples"] / self.max_dt.tree_.value[0][0][branch["class"]]) * 100,
+                (branch["samples"] / self.max_dt.tree_.value[0][0][branch["class"]]) * 100 if self.is_classify else 0,
             )
             sum_samples += samples
             sum_samples_perc += samples_perc
@@ -358,24 +358,20 @@ class TrustReport:
                 sum_class_samples_perc[branch["class"]] = 0
             sum_class_samples_perc[branch["class"]] += class_samples_perc
 
+            branch_class = (
+                self.class_names[branch["class"]]
+                if self.class_names and branch["class"] < len(self.class_names)
+                else branch["class"],
+            )
             top_branches.add_row(
                 [
                     "\n and ".join(
                         [
-                            "{} {} {}".format(
-                                self.feature_names[feat] if self.feature_names else feat,
-                                op,
-                                threshold,
-                            )
+                            f"{self.feature_names[feat] if self.feature_names else feat} {op} {threshold}"
                             for (_, feat, op, threshold) in branch["path"]
                         ]
                     ),
-                    "{}\n({:.2f}%)".format(
-                        self.class_names[branch["class"]]
-                        if self.class_names and branch["class"] < len(self.class_names)
-                        else branch["class"],
-                        branch["prob"],
-                    ),
+                    f"{branch_class}\n({branch['prob']:.2f}%)",
                     f"{samples}\n({samples_perc:.2f}%)",
                     f"{class_samples_perc:.2f}%",
                 ]
@@ -390,12 +386,7 @@ class TrustReport:
                 f"{sum_samples} ({sum_samples_perc:.2f}%)",
                 "\n".join(
                     [
-                        "{}: {:.2f}%".format(
-                            self.class_names[class_idx]
-                            if self.class_names and class_idx < len(self.class_names)
-                            else class_idx,
-                            class_perc,
-                        )
+                        f"{self.class_names[class_idx] if self.class_names and class_idx < len(self.class_names) else class_idx}:{class_perc:.2f}%"
                         for (class_idx, class_perc) in sum_class_samples_perc.items()
                     ]
                 ),
@@ -416,7 +407,6 @@ class TrustReport:
                     "DT Size",
                     "DT Depth",
                     "DT Num Leaves",
-                    "Similarity",
                     "Performance",
                     "Fidelity",
                 ],
@@ -425,19 +415,17 @@ class TrustReport:
             top_k_prune_performance.valign = "m"
 
             for i in self.top_k_prune_iter:
-                joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
                 top_k_prune_performance.add_row(
                     [
                         i["top_k"],
                         i["dt"].tree_.node_count,
                         i["dt"].get_depth(),
                         i["dt"].get_n_leaves(),
-                        f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
-                        i["classification_report"],
+                        i["score_report"],
                         i["fidelity_report"],
                     ]
                 )
-                top_k_prune_performance.add_row(["", "", "", "", "", "", ""])
+                top_k_prune_performance.add_row(["", "", "", "", "", ""])
 
             alpha_performance = PrettyTable(
                 title="CCP Alpha Iteration",
@@ -447,7 +435,6 @@ class TrustReport:
                     "DT Size",
                     "DT Depth",
                     "DT Num Leaves",
-                    "Similarity",
                     "Performance",
                     "Fidelity",
                 ],
@@ -456,7 +443,6 @@ class TrustReport:
             alpha_performance.valign = "m"
 
             for i in self.ccp_iter:
-                joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
                 alpha_performance.add_row(
                     [
                         i["ccp_alpha"],
@@ -464,12 +450,11 @@ class TrustReport:
                         i["dt"].tree_.node_count,
                         i["dt"].get_depth(),
                         i["dt"].get_n_leaves(),
-                        f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
-                        i["classification_report"],
+                        i["score_report"],
                         i["fidelity_report"],
                     ]
                 )
-                alpha_performance.add_row(["", "", "", "", "", "", "", ""])
+                alpha_performance.add_row(["", "", "", "", "", "", ""])
 
             max_depth_performance = PrettyTable(
                 title="Max Depth Iteration",
@@ -478,7 +463,6 @@ class TrustReport:
                     "DT Size",
                     "DT Depth",
                     "DT Num Leaves",
-                    "Similarity",
                     "Performance",
                     "Fidelity",
                 ],
@@ -487,19 +471,17 @@ class TrustReport:
             max_depth_performance.valign = "m"
 
             for i in self.max_depth_iter:
-                joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
                 max_depth_performance.add_row(
                     [
                         i["max_depth"],
                         i["dt"].tree_.node_count,
                         i["dt"].get_depth(),
                         i["dt"].get_n_leaves(),
-                        f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
-                        i["classification_report"],
+                        i["score_report"],
                         i["fidelity_report"],
                     ]
                 )
-                max_depth_performance.add_row(["", "", "", "", "", "", ""])
+                max_depth_performance.add_row(["", "", "", "", "", ""])
 
             max_leaves_performance = PrettyTable(
                 title="Max Leaves Iteration",
@@ -508,7 +490,6 @@ class TrustReport:
                     "DT Size",
                     "DT Depth",
                     "DT Num Leaves",
-                    "Similarity",
                     "Performance",
                     "Fidelity",
                 ],
@@ -517,19 +498,17 @@ class TrustReport:
             max_leaves_performance.valign = "m"
 
             for i in self.max_leaves_iter:
-                joined_similarity = "\n".join([f"  {sim:.3f}" for sim in i["similarity_vec"]])
                 max_leaves_performance.add_row(
                     [
                         i["max_leaves"],
                         i["dt"].tree_.node_count,
                         i["dt"].get_depth(),
                         i["dt"].get_n_leaves(),
-                        f"{i['similarity']:.3f}\n\nVector:[\n{joined_similarity}\n]",
-                        i["classification_report"],
+                        i["score_report"],
                         i["fidelity_report"],
                     ]
                 )
-                max_leaves_performance.add_row(["", "", "", "", "", "", ""])
+                max_leaves_performance.add_row(["", "", "", "", "", ""])
 
             prunning_analysis.add_column(
                 "Prunning Iteration",
@@ -558,7 +537,7 @@ class TrustReport:
                         i["it"],
                         self.feature_names[i["feature_removed"]] if self.feature_names else i["feature_removed"],
                         i["n_features_removed"],
-                        i["classification_report"],
+                        i["score_report"],
                         i["dt"].tree_.node_count,
                         i["fidelity_report"],
                     ]
@@ -576,6 +555,18 @@ class TrustReport:
 
         return f"\n{report}"
 
+    def _score(self, y, y_pred):
+        if self.is_classify:
+            return f1_score(y, y_pred, average="macro", zero_division=0)
+
+        return r2_score(y, y_pred)
+
+    def _score_report(self, y, y_pred):
+        if self.is_classify:
+            return f"\n{classification_report(y, y_pred, digits=3, zero_division=0)}"
+
+        return f"R2 Score: {r2_score(y, y_pred)}"
+
     def _progress(self, finish=False, length=100, fill="█", end="\r"):
         """
         Call in a loop to create terminal progress bar
@@ -588,7 +579,7 @@ class TrustReport:
         if self.step > self.total_steps or finish:
             self.step = self.total_steps
 
-        percent = ("{0:.1f}").format(100 * (self.step / float(self.total_steps)))
+        percent = f"{100 * (self.step / float(self.total_steps)):.1f}"
         filled_length = int(length * self.step // self.total_steps)
         progress_bar = fill * filled_length + "-" * (length - filled_length)
         print(f"\rProgress |{progress_bar}| {percent}% Complete", end=end)
@@ -659,7 +650,7 @@ class TrustReport:
         log = self.logger.log if self.logger else print
 
         if self.verbose:
-            log(f"Fitting blackbox model...")
+            log("Fitting blackbox model...")
 
         X_train = X_train if X_train is not None else self.X_train
         X_test = X_test if X_test is not None else self.X_test
@@ -709,11 +700,13 @@ class TrustReport:
         y_pred = getattr(blackbox_copy, self.predict_method_name)(X_test)
 
         if self.verbose:
-            log("Blackbox model classification report with training data:")
-            log(f"\n{classification_report(self.y_test, y_pred, digits=3, zero_division=0) }")
+            log("Blackbox model score report with training data:")
+            log(self._score_report(self.y_test, y_pred))
             log("Using Classification Trustee algorithm to extract DT...")
 
-        trustee = ClassificationTrustee(expert=blackbox_copy)
+        trustee = (
+            ClassificationTrustee(expert=blackbox_copy) if self.is_classify else RegressionTrustee(expert=blackbox_copy)
+        )
 
         trustee.fit(
             X_train,
@@ -752,14 +745,14 @@ class TrustReport:
 
         if self.verbose:
             log("Model explanation global fidelity report:")
-            log("\n{}".format(classification_report(y_pred, dt_y_pred, digits=3, zero_division=0)))
+            log(self._score_report(y_pred, dt_y_pred))
             log("Top-k Model explanation global fidelity report:")
-            log("\n{}".format(classification_report(y_pred, min_dt_y_pred, digits=3, zero_division=0)))
+            log(self._score_report(y_pred, min_dt_y_pred))
 
-            log("Model explanation classification report:")
-            log("\n{}".format(classification_report(self.y_test, dt_y_pred, digits=3, zero_division=0)))
-            log("Top-k Model explanation classification report:")
-            log("\n{}".format(classification_report(self.y_test, min_dt_y_pred, digits=3, zero_division=0)))
+            log("Model explanation score report:")
+            log(self._score_report(self.y_test, dt_y_pred))
+            log("Top-k Model explanation score report:")
+            log(self._score_report(self.y_test, min_dt_y_pred))
 
         self.blackbox = blackbox_copy
 
@@ -769,7 +762,6 @@ class TrustReport:
         """Collects data to build the make report"""
         self._collect_blackbox()
         self._collect_trustee()
-        self._collect_top_k_prunning()
 
         if self.analyze_stability:
             self._collect_stability_analysis()
@@ -778,12 +770,13 @@ class TrustReport:
             self._collect_branch_analysis()
 
         if self.num_pruning_iter > 0:
+            self._collect_top_k_prunning()
             self._collect_ccp_prunning()
             self._collect_max_depth_prunning()
             self._collect_max_leaves_prunning()
 
-        # if not self.skip_retrain:
-        #     self._collect_features_iter_removal()
+        if not self.skip_retrain:
+            self._collect_features_iter_removal()
 
         self._progress(finish=100)
 
@@ -848,22 +841,17 @@ class TrustReport:
 
             pruned_dt = self.trustee.prune(top_k=top_k)
             pruned_dt_y_pred = pruned_dt.predict(self.X_test)
-            pruned_dt_sim, pruned_dt_sim_vec = get_dt_similarity(pruned_dt, self.max_dt)
 
             self.branch_iter.append(
                 {
                     "top_k": top_k,
                     "dt": pruned_dt,
-                    "similarity": pruned_dt_sim,
-                    "similarity_vec": pruned_dt_sim_vec,
                     "y_pred": self.y_pred,
                     "dt_y_pred": pruned_dt_y_pred,
-                    "f1": f1_score(self.y_test, pruned_dt_y_pred, average="macro", zero_division=0),
-                    "classification_report": classification_report(
-                        self.y_test, pruned_dt_y_pred, digits=3, zero_division=0
-                    ),
-                    "fidelity": f1_score(self.y_pred, pruned_dt_y_pred, average="macro", zero_division=0),
-                    "fidelity_report": classification_report(self.y_pred, pruned_dt_y_pred, digits=3, zero_division=0),
+                    "score": self._score(self.y_test, pruned_dt_y_pred),
+                    "score_report": self._score_report(self.y_test, pruned_dt_y_pred),
+                    "fidelity": self._score(self.y_pred, pruned_dt_y_pred),
+                    "fidelity_report": self._score_report(self.y_pred, pruned_dt_y_pred),
                 }
             )
             self._progress()
@@ -888,8 +876,8 @@ class TrustReport:
                 {
                     "max_dt": max_dt,
                     "min_dt": min_dt,
-                    "max_dt_fidelity": f1_score(y_pred, max_dt_y_pred, average="macro", zero_division=0),
-                    "min_dt_fidelity": f1_score(y_pred, min_dt_y_pred, average="macro", zero_division=0),
+                    "max_dt_fidelity": self._score(y_pred, max_dt_y_pred),
+                    "min_dt_fidelity": self._score(y_pred, min_dt_y_pred),
                     "iteration": i,
                     "top_branches": top_branches,
                 }
@@ -912,22 +900,17 @@ class TrustReport:
 
             pruned_dt = self.trustee.prune(top_k=top_k)
             pruned_dt_y_pred = pruned_dt.predict(self.X_test)
-            pruned_dt_sim, pruned_dt_sim_vec = get_dt_similarity(pruned_dt, self.max_dt)
 
             self.top_k_prune_iter.append(
                 {
                     "top_k": top_k,
                     "dt": pruned_dt,
-                    "similarity": pruned_dt_sim,
-                    "similarity_vec": pruned_dt_sim_vec,
                     "y_pred": self.y_pred,
                     "dt_y_pred": pruned_dt_y_pred,
-                    "f1": f1_score(self.y_test, pruned_dt_y_pred, average="macro", zero_division=0),
-                    "classification_report": classification_report(
-                        self.y_test, pruned_dt_y_pred, digits=3, zero_division=0
-                    ),
-                    "fidelity": f1_score(self.y_pred, pruned_dt_y_pred, average="macro", zero_division=0),
-                    "fidelity_report": classification_report(self.y_pred, pruned_dt_y_pred, digits=3, zero_division=0),
+                    "score": self._score(self.y_test, pruned_dt_y_pred),
+                    "score_report": self._score_report(self.y_test, pruned_dt_y_pred),
+                    "fidelity": self._score(self.y_pred, pruned_dt_y_pred),
+                    "fidelity_report": self._score_report(self.y_pred, pruned_dt_y_pred),
                 }
             )
             self._progress()
@@ -953,23 +936,18 @@ class TrustReport:
 
                 gini = impurities[idx]
                 _, _, ccp_dt, ccp_dt_y_pred, _, _ = self._fit_and_explain(trustee_ccp_alpha=ccp_alpha)
-                ccp_dt_sim, ccp_dt_sim_vec = get_dt_similarity(ccp_dt, self.max_dt)
 
                 self.ccp_iter.append(
                     {
                         "ccp_alpha": ccp_alpha,
                         "gini": gini,
                         "dt": ccp_dt,
-                        "similarity": ccp_dt_sim,
-                        "similarity_vec": ccp_dt_sim_vec,
                         "y_pred": self.y_pred,
                         "dt_y_pred": ccp_dt_y_pred,
-                        "f1": f1_score(self.y_test, ccp_dt_y_pred, average="macro", zero_division=0),
-                        "classification_report": classification_report(
-                            self.y_test, ccp_dt_y_pred, digits=3, zero_division=0
-                        ),
-                        "fidelity": f1_score(self.y_pred, ccp_dt_y_pred, average="macro", zero_division=0),
-                        "fidelity_report": classification_report(self.y_pred, ccp_dt_y_pred, digits=3, zero_division=0),
+                        "score": self._score(self.y_test, ccp_dt_y_pred),
+                        "score_report": self._score_report(self.y_test, ccp_dt_y_pred),
+                        "fidelity": self._score(self.y_pred, ccp_dt_y_pred),
+                        "fidelity_report": self._score_report(self.y_pred, ccp_dt_y_pred),
                     }
                 )
                 self._progress()
@@ -991,23 +969,16 @@ class TrustReport:
 
                 _, _, max_depth_dt, max_depth_dt_y_pred, _, _ = self._fit_and_explain(trustee_max_depth=max_depth)
 
-                max_depth_dt_sim, max_depth_dt_sim_vec = get_dt_similarity(max_depth_dt, self.max_dt)
                 self.max_depth_iter.append(
                     {
                         "max_depth": max_depth,
                         "dt": max_depth_dt,
-                        "similarity": max_depth_dt_sim,
-                        "similarity_vec": max_depth_dt_sim_vec,
                         "y_pred": self.y_pred,
                         "dt_y_pred": max_depth_dt_y_pred,
-                        "f1": f1_score(self.y_test, max_depth_dt_y_pred, average="macro", zero_division=0),
-                        "classification_report": classification_report(
-                            self.y_test, max_depth_dt_y_pred, digits=3, zero_division=0
-                        ),
-                        "fidelity": f1_score(self.y_pred, max_depth_dt_y_pred, average="macro", zero_division=0),
-                        "fidelity_report": classification_report(
-                            self.y_pred, max_depth_dt_y_pred, digits=3, zero_division=0
-                        ),
+                        "score": self._score(self.y_test, max_depth_dt_y_pred),
+                        "score_report": self._score_report(self.y_test, max_depth_dt_y_pred),
+                        "fidelity": self._score(self.y_pred, max_depth_dt_y_pred),
+                        "fidelity_report": self._score_report(self.y_pred, max_depth_dt_y_pred),
                     }
                 )
                 self._progress()
@@ -1031,23 +1002,16 @@ class TrustReport:
                     trustee_max_leaf_nodes=max_leaves
                 )
 
-                max_leaves_dt_sim, max_leaves_dt_sim_vec = get_dt_similarity(max_leaves_dt, self.max_dt)
                 self.max_leaves_iter.append(
                     {
                         "max_leaves": max_leaves,
                         "dt": max_leaves_dt,
-                        "similarity": max_leaves_dt_sim,
-                        "similarity_vec": max_leaves_dt_sim_vec,
                         "y_pred": self.y_pred,
                         "dt_y_pred": max_leaves_dt_y_pred,
-                        "f1": f1_score(self.y_test, max_leaves_dt_y_pred, average="macro", zero_division=0),
-                        "classification_report": classification_report(
-                            self.y_test, max_leaves_dt_y_pred, digits=3, zero_division=0
-                        ),
-                        "fidelity": f1_score(self.y_pred, max_leaves_dt_y_pred, average="macro", zero_division=0),
-                        "fidelity_report": classification_report(
-                            self.y_pred, max_leaves_dt_y_pred, digits=3, zero_division=0
-                        ),
+                        "score": self._score(self.y_test, max_leaves_dt_y_pred),
+                        "score_report": self._score_report(self.y_test, max_leaves_dt_y_pred),
+                        "fidelity": self._score(self.y_pred, max_leaves_dt_y_pred),
+                        "fidelity_report": self._score_report(self.y_pred, max_leaves_dt_y_pred),
                     }
                 )
                 self._progress()
@@ -1103,10 +1067,10 @@ class TrustReport:
                     "dt_y_pred": dt_y_pred,
                     "feature_removed": top_feature_to_remove,
                     "n_features_removed": n_features_removed,
-                    "f1": f1_score(self.y_test, y_pred, average="macro", zero_division=0),
-                    "classification_report": classification_report(self.y_test, y_pred, digits=3, zero_division=0),
-                    "fidelity": f1_score(y_pred, dt_y_pred, average="macro", zero_division=0),
-                    "fidelity_report": classification_report(y_pred, dt_y_pred, digits=3, zero_division=0),
+                    "score": self._score(self.y_test, y_pred),
+                    "score_report": self._score_report(self.y_test, y_pred),
+                    "fidelity": self._score(y_pred, dt_y_pred),
+                    "fidelity_report": self._score_report(y_pred, dt_y_pred),
                 }
             )
 
@@ -1272,6 +1236,7 @@ class TrustReport:
             self.max_dt.tree_.n_node_samples[0],
             plots_output_dir,
             class_names=self.class_names,
+            is_classify=self.is_classify,
         )
         plot_all_branches(
             self.max_dt_all_branches,
@@ -1310,6 +1275,7 @@ class TrustReport:
             self.max_dt_top_branches,
             plots_output_dir,
             class_names=self.class_names,
+            is_classify=self.is_classify,
         )
 
         plot_stability(
@@ -1321,6 +1287,7 @@ class TrustReport:
             self.max_dt_top_branches,
             plots_output_dir,
             class_names=self.class_names,
+            is_classify=self.is_classify,
         )
 
         plot_stability_heatmap(
@@ -1331,6 +1298,7 @@ class TrustReport:
             self.max_dt_top_branches,
             plots_output_dir,
             class_names=self.class_names,
+            is_classify=self.is_classify,
         )
 
         plot_stability_heatmap(
@@ -1341,6 +1309,7 @@ class TrustReport:
             self.max_dt_top_branches,
             plots_output_dir,
             class_names=self.class_names,
+            is_classify=self.is_classify,
         )
 
         plot_distribution(
@@ -1371,9 +1340,9 @@ class TrustReport:
         stable = []
         agreement = []
 
-        for i in range(len(self.stability_iter)):
+        for i, _ in enumerate(self.stability_iter):
             agreement.append([])
-            for j in range(len(self.stability_iter)):
+            for j, _ in enumerate(self.stability_iter):
                 base_tree = self.stability_iter[i]["min_dt"]
                 iter_tree = self.stability_iter[j]["min_dt"]
 
@@ -1381,11 +1350,9 @@ class TrustReport:
                 iter_y_pred = iter_tree.predict(X_test_values)
                 base_y_pred = base_tree.predict(X_test_values)
 
-                agreement[i].append(f1_score(iter_y_pred, base_y_pred, average="weighted"))
+                agreement[i].append(self._score(iter_y_pred, base_y_pred))
 
-            print("Stability Iter", i)
             mean_agreement = np.mean(agreement[i])
-            print("Mean Agreement", agreement[i], mean_agreement)
             if mean_agreement >= threshold:
                 stable.append({"mean_agreement": mean_agreement, "dt": self.stability_iter[i]["min_dt"]})
 

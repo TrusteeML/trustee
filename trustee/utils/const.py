@@ -1,7 +1,7 @@
+import rootpath
 import numpy as np
 
-import rootpath
-from skexplain.enums.feature_type import FeatureType
+from trustee.enums.feature_type import FeatureType
 
 WINE_DATASET_META = {
     "name": "wine",

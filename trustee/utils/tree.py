@@ -1,6 +1,5 @@
 import numpy as np
 
-from scipy import spatial
 from sklearn.tree._tree import TREE_LEAF, TREE_UNDEFINED
 
 
@@ -115,30 +114,6 @@ def get_dt_dict(dt):
     return dt_dict
 
 
-# def get_zss_tree(dt):
-#     """Converts scikit-learn Decision Tree to ZSS Decision Tree"""
-#     children_left = dt.tree_.children_left
-#     children_right = dt.tree_.children_right
-#     features = dt.tree_.feature
-#     thresholds = dt.tree_.threshold
-
-#     def build_zss_tree(node):
-#         """Recursively iterates through all nodes in given decision tree to convert them to ZSS tree."""
-#         left = children_left[node]
-#         right = children_right[node]
-
-#         node = Node(f"{features[node]} <= {thresholds[node]}")
-#         if left != right:  # if not  leaf node
-#             node.addkid(build_zss_tree(left))
-#             node.addkid(build_zss_tree(right))
-
-#         return node
-
-#     zss_tree = build_zss_tree(0)
-
-#     return zss_tree
-
-
 def get_dt_info(dt):
     """Iterates through the given Decision Tree to collect relevant information."""
     children_left = dt.tree_.children_left
@@ -155,13 +130,18 @@ def get_dt_info(dt):
     def walk_tree(node, level, path):
         """Recursively iterates through all nodes in given decision tree and returns them as a list."""
         if children_left[node] == children_right[node]:  # if leaf node
-            node_class = np.argmax(values[node][0])
+            node_class = np.argmax(values[node][0]) if len(np.array(values[node][0])) > 1 else values[node][0][0]
+            node_prob = (
+                (values[node][0][node_class] / np.sum(values[node][0])) * 100
+                if np.array(values[node][0]).ndim > 1
+                else 0
+            )
             return [
                 {
                     "level": level,
                     "path": path,
                     "class": node_class,
-                    "prob": (values[node][0][node_class] / np.sum(values[node][0])) * 100,
+                    "prob": node_prob,
                     "samples": samples[node],
                 }
             ]
@@ -199,37 +179,3 @@ def get_dt_info(dt):
 
     branches = walk_tree(0, 0, [])
     return features_used, splits, branches
-
-
-def get_dt_similarity(dt_one, dt_two):
-    """Compare decision tree elements and compute the similarity between them"""
-    dt_one_matrix = np.array(
-        [
-            dt_one.tree_.children_left,
-            dt_one.tree_.children_right,
-            dt_one.tree_.feature,
-            dt_one.tree_.threshold,
-            [np.argmax(node[0]) for node in dt_one.tree_.value],
-        ]
-    )
-
-    dt_two_matrix = np.array(
-        [
-            dt_two.tree_.children_left,
-            dt_two.tree_.children_right,
-            dt_two.tree_.feature,
-            dt_two.tree_.threshold,
-            [np.argmax(node[0]) for node in dt_two.tree_.value],
-        ]
-    )
-
-    diff_tree_size = abs(len(dt_one.tree_.feature) - len(dt_two.tree_.feature))
-    if len(dt_one.tree_.feature) > len(dt_two.tree_.feature):
-        dt_two_matrix = np.pad(dt_two_matrix, [(0, 0), (0, diff_tree_size)], mode="constant")
-    else:
-        dt_one_matrix = np.pad(dt_one_matrix, [(0, 0), (0, diff_tree_size)], mode="constant")
-
-    similarity_vector = [1 - spatial.distance.cosine(x, y) for x, y in zip(dt_one_matrix, dt_two_matrix)]
-    similarity = np.mean(similarity_vector)
-
-    return similarity, list(similarity_vector)
