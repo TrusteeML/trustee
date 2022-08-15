@@ -8,7 +8,7 @@ def read(fname):
 
 
 setup(
-    name="trustee",
+    name="trustee-ml",
     version="0.1",
     packages=find_packages(),
     author="Arthur Selle Jacobs",

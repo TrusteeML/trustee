@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "trustee"
+name = "trustee-ml"
 version = "0.1.0"
 description = "This package implements the Trustee framework to extract decision tree explanation from black-box ML models."
 authors = ["Arthur Selle Jacobs <asjacobs@inf.ufrgs.br>"]
