@@ -137,7 +137,6 @@ dmypy.json
 *.pcap
 *.zip
 *.md5
-*.html
 dataset/
 *.pdf
 dt_*
