@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "trustee-ml"
-version = "0.1.0"
+name = "trustee"
+version = "1.0.0"
 description = "This package implements the Trustee framework to extract decision tree explanation from black-box ML models."
 authors = ["Arthur Selle Jacobs <asjacobs@inf.ufrgs.br>"]
 packages = [ { include = "trustee"} ]
@@ -21,6 +21,8 @@ termcolor = "^1.1.0"
 autogluon = ">=0.1.0"
 
 [tool.poetry.dev-dependencies]
+Sphinx = "^5.1.1"
+furo = "^2022.6.21"
 
 
 [tool.black]

@@ -1,3 +1,9 @@
+"""
+Trustee
+====================================
+The core module of the Trustee project
+"""
+
 import abc
 import torch
 import functools
@@ -14,7 +20,12 @@ from trustee.utils.tree import get_dt_info, get_dt_dict, prune_index
 
 def _check_if_trained(func):
     """
-    Check whether the Trustee is already fitted and self.best_student exists
+    Checks whether the Trustee is already fitted and self.best_student exists
+
+    Parameters
+    ----------
+    func
+        Function to apply decorator to.
     """
 
     @functools.wraps(func)
@@ -28,12 +39,24 @@ def _check_if_trained(func):
 
 class Trustee(abc.ABC):
     """
-    Implements the Trust-oriented Decision Tree Extraction (Trustee) algorithm to train
-    student model based on observations from an Expert model.
+    Base implementation the Trust-oriented Decision Tree Extraction (Trustee)
+    algorithm to train student model based on observations from an Expert model.
     """
 
     def __init__(self, expert, student_class, logger=None):
-        """Init method"""
+        """
+        Trustee constructor
+
+        Parameters
+        ---------
+        expert
+            The ML blackbox model to analyze.
+        student_class
+            Class of student to train based on blackbox model predictions
+        logger (optional)
+            A logger object
+
+        """
         self.log = logger.log if logger else print
         self.expert = expert
         self.students = []
@@ -65,7 +88,26 @@ class Trustee(abc.ABC):
         aggregate=True,  # for comparative purposes only
         verbose=False,
     ):
-        """Trains Decision Tree Regressor to imitate Expert model."""
+        """
+        Trains Decision Tree Regressor to imitate Expert model.
+
+        Parameters
+        ---------
+        X
+        y
+        max_leaf_nodes
+        max_depth
+        ccp_alpha
+        train_size
+        num_iter
+        num_samples
+        samples_size
+        use_features
+        predict_method_name
+        optimization
+        aggregate
+        verbose
+        """
         if verbose:
             self.log(f"Initializing training dataset using {self.expert} as expert model")
 
@@ -174,7 +216,9 @@ class Trustee(abc.ABC):
         self.best_student = self.explain()[0]
 
     def explain(self):
-        """Returns explainable model that best imitates Expert model, based on calculated rewards."""
+        """
+        Returns explainable model that best imitates Expert model, based on calculated rewards.
+        """
         if not self.students:
             raise ValueError("No student models have been trained yet. Please fit() Trustee explaimer first.")
 
@@ -182,12 +226,16 @@ class Trustee(abc.ABC):
 
     @_check_if_trained
     def get_students(self):
-        """Returns list of all (student, reward) obtained during the training process."""
+        """
+        Returns list of all (student, reward) obtained during the training process.
+        """
         return self.students
 
     @_check_if_trained
     def get_n_features(self):
-        """Returns number of features used in the top student model."""
+        """
+        Returns number of features used in the top student model.
+        """
 
         if not self.features:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
@@ -196,13 +244,17 @@ class Trustee(abc.ABC):
 
     @_check_if_trained
     def get_n_classes(self):
-        """Returns number of classes used in the top student model."""
+        """
+        Returns number of classes used in the top student model.
+        """
 
         return self.best_student.tree_.n_classes[0]
 
     @_check_if_trained
     def get_samples_sum(self):
-        """Returns the sum of all samples in all non-leaf nodes in best student model."""
+        """
+        Returns the sum of all samples in all non-leaf nodes in best student model.
+        """
 
         left = self.best_student.tree_.children_left
         right = self.best_student.tree_.children_right
@@ -212,7 +264,9 @@ class Trustee(abc.ABC):
 
     @_check_if_trained
     def get_top_branches(self, top_k=10):
-        """Returns list of top branches of the best student."""
+        """
+        Returns list of top branches of the best student.
+        """
 
         if not self.branches:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
@@ -221,7 +275,9 @@ class Trustee(abc.ABC):
 
     @_check_if_trained
     def get_top_features(self, top_k=10):
-        """Returns list of top features of the best student."""
+        """
+        Returns list of top features of the best student.
+        """
 
         if not self.features:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
@@ -230,7 +286,9 @@ class Trustee(abc.ABC):
 
     @_check_if_trained
     def get_top_nodes(self, top_k=10):
-        """Returns list of top nodes of the best student."""
+        """
+        Returns list of top nodes of the best student.
+        """
 
         if not self.nodes:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
@@ -241,7 +299,9 @@ class Trustee(abc.ABC):
 
     @_check_if_trained
     def get_samples_by_level(self):
-        """Returns list of samples by level of the best student."""
+        """
+        Returns list of samples by level of the best student.
+        """
 
         if not self.nodes:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
@@ -260,7 +320,9 @@ class Trustee(abc.ABC):
 
     @_check_if_trained
     def get_leaves_by_level(self):
-        """Returns list of leaves by level of the best student."""
+        """
+        Returns list of leaves by level of the best student.
+        """
 
         if not self.branches:
             self.features, self.nodes, self.branches = get_dt_info(self.best_student)
@@ -273,7 +335,14 @@ class Trustee(abc.ABC):
 
     @_check_if_trained
     def prune(self, top_k=10, max_impurity=0.10):
-        """Prunes and returns the best student model explanation from the list of students."""
+        """
+        Prunes and returns the best student model explanation from the list of students.
+
+        Parameters
+        ---------
+        top_k
+        max_impurity
+        """
 
         top_branches = self.get_top_branches(top_k=top_k)
         prunned_student = deepcopy(self.best_student)
@@ -296,29 +365,65 @@ class Trustee(abc.ABC):
 
 class ClassificationTrustee(Trustee):
     """
-    Implements the Trust-oriented Decision Tree Extraction (Trustee) algorithm to train a student Decision Tree Classifier
-    based on observations from an Expert classification model.
+    Implements the Trust-oriented Decision Tree Extraction (Trustee) algorithm to train
+    a student Decision Tree Classifier based on observations from an Expert classification model.
     """
 
     def __init__(self, expert, logger=None):
-        """Init method"""
+        """
+        Classification Trustee constructor
+
+        Parameters
+        ---------
+        expert
+            The ML blackbox model to analyze.
+        student_class
+            Class of student to train based on blackbox model predictions
+        logger (optional)
+            A logger object
+        """
         super().__init__(expert, student_class=DecisionTreeClassifier, logger=logger)
 
     def score(self, y_true, y_pred, average="macro"):
-        """Score function for student models"""
+        """
+        Score function for student models
+
+        Parameters
+        ---------
+        y_true
+        y_pred
+        """
         return f1_score(y_true, y_pred, average=average)
 
 
 class RegressionTrustee(Trustee):
     """
-    Implements the Trust-oriented Decision Tree Extraction (Trustee) algorithm to train a student Decision Tree Regressor
-    based on observations from an Expert regression model.
+    Implements the Trust-oriented Decision Tree Extraction (Trustee) algorithm to train a
+    student Decision Tree Regressor based on observations from an Expert regression model.
     """
 
     def __init__(self, expert, logger=None):
-        """Init method"""
+        """
+        Regression Trustee constructor
+
+        Parameters
+        ---------
+        expert
+            The ML blackbox model to analyze.
+        student_class
+            Class of student to train based on blackbox model predictions
+        logger (optional)
+            A logger object
+        """
         super().__init__(expert=expert, student_class=DecisionTreeRegressor, logger=logger)
 
     def score(self, y_true, y_pred):
-        """Score function for student models"""
+        """
+        Score function for student models
+
+        Parameters
+        ---------
+        y_true
+        y_pred
+        """
         return r2_score(y_true, y_pred)

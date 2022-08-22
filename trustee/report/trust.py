@@ -1,3 +1,8 @@
+"""
+Trust Report
+====================================
+The module that implements Trust Reports
+"""
 import os
 import copy
 import torch

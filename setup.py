@@ -8,7 +8,7 @@ def read(fname):
 
 
 setup(
-    name="trustee-ml",
+    name="trustee",
     version="0.1",
     packages=find_packages(),
     author="Arthur Selle Jacobs",
@@ -17,7 +17,7 @@ setup(
     long_description=read("README.md"),
     keywords="trustee xai explainable ai machine-learning ml",
     license="BSD",
-    python_requires=">=3.6.1",
+    python_requires=">=3.7.1<3.9",
     classifiers=[
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
