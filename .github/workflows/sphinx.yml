@@ -19,7 +19,6 @@ jobs:
                   path: docs/build/html/
             - name: Deploy
               uses: peaceiris/actions-gh-pages@v3
-              if: github.ref == 'refs/heads/main'
               with:
                   deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
                   external_repository: username/external-repository
