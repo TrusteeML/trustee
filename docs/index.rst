@@ -12,7 +12,7 @@ the :doc:`api` section.
 Python Version
 --------------
 
-Trustee supports Python >=3.7 and <=3.9.
+Trustee supports Python >=3.8 and <=3.9.
 
 Install Trustee
 ---------------
