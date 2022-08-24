@@ -48,7 +48,7 @@ class Trustee(abc.ABC):
         Trustee constructor
 
         Parameters
-        ---------
+        ----------
         expert
             The ML blackbox model to analyze.
         student_class
@@ -92,7 +92,7 @@ class Trustee(abc.ABC):
         Trains Decision Tree Regressor to imitate Expert model.
 
         Parameters
-        ---------
+        ----------
         X
         y
         max_leaf_nodes
@@ -339,7 +339,7 @@ class Trustee(abc.ABC):
         Prunes and returns the best student model explanation from the list of students.
 
         Parameters
-        ---------
+        ----------
         top_k
         max_impurity
         """
@@ -374,7 +374,7 @@ class ClassificationTrustee(Trustee):
         Classification Trustee constructor
 
         Parameters
-        ---------
+        ----------
         expert
             The ML blackbox model to analyze.
         student_class
@@ -389,7 +389,7 @@ class ClassificationTrustee(Trustee):
         Score function for student models
 
         Parameters
-        ---------
+        ----------
         y_true
         y_pred
         """
@@ -407,7 +407,7 @@ class RegressionTrustee(Trustee):
         Regression Trustee constructor
 
         Parameters
-        ---------
+        ----------
         expert
             The ML blackbox model to analyze.
         student_class
@@ -422,7 +422,7 @@ class RegressionTrustee(Trustee):
         Score function for student models
 
         Parameters
-        ---------
+        ----------
         y_true
         y_pred
         """

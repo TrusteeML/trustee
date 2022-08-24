@@ -19,9 +19,11 @@ torch = "^1.10.0"
 prettytable = "3.0.0"
 termcolor = "^1.1.0"
 autogluon = ">=0.1.0"
-furo = "^2022.6.21"
 
 [tool.poetry.dev-dependencies]
+furo = "^2022.6.21"
+sphinxemoji = "^0.2.0"
+Sphinx = "^5.1.1"
 
 [tool.black]
 line-length = 120

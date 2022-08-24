@@ -3,7 +3,7 @@
 This package implements the `trustee` framework to extract decision tree explanation from black-box ML models.
 
 
-# Usage
+## Usage
 
 TBD.
 
@@ -22,6 +22,6 @@ For use cases on how `trustee` can be leverage to explain ML black boxes, please
 	location     = {Los Angeles, CA, USA},
 	publisher    = {Association for Computing Machinery},
 	address      = {New York, NY, USA},
-	series       = {CCS '21}
+	series       = {CCS '22}
 }
 ```
