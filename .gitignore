@@ -132,7 +132,6 @@ dmypy.json
 
 # Custom files
 *.csv
-*.png
 .DS_Store
 *.pcap
 *.zip
