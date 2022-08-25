@@ -21,17 +21,6 @@ X, y = datasets.load_iris(return_X_y=True)
 # i.e. 70 % training dataset and 30 % test datasets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30)
 
-# creating dataframe of IRIS dataset
-data = pd.DataFrame(
-    {
-        "sepallength": iris.data[:, 0],
-        "sepalwidth": iris.data[:, 1],
-        "petallength": iris.data[:, 2],
-        "petalwidth": iris.data[:, 3],
-        "species": iris.target,
-    }
-)
-
 # creating a RF classifier
 clf = RandomForestClassifier(n_estimators=100)
 # Training the model on the training dataset

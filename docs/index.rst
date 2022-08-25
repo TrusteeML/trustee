@@ -58,7 +58,10 @@ Sample Code
 *******************
 
 .. code:: python
+<<<<<<< HEAD
   
+=======
+>>>>>>> afc8eb78fccfa6b73a464442ccddd6a71d9ddf67
   from sklearn import datasets
   from sklearn.ensemble import RandomForestClassifier
   from sklearn.model_selection import train_test_split
@@ -100,7 +103,11 @@ For other examples and use cases of how Trustee can used to scrutinize ML models
     `iot_case/`           Trustee application to Random Forest Classifier to distguish IoT devices, trained with features extracted from the pcaps from the UNSW IoT Dataset.
     `moon_star_case/`     Trustee application to Neural Network Moon and Stars Shortcut learning toy example.
     `nprint_ids_case/`    Trustee application to the nPrintML AutoGluon Tabular Predictor for an Intrustion Detection System, also trained using pcaps from the CIC-IDS-2017 dataset.
+<<<<<<< HEAD
     `nprint_os_case/`     Trustee application to the nPrintML AutoGluon Tabular Predictor for OS Fingerprinting, also trained using with pcaps from the CIC-IDS-2017 dataset.
+=======
+    `nprint_os_case/`    Trustee application to the nPrintML AutoGluon Tabular Predictor for OS Fingerprinting, also trained using with pcaps from the CIC-IDS-2017 dataset.
+>>>>>>> afc8eb78fccfa6b73a464442ccddd6a71d9ddf67
     `pensieve_case/`      Trustee application to the Pensieve RL model for adaptive bit-rate prediction, and comparison to related work Metis.
     `vpn_case/`           Trustee application the 1D-CNN trained to detect VPN traffic trained with the ISCX VPN-nonVPN dataset.
     ===================== ============================================================================================================================================================================
