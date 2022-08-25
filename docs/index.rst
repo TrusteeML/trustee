@@ -58,9 +58,6 @@ Sample Code
 *******************
 
 .. code:: python
-
-  import pandas as pd
-
   from sklearn import datasets
   from sklearn.ensemble import RandomForestClassifier
   from sklearn.model_selection import train_test_split
@@ -71,16 +68,6 @@ Sample Code
   iris = datasets.load_iris()
   X, y = datasets.load_iris(return_X_y=True)
   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30)
-
-  data = pd.DataFrame(
-      {
-          "sepallength": iris.data[:, 0],
-          "sepalwidth": iris.data[:, 1],
-          "petallength": iris.data[:, 2],
-          "petalwidth": iris.data[:, 3],
-          "species": iris.target,
-      }
-  )
 
   clf = RandomForestClassifier(n_estimators=100)
   clf.fit(X_train, y_train)
@@ -112,7 +99,7 @@ For other examples and use cases of how Trustee can used to scrutinize ML models
     `iot_case/`           Trustee application to Random Forest Classifier to distguish IoT devices, trained with features extracted from the pcaps from the UNSW IoT Dataset.
     `moon_star_case/`     Trustee application to Neural Network Moon and Stars Shortcut learning toy example.
     `nprint_ids_case/`    Trustee application to the nPrintML AutoGluon Tabular Predictor for an Intrustion Detection System, also trained using pcaps from the CIC-IDS-2017 dataset.
-    `nprint_ids_case/`    Trustee application to the nPrintML AutoGluon Tabular Predictor for OS Fingerprinting, also trained using with pcaps from the CIC-IDS-2017 dataset.
+    `nprint_os_case/`    Trustee application to the nPrintML AutoGluon Tabular Predictor for OS Fingerprinting, also trained using with pcaps from the CIC-IDS-2017 dataset.
     `pensieve_case/`      Trustee application to the Pensieve RL model for adaptive bit-rate prediction, and comparison to related work Metis.
     `vpn_case/`           Trustee application the 1D-CNN trained to detect VPN traffic trained with the ISCX VPN-nonVPN dataset.
     ===================== ============================================================================================================================================================================
