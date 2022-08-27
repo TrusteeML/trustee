@@ -75,13 +75,13 @@ Sample Code
   y_pred = clf.predict(X_test)
 
   trustee = ClassificationTrustee(expert=clf)
-  trustee.fit(X_train, y_train, num_iter=50, samples_size=0.3, verbose=True)
-  dt = trustee.prune(top_k=10)
+  trustee.fit(X_train, y_train, num_iter=50, num_stability_iter=10, samples_size=0.3, verbose=True)
+  dt = trustee.explain()
   dt_y_pred = dt.predict(X_test)
 
-  print("Top-k Model explanation global fidelity report:")
+  print("Model explanation global fidelity report:")
   print(classification_report(y_pred, dt_y_pred))
-  print("Top-k Model explanation score report:")
+  print("Model explanation score report:")
   print(classification_report(y_test, dt_y_pred))
 
 

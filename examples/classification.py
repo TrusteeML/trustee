@@ -34,12 +34,10 @@ trustee = ClassificationTrustee(expert=clf)
 trustee.fit(X_train, y_train, num_iter=50, samples_size=0.3, verbose=True)
 
 # Get the best explanation from Trustee
-dt, reward, idx = trustee.explain()
-print(f"Model explanation {idx} training fidelity: {reward}")
-
-# Get the Top-10 pruned explanation DT
-pruned_dt = trustee.prune(top_k=10)
-print(f"Top-k Prunned explanation size: {dt.tree_.node_count}")
+dt, pruned_dt, agreement, reward = trustee.explain()
+print(f"Model explanation training agreement and fidelity: ({agreement}, {reward})")
+print(f"Model Explanation size: {dt.tree_.node_count}")
+print(f"Top-k Prunned Model explanation size: {pruned_dt.tree_.node_count}")
 
 # Use explanations to make predictions
 dt_y_pred = dt.predict(X_test)

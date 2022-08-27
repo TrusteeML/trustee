@@ -3,24 +3,23 @@ Trustee
 ====================================
 The core module of the Trustee project
 """
-
 import abc
-import torch
 import functools
 import numpy as np
-import pandas as pd
+
 from copy import deepcopy
+
 
 from sklearn.metrics import f1_score, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from trustee.utils.tree import get_dt_info, get_dt_dict, prune_index
+from trustee.utils.tree import get_dt_info, top_k_prune
 
 
 def _check_if_trained(func):
     """
-    Checks whether the Trustee is already fitted and self.best_student exists
+    Checks whether the Trustee is already fitted and self._best_student exists
 
     Parameters
     ----------
@@ -30,7 +29,7 @@ def _check_if_trained(func):
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        if not self.best_student:
+        if len(self._top_students) == 0:
             raise ValueError("No student models have been trained yet. Please fit() Trustee explainer first.")
         return func(self, *args, **kwargs)
 
@@ -59,27 +58,37 @@ class Trustee(abc.ABC):
         """
         self.log = logger.log if logger else print
         self.expert = expert
-        self.students = []
         self.student_class = student_class
 
-        self.best_student = None
-        self.features = None
-        self.nodes = None
-        self.branches = None
+        self._students_by_iter = []
+        self._top_students = []
+        self._stable_students = []
+
+        self._X_train = []
+        self._X_test = []
+        self._y_train = []
+        self._y_test = []
+
+        self._best_student = None
+        self._features = None
+        self._nodes = None
+        self._branches = None
 
     @abc.abstractmethod
-    def score(self, y_true, y_pred):
+    def _score(self, y_true, y_pred):
         """Score function for student models"""
 
     def fit(
         self,
         X,
         y,
+        top_k=10,
         max_leaf_nodes=None,
         max_depth=None,
         ccp_alpha=0.0,
         train_size=0.7,
-        num_iter=100,
+        num_iter=50,
+        num_stability_iter=5,
         num_samples=2000,
         samples_size=None,
         use_features=None,
@@ -111,224 +120,259 @@ class Trustee(abc.ABC):
         if verbose:
             self.log(f"Initializing training dataset using {self.expert} as expert model")
 
+        # convert data to np array to facilitate processing
+        X = np.array(X)
+        y = np.array(y)
+
         if len(X) != len(y):
-            raise ValueError("Features (X) and target (y) values should have the same length.")
+            raise ValueError("_Features (X) and target (y) values should have the same length.")
 
-        features = X
-        targets = getattr(self.expert, predict_method_name)(X)
+        # split input array to train DTs and evaluate agreement
+        self._X_train, self._X_test, self._y_train, self._y_test = train_test_split(X, y, train_size=train_size)
 
-        if hasattr(targets, "shape") and len(targets.shape) >= 2:
+        _features = self._X_train
+        targets = getattr(self.expert, predict_method_name)(self._X_train)
+
+        if len(targets.shape) >= 2:
             targets = targets.argmax(axis=-1)
 
         student = self.student_class(
-            random_state=0,
-            max_leaf_nodes=max_leaf_nodes,
-            max_depth=max_depth,
-            ccp_alpha=ccp_alpha,
+            random_state=0, max_leaf_nodes=max_leaf_nodes, max_depth=max_depth, ccp_alpha=ccp_alpha
         )
 
         if verbose:
-            self.log(f"Expert model score: {self.score(y, targets)}")
-            self.log(f"Initializing Trustee loop with {num_iter} iterations")
+            self.log(f"Expert model score: {self._score(self._y_train, targets)}")
+            self.log(f"Initializing Trustee outer-loop with {num_stability_iter} iterations")
 
-        # Trustee inner-loop
-        # The outer-loop was implemented as part of the trust report, see report/trust.py -> get_stable_explanations()
-        for i in range(num_iter):
+        # Trustee outer-loop
+        for i in range(num_stability_iter):
+            self._students_by_iter.append([])
             if verbose:
-                self.log("#" * 10, f"Iteration {i}/{num_iter}", "#" * 10)
+                self.log("#" * 10, f"Outer-loop Iteration {i}/{num_stability_iter}", "#" * 10)
+                self.log(f"Initializing Trustee inner-loop with {num_stability_iter} iterations")
 
-            dataset_size = len(features)
-            size = int(int(len(X)) * samples_size) if samples_size else num_samples
-            # Step 1: Sample predictions from training dataset
-            if verbose:
-                self.log(f"Sampling {size} points from training dataset with ({len(features)}, {len(targets)}) entries")
+            # Trustee inner-loop
+            for j in range(num_iter):
+                if verbose:
+                    self.log("#" * 10, f"Inner-loop Iteration {j}/{num_iter}", "#" * 10)
 
-            samples_idxs = np.random.choice(dataset_size, size=size, replace=False)
+                dataset_size = len(_features)
+                size = int(int(len(self._X_train)) * samples_size) if samples_size else num_samples
+                # Step 1: Sample predictions from training dataset
+                if verbose:
+                    self.log(
+                        f"Sampling {size} points from training dataset with ({len(_features)}, {len(targets)}) entries"
+                    )
 
-            if isinstance(features, pd.DataFrame) and isinstance(targets, pd.Series):
-                X_iter, y_iter = features.iloc[samples_idxs], targets.iloc[samples_idxs]
-            elif isinstance(features, np.ndarray) and isinstance(targets, np.ndarray):
-                X_iter, y_iter = features[samples_idxs], targets[samples_idxs]
-            elif torch.is_tensor(features) and torch.is_tensor(targets):
-                X_iter, y_iter = features[samples_idxs].clone().detach(), targets[samples_idxs].clone().detach()
-            else:
-                X_iter, y_iter = np.array(features)[samples_idxs], np.array(targets)[samples_idxs]
-
-            X_train, X_test, y_train, y_test = train_test_split(X_iter, y_iter, train_size=train_size)
-
-            X_train_student = X_train
-            X_test_student = X_test
-            if use_features is not None:
-                if isinstance(X_train, pd.DataFrame):
-                    X_train_student = X_train.iloc[:, use_features]
-                    X_test_student = X_test.iloc[:, use_features]
-                elif isinstance(X_train, np.ndarray):
-                    X_train_student = np.reshape(X_train[:, [use_features]], (X_train.shape[0], -1))
-                    X_test_student = np.reshape(X_test[:, [use_features]], (X_test.shape[0], -1))
-                elif torch.is_tensor(X_train):
-                    X_train_student = X_train[:, [use_features]].clone().detach()
-                    X_test_student = X_test[:, [use_features]].clone().detach()
-                else:
-                    X_train_student = np.array(X_train)[:, [use_features]]
-                    X_test_student = np.array(X_test)[:, [use_features]]
-
-            # Step 2: Traing DecisionTreeRegressor with sampled data
-            student.fit(X_train_student, y_train)
-            student_pred = student.predict(X_test_student)
-
-            if verbose:
-                self.log(
-                    f"Student model {i} trained with depth {student.get_depth()} and {student.get_n_leaves()} leaves:"
+                samples_idxs = np.random.choice(dataset_size, size=size, replace=False)
+                X_iter, y_iter = _features[samples_idxs], targets[samples_idxs]
+                X_iter_train, X_iter_test, y_iter_train, y_iter_test = train_test_split(
+                    X_iter, y_iter, train_size=train_size
                 )
-                self.log(f"Student model score: {self.score(y_test, student_pred)}")
 
-            # Step 3: Use expert model predictions to aggregate original dataset
-            expert_pred = getattr(self.expert, predict_method_name)(X_test)
-            if hasattr(expert_pred, "shape") and len(expert_pred.shape) >= 2:
-                # expert_pred = expert_pred.ravel()
-                expert_pred = expert_pred.argmax(axis=-1)
+                X_train_student = X_iter_train
+                X_test_student = X_iter_test
+                if use_features is not None:
+                    X_train_student = np.reshape(X_iter_train[:, [use_features]], (X_iter_train.shape[0], -1))
+                    X_test_student = np.reshape(X_iter_test[:, [use_features]], (X_iter_test.shape[0], -1))
 
-            if aggregate:
-                if isinstance(features, pd.DataFrame) and isinstance(targets, pd.Series):
-                    features = features.append(X_test)
-                    targets = targets.append(expert_pred)
-                elif torch.is_tensor(features) and torch.is_tensor(targets):
-                    features = torch.cat((features, X_test), 0)
-                    targets = torch.cat((targets, expert_pred), 0)
-                else:
-                    features = np.append(features, X_test, axis=0)
+                # Step 2: Traing DecisionTreeRegressor with sampled data
+                student.fit(X_train_student, y_iter_train)
+                student_pred = student.predict(X_test_student)
+
+                if verbose:
+                    self.log(
+                        f"Student model {j} trained with depth {student.get_depth()} and {student.get_n_leaves()} leaves:"
+                    )
+                    self.log(f"Student model score: {self._score(y_iter_test, student_pred)}")
+
+                # Step 3: Use expert model predictions to aggregate original dataset
+                expert_pred = getattr(self.expert, predict_method_name)(X_iter_test)
+                if hasattr(expert_pred, "shape") and len(expert_pred.shape) >= 2:
+                    # expert_pred = expert_pred.ravel()
+                    expert_pred = expert_pred.argmax(axis=-1)
+
+                if aggregate:
+                    _features = np.append(_features, X_iter_test, axis=0)
                     targets = np.append(targets, expert_pred, axis=0)
 
-            if optimization == "accuracy":
-                # Step 4: Calculate reward based on Decistion Tree Classifier accuracy
-                reward = self.score(y_test, student_pred)
-            else:
-                # Step 4: Calculate reward based on Decistion Tree Classifier fidelity to the Expert model
-                reward = self.score(expert_pred, student_pred)
+                if optimization == "accuracy":
+                    # Step 4: Calculate reward based on Decistion Tree Classifier accuracy
+                    reward = self._score(y_iter_test, student_pred)
+                else:
+                    # Step 4: Calculate reward based on Decistion Tree Classifier fidelity to the Expert model
+                    reward = self._score(expert_pred, student_pred)
 
-            if verbose:
-                self.log(f"Student model {i} fidelity: {reward}")
+                if verbose:
+                    self.log(f"Student model {j} fidelity: {reward}")
 
-            # Step 5: Somehow incorporate that reward onto training process?
-            # - Maybe just store the highest reward possible and use that as output?
-            self.students.append((deepcopy(student), reward, i))
+                # Save student to list of iterations dt
+                self._students_by_iter[i].append((deepcopy(student), reward))
 
-        self.best_student = self.explain()[0]
+            # Save student with highest fidelity to list of top students by iteration
+            self._top_students.append(max(self._students_by_iter[i], key=lambda item: item[1]))
 
-    def explain(self):
+        # Get best overall student based on mean agreement
+        self._best_student = self.explain(top_k=top_k)[0]
+
+    @_check_if_trained
+    def explain(self, top_k=10):
         """
         Returns explainable model that best imitates Expert model, based on calculated rewards.
         """
-        if not self.students:
-            raise ValueError("No student models have been trained yet. Please fit() Trustee explaimer first.")
-
-        return max(self.students, key=lambda item: item[1])
-
-    @_check_if_trained
-    def get_students(self):
-        """
-        Returns list of all (student, reward) obtained during the training process.
-        """
-        return self.students
+        # Return dt with highest mean agreement when pruned (with no thrshold)
+        stable = self.get_stable(top_k=top_k, threshold=0, sort=False)
+        return max(stable, key=lambda item: item[2])
 
     @_check_if_trained
-    def get_n_features(self):
+    def get_stable(self, top_k=10, threshold=0.9, sort=True):
         """
-        Returns number of features used in the top student model.
+        Filters out explanations from Trustee sability analysis with less than threshold agreement.
+
+        Parameters
+        ----------
+        top_k = 10
+        threshold = 0.9
+        sort = True
         """
+        if len(self._stable_students) == 0:
+            agreement = []
+            # Calculate pair-wise agreement of all top students generated during inner loop
+            for i, _ in enumerate(self._top_students):
+                agreement.append([])
+                # Apply top-k prunning before calculating agreement
+                base_tree = top_k_prune(self._top_students[i][0], top_k=top_k)
+                for j, _ in enumerate(self._top_students):
+                    # Apply top-k prunning before calculating agreement
+                    iter_tree = top_k_prune(self._top_students[j][0], top_k=top_k)
 
-        if not self.features:
-            self.features, self.nodes, self.branches = get_dt_info(self.best_student)
+                    iter_y_pred = iter_tree.predict(self._X_test)
+                    base_y_pred = base_tree.predict(self._X_test)
 
-        return len(self.features.keys())
+                    agreement[i].append(self._score(iter_y_pred, base_y_pred))
+
+                # Save complete dt, top-k prune dt, mean agreement and fidelity
+                self._stable_students.append(
+                    (
+                        self._top_students[i][0],
+                        base_tree,
+                        np.mean(agreement[i]),
+                        self._top_students[i][1],
+                    )
+                )
+
+        stable = self._stable_students
+        if threshold > 0:
+            stable = filter(lambda item: item[2] >= threshold, stable)
+
+        if sort:
+            return sorted(stable, key=lambda item: item[2], reverse=True)
+
+        return stable
 
     @_check_if_trained
-    def get_n_classes(self):
+    def get_all_students(self):
+        """
+        Returns list of all (student, reward) obtained during the inner-loop process.
+        """
+        return self._students_by_iter
+
+    @_check_if_trained
+    def get_top_students(self):
+        """
+        Returns list of top (students, reward) obtained during the outer-loop process.
+        """
+        return self._top_students
+
+    @_check_if_trained
+    def get_n_features(self, student=None):
+        """
+        Returns number of _features used in the top student model.
+        """
+        if not self._features:
+            self._features, self._nodes, self._branches = get_dt_info(self.student)
+
+        return len(self._features.keys())
+
+    @_check_if_trained
+    def get_n_classes(self, student=None):
         """
         Returns number of classes used in the top student model.
         """
-
-        return self.best_student.tree_.n_classes[0]
+        return self._best_student.tree_.n_classes[0]
 
     @_check_if_trained
-    def get_samples_sum(self):
+    def get_samples_sum(self, student=None):
         """
-        Returns the sum of all samples in all non-leaf nodes in best student model.
+        Returns the sum of all samples in all non-leaf _nodes in best student model.
         """
-
-        left = self.best_student.tree_.children_left
-        right = self.best_student.tree_.children_right
-        samples = self.best_student.tree_.n_node_samples
+        left = self._best_student.tree_.children_left
+        right = self._best_student.tree_.children_right
+        samples = self._best_student.tree_.n_node_samples
 
         return np.sum([n_samples if left[node] != right[node] else 0 for node, n_samples in enumerate(samples)])
 
     @_check_if_trained
     def get_top_branches(self, top_k=10):
         """
-        Returns list of top branches of the best student.
+        Returns list of top _branches of the best student.
         """
+        if not self._branches:
+            self._features, self._nodes, self._branches = get_dt_info(self._best_student)
 
-        if not self.branches:
-            self.features, self.nodes, self.branches = get_dt_info(self.best_student)
-
-        return sorted(self.branches, key=lambda p: p["samples"], reverse=True)[:top_k]
+        return sorted(self._branches, key=lambda p: p["samples"], reverse=True)[:top_k]
 
     @_check_if_trained
     def get_top_features(self, top_k=10):
         """
-        Returns list of top features of the best student.
+        Returns list of top _features of the best student.
         """
+        if not self._features:
+            self._features, self._nodes, self._branches = get_dt_info(self._best_student)
 
-        if not self.features:
-            self.features, self.nodes, self.branches = get_dt_info(self.best_student)
-
-        return sorted(self.features.items(), key=lambda p: p[1]["samples"], reverse=True)[:top_k]
+        return sorted(self._features.items(), key=lambda p: p[1]["samples"], reverse=True)[:top_k]
 
     @_check_if_trained
     def get_top_nodes(self, top_k=10):
         """
-        Returns list of top nodes of the best student.
+        Returns list of top _nodes of the best student.
         """
-
-        if not self.nodes:
-            self.features, self.nodes, self.branches = get_dt_info(self.best_student)
+        if not self._nodes:
+            self._features, self._nodes, self._branches = get_dt_info(self._best_student)
 
         return sorted(
-            self.nodes, key=lambda p: p["samples"] * abs(p["gini_split"][0] - p["gini_split"][1]), reverse=True
+            self._nodes, key=lambda p: p["samples"] * abs(p["gini_split"][0] - p["gini_split"][1]), reverse=True
         )[:top_k]
 
     @_check_if_trained
-    def get_samples_by_level(self):
+    def get_samples_by_level(self, student=None):
         """
         Returns list of samples by level of the best student.
         """
+        if not self._nodes:
+            self._features, self._nodes, self._branches = get_dt_info(self._best_student)
 
-        if not self.nodes:
-            self.features, self.nodes, self.branches = get_dt_info(self.best_student)
-
-        samples_by_level = list(np.zeros(self.best_student.get_depth() + 1))
-        nodes_by_level = list(np.zeros(self.best_student.get_depth() + 1).astype(int))
-        for node in self.nodes:
+        samples_by_level = list(np.zeros(student.get_depth() + 1))
+        nodes_by_level = list(np.zeros(student.get_depth() + 1).astype(int))
+        for node in self._nodes:
             samples_by_level[node["level"]] += node["samples"]
-            # nodes_by_level[node["level"]] += 1
 
-        for node in self.branches:
+        for node in self._branches:
             samples_by_level[node["level"]] += node["samples"]
             nodes_by_level[node["level"]] += 1
 
         return samples_by_level
 
     @_check_if_trained
-    def get_leaves_by_level(self):
+    def get_leaves_by_level(self, student=None):
         """
         Returns list of leaves by level of the best student.
         """
+        if not self._branches:
+            self._features, self._nodes, self._branches = get_dt_info(self._best_student)
 
-        if not self.branches:
-            self.features, self.nodes, self.branches = get_dt_info(self.best_student)
-
-        leaves_by_level = list(np.zeros(self.best_student.get_depth() + 1).astype(int))
-        for node in self.branches:
+        leaves_by_level = list(np.zeros(student.get_depth() + 1).astype(int))
+        for node in self._branches:
             leaves_by_level[node["level"]] += 1
 
         return leaves_by_level
@@ -336,31 +380,14 @@ class Trustee(abc.ABC):
     @_check_if_trained
     def prune(self, top_k=10, max_impurity=0.10):
         """
-        Prunes and returns the best student model explanation from the list of students.
+        Prunes and returns the best student model explanation from the list of _students_by_iter.
 
         Parameters
         ----------
         top_k
         max_impurity
         """
-
-        top_branches = self.get_top_branches(top_k=top_k)
-        prunned_student = deepcopy(self.best_student)
-
-        nodes_to_keep = set({})
-        for branch in top_branches:
-            for (node, _, _, _) in branch["path"]:
-                if self.best_student.tree_.impurity[node] > max_impurity:
-                    nodes_to_keep.add(node)
-
-        for node in self.nodes:
-            if node["idx"] not in nodes_to_keep:
-                prune_index(prunned_student, node["idx"], 0)
-
-        # update classifier with prunned model
-        prunned_student.tree_.__setstate__(get_dt_dict(prunned_student))
-
-        return prunned_student
+        return top_k_prune(self._best_student, top_k=top_k, max_impurity=max_impurity)
 
 
 class ClassificationTrustee(Trustee):
@@ -384,9 +411,9 @@ class ClassificationTrustee(Trustee):
         """
         super().__init__(expert, student_class=DecisionTreeClassifier, logger=logger)
 
-    def score(self, y_true, y_pred, average="macro"):
+    def _score(self, y_true, y_pred, average="macro"):
         """
-        Score function for student models
+        F1-score function for classification student models
 
         Parameters
         ----------
@@ -417,9 +444,9 @@ class RegressionTrustee(Trustee):
         """
         super().__init__(expert=expert, student_class=DecisionTreeRegressor, logger=logger)
 
-    def score(self, y_true, y_pred):
+    def _score(self, y_true, y_pred):
         """
-        Score function for student models
+        R2-score function for regression student models
 
         Parameters
         ----------

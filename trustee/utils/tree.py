@@ -1,5 +1,7 @@
 import numpy as np
 
+from copy import deepcopy
+
 from sklearn.tree._tree import TREE_LEAF, TREE_UNDEFINED
 
 
@@ -179,3 +181,25 @@ def get_dt_info(dt):
 
     branches = walk_tree(0, 0, [])
     return features_used, splits, branches
+
+
+def top_k_prune(dt, top_k, max_impurity=0.1):
+    """Prunes a given decision tree down to its top-k branches, sorted by number of samples covered"""
+    _, nodes, branches = get_dt_info(dt)
+    top_branches = sorted(branches, key=lambda p: p["samples"], reverse=True)[:top_k]
+    prunned_dt = deepcopy(dt)
+
+    nodes_to_keep = set({})
+    for branch in top_branches:
+        for (node, _, _, _) in branch["path"]:
+            if dt.tree_.impurity[node] > max_impurity:
+                nodes_to_keep.add(node)
+
+    for node in nodes:
+        if node["idx"] not in nodes_to_keep:
+            prune_index(prunned_dt, node["idx"], 0)
+
+    # update classifier with prunned model
+    prunned_dt.tree_.__setstate__(get_dt_dict(prunned_dt))
+
+    return prunned_dt
