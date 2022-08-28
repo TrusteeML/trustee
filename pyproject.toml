@@ -28,10 +28,10 @@ setuptools = "^57.0.0"
 prettytable = "3.0.0"
 termcolor = "^1.1.0"
 graphviz = ">=0.8.1"
-
-[tool.poetry.dev-dependencies]
 furo = "^2022.6.21"
 sphinxemoji = "^0.2.0"
+
+[tool.poetry.dev-dependencies]
 Sphinx = "^5.1.1"
 
 [tool.black]
