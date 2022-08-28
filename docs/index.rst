@@ -39,7 +39,7 @@ This section contains basic information and instructions to get started with Tru
 Python Version
 ***************
 
-Trustee supports Python >=3.8.
+Trustee supports Python >=3.7.
 
 Install Trustee
 ***************
