@@ -39,10 +39,7 @@ This section contains basic information and instructions to get started with Tru
 Python Version
 ***************
 
-Trustee supports Python >=3.8 and <=3.9. In theory, other versions of Python 3.x and newer could be supported as well, 
-but support is limited by the versions of Python supported by Trustee's dependecies. We are considering a no-deps core 
-release in the future. 
-
+Trustee supports Python >=3.8.
 
 Install Trustee
 ***************
