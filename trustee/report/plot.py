@@ -100,7 +100,7 @@ def plot_top_nodes(top_nodes, dt_samples_by_class, dt_samples, output_dir, featu
         ylim=(0, 100),
         xlabel="Node",
         ylabel="% of total samples",
-        labels=class_names if class_names else [],
+        labels=class_names if class_names is not None else [],
         path=f"{output_dir}/top_nodes_by_class.pdf",
     )
 
@@ -132,7 +132,7 @@ def plot_top_branches(
     colors_by_class = {}
     colors_by_samples = []
     for branch in top_branches:
-        class_label = class_names[branch["class"]] if class_names else branch["class"]
+        class_label = class_names[branch["class"]] if class_names is not None else branch["class"]
         if class_label not in colors_by_class:
             colors_by_class[class_label] = (
                 colors.pop() if colors else "#%02x%02x%02x" % tuple(np.random.randint(256, size=3))
@@ -197,10 +197,16 @@ def plot_top_branches(
         )
 
 
-def plot_all_branches(top_branches, dt_samples_by_class, dt_samples, output_dir, class_names=[]):
+def plot_all_branches(top_branches, dt_samples_by_class, dt_samples, output_dir, class_names=[], is_classify=True):
     """Uses all features information and plots CDF with it"""
     plot_top_branches(
-        top_branches, dt_samples_by_class, dt_samples, output_dir, filename="all_branches", class_names=class_names
+        top_branches,
+        dt_samples_by_class,
+        dt_samples,
+        output_dir,
+        filename="all_branches",
+        class_names=class_names,
+        is_classify=is_classify,
     )
 
 
@@ -296,11 +302,10 @@ def plot_stability(
     total_nodes = 0
     number_of_splits = []
     fidelity = []
-    X_test_values = X_test.values if isinstance(X_test, pd.DataFrame) else X_test
-    base_y_pred = base_tree.predict(X_test_values)
+    base_y_pred = base_tree.predict(X_test.values)
     base_df = pd.DataFrame(deepcopy(X_test))
     base_df["label"] = y_test
-    grouped_df = base_df.groupby("label")
+    grouped_df = base_df.groupby("label") if is_classify else []
 
     for idx, it in enumerate(stability_iter):
         iter_tree = it[f"{base_tree_key}"]
@@ -323,7 +328,7 @@ def plot_stability(
                 features_by_it[idx] += 1
             features[split["feature"]][idx] += 1
 
-        y_pred = iter_tree.predict(X_test_values)
+        y_pred = iter_tree.predict(X_test.values)
         fidelity.append(it[f"{base_tree_key}_fidelity"])
         agreement.append(
             f1_score(y_pred, base_y_pred, average="weighted") if is_classify else r2_score(y_pred, base_y_pred)
@@ -335,11 +340,7 @@ def plot_stability(
             if group not in agreement_by_class:
                 agreement_by_class[group] = []
 
-            agreement_by_class[group].append(
-                f1_score(y_pred_class, base_y_pred_class, average="weighted")
-                if is_classify
-                else r2_score(y_pred_class, base_y_pred_class)
-            )
+            agreement_by_class[group].append(f1_score(y_pred_class, base_y_pred_class, average="weighted"))
 
     plot.plot_lines(
         range(len(number_of_splits)),
@@ -368,25 +369,26 @@ def plot_stability(
         path=f"{output_dir}/{base_tree_key}_stability.pdf",
     )
 
-    top_branch_agreement = {}
-    for branch in top_branches[:5]:
-        class_name = class_names[branch["class"]] if class_names else branch["class"]
-        class_id = class_name if class_name in agreement_by_class else branch["class"]
-        top_branch_agreement[class_id] = agreement_by_class[class_id]
+    if is_classify:
+        top_branch_agreement = {}
+        for branch in top_branches[:5]:
+            class_name = class_names[branch["class"]] if class_names is not None else branch["class"]
+            class_id = class_name if class_name in agreement_by_class else branch["class"]
+            top_branch_agreement[class_id] = agreement_by_class[class_id]
 
-    plot.plot_lines(
-        range(len(stability_iter)),
-        [agreement for _, agreement in top_branch_agreement.items()],
-        ylim=(0, 1),
-        xlabel="Iteration",
-        ylabel="Agreement (Score)",
-        labels=[
-            class_names[group] if class_names and not isinstance(group, str) else group
-            for group, _ in top_branch_agreement.items()
-        ],
-        path=f"{output_dir}/{base_tree_key}_stability_by_class.pdf",
-        size=(6, 4),
-    )
+        plot.plot_lines(
+            range(len(stability_iter)),
+            [agreement for _, agreement in top_branch_agreement.items()],
+            ylim=(0, 1),
+            xlabel="Iteration",
+            ylabel="Agreement (Score)",
+            labels=[
+                class_names[group] if class_names is not None and not isinstance(group, str) else group
+                for group, _ in top_branch_agreement.items()
+            ],
+            path=f"{output_dir}/{base_tree_key}_stability_by_class.pdf",
+            size=(6, 4),
+        )
 
 
 def plot_stability_heatmap(
@@ -410,7 +412,7 @@ def plot_stability_heatmap(
     agreement_by_class = {}
     base_df = pd.DataFrame(deepcopy(X_test))
     base_df["label"] = y_test
-    grouped_df = base_df.groupby("label")
+    grouped_df = base_df.groupby("label") if is_classify else []
 
     for i, _ in enumerate(stability_iter):
         base_tree = stability_iter[i][f"{tree_key}"]
@@ -420,9 +422,8 @@ def plot_stability_heatmap(
         for j, _ in enumerate(stability_iter):
             iter_tree = stability_iter[j][f"{tree_key}"]
 
-            X_test_values = X_test.values if isinstance(X_test, pd.DataFrame) else X_test
-            iter_y_pred = iter_tree.predict(X_test_values)
-            base_y_pred = base_tree.predict(X_test_values)
+            iter_y_pred = iter_tree.predict(X_test.values)
+            base_y_pred = base_tree.predict(X_test.values)
 
             agreement[i].append(
                 f1_score(iter_y_pred, base_y_pred, average="weighted")
@@ -444,8 +445,6 @@ def plot_stability_heatmap(
                     if is_classify
                     else r2_score(y_pred_class, base_y_pred_class)
                 )
-
-        print("mean agreement", i, np.mean(agreement[i]))
         mean_agreement.append(np.mean(agreement[i]))
 
     plot.plot_lines(
@@ -465,18 +464,19 @@ def plot_stability_heatmap(
         path=f"{output_dir}/{tree_key}_stability_heatmap.pdf",
     )
 
-    top_branch_agreement = {}
-    for branch in top_branches[:5]:
-        class_name = class_names[branch["class"]] if class_names else branch["class"]
-        class_id = class_name if class_name in agreement_by_class else branch["class"]
-        top_branch_agreement[class_id] = agreement_by_class[class_id]
+    if is_classify:
+        top_branch_agreement = {}
+        for branch in top_branches[:5]:
+            class_name = class_names[branch["class"]] if class_names is not None else branch["class"]
+            class_id = class_name if class_name in agreement_by_class else branch["class"]
+            top_branch_agreement[class_id] = agreement_by_class[class_id]
 
-    for group, group_agreement in top_branch_agreement.items():
-        plot.plot_heatmap(
-            np.array(group_agreement[:heatmap_size]),
-            labels=range(min(len(stability_iter), heatmap_size)),
-            path=f"{output_dir}/{tree_key}_{class_names[group] if class_names and not isinstance(group, str) else group}_stability_heatmap.pdf",
-        )
+        for group, group_agreement in top_branch_agreement.items():
+            plot.plot_heatmap(
+                np.array(group_agreement[:heatmap_size]),
+                labels=range(min(len(stability_iter), heatmap_size)),
+                path=f"{output_dir}/{tree_key}_{class_names[group] if class_names is not None and not isinstance(group, str) else group}_stability_heatmap.pdf",
+            )
 
 
 def plot_accuracy_by_feature_removed(whitebox_iter, output_dir, feature_names=[]):
@@ -559,14 +559,14 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
         df = pd.concat([non_opt_df, opt_df], axis=1)
 
     df["label"] = y
-    if class_names and is_numeric_dtype(df["label"]):
+    if class_names is not None and is_numeric_dtype(df["label"]):
         df["label"] = df["label"].map(lambda x: class_names[int(x)])
 
     num_classes = len(np.unique(y))
     split_dfs = [x for _, x in df.groupby("label")]
 
     for idx, branch in enumerate(top_branches):
-        branch_class = class_names[branch["class"]] if class_names else branch["class"]
+        branch_class = class_names[branch["class"]] if class_names is not None else str(branch["class"])
         branch_output_dir = f"{plots_output_dir}/{idx}_branch_{branch_class}"
 
         if not os.path.exists(branch_output_dir):

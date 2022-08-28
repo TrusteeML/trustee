@@ -6,6 +6,7 @@ The core module of the Trustee project
 import abc
 import functools
 import numpy as np
+import pandas as pd
 
 from copy import deepcopy
 
@@ -120,21 +121,21 @@ class Trustee(abc.ABC):
         if verbose:
             self.log(f"Initializing training dataset using {self.expert} as expert model")
 
-        # convert data to np array to facilitate processing
-        X = np.array(X)
-        y = np.array(y)
-
         if len(X) != len(y):
-            raise ValueError("_Features (X) and target (y) values should have the same length.")
+            raise ValueError("Features (X) and target (y) values should have the same length.")
+
+        # convert data to np array to facilitate processing
+        X = pd.DataFrame(X)
+        y = pd.Series(y)
 
         # split input array to train DTs and evaluate agreement
         self._X_train, self._X_test, self._y_train, self._y_test = train_test_split(X, y, train_size=train_size)
 
-        _features = self._X_train
-        targets = getattr(self.expert, predict_method_name)(self._X_train)
+        features = self._X_train
+        targets = pd.Series(getattr(self.expert, predict_method_name)(self._X_train))
 
-        if len(targets.shape) >= 2:
-            targets = targets.argmax(axis=-1)
+        if hasattr(targets, "shape") and len(targets.shape) >= 2:
+            targets = targets.ravel()
 
         student = self.student_class(
             random_state=0, max_leaf_nodes=max_leaf_nodes, max_depth=max_depth, ccp_alpha=ccp_alpha
@@ -156,16 +157,16 @@ class Trustee(abc.ABC):
                 if verbose:
                     self.log("#" * 10, f"Inner-loop Iteration {j}/{num_iter}", "#" * 10)
 
-                dataset_size = len(_features)
+                dataset_size = len(features)
                 size = int(int(len(self._X_train)) * samples_size) if samples_size else num_samples
                 # Step 1: Sample predictions from training dataset
                 if verbose:
                     self.log(
-                        f"Sampling {size} points from training dataset with ({len(_features)}, {len(targets)}) entries"
+                        f"Sampling {size} points from training dataset with ({len(features)}, {len(targets)}) entries"
                     )
 
                 samples_idxs = np.random.choice(dataset_size, size=size, replace=False)
-                X_iter, y_iter = _features[samples_idxs], targets[samples_idxs]
+                X_iter, y_iter = features.iloc[samples_idxs], targets.iloc[samples_idxs]
                 X_iter_train, X_iter_test, y_iter_train, y_iter_test = train_test_split(
                     X_iter, y_iter, train_size=train_size
                 )
@@ -173,28 +174,27 @@ class Trustee(abc.ABC):
                 X_train_student = X_iter_train
                 X_test_student = X_iter_test
                 if use_features is not None:
-                    X_train_student = np.reshape(X_iter_train[:, [use_features]], (X_iter_train.shape[0], -1))
-                    X_test_student = np.reshape(X_iter_test[:, [use_features]], (X_iter_test.shape[0], -1))
+                    X_train_student = X_iter_train.iloc[:, use_features]
+                    X_test_student = X_iter_test.iloc[:, use_features]
 
                 # Step 2: Traing DecisionTreeRegressor with sampled data
-                student.fit(X_train_student, y_iter_train)
-                student_pred = student.predict(X_test_student)
+                student.fit(X_train_student.values, y_iter_train.values)
+                student_pred = student.predict(X_test_student.values)
 
                 if verbose:
                     self.log(
-                        f"Student model {j} trained with depth {student.get_depth()} and {student.get_n_leaves()} leaves:"
+                        f"Student model {i}-{j} trained with depth {student.get_depth()} and {student.get_n_leaves()} leaves:"
                     )
                     self.log(f"Student model score: {self._score(y_iter_test, student_pred)}")
 
                 # Step 3: Use expert model predictions to aggregate original dataset
-                expert_pred = getattr(self.expert, predict_method_name)(X_iter_test)
+                expert_pred = pd.Series(getattr(self.expert, predict_method_name)(X_iter_test))
                 if hasattr(expert_pred, "shape") and len(expert_pred.shape) >= 2:
-                    # expert_pred = expert_pred.ravel()
-                    expert_pred = expert_pred.argmax(axis=-1)
+                    expert_pred = expert_pred.ravel()
 
                 if aggregate:
-                    _features = np.append(_features, X_iter_test, axis=0)
-                    targets = np.append(targets, expert_pred, axis=0)
+                    features = pd.concat([features, X_iter_test])
+                    targets = pd.concat([targets, expert_pred])
 
                 if optimization == "accuracy":
                     # Step 4: Calculate reward based on Decistion Tree Classifier accuracy
@@ -204,7 +204,7 @@ class Trustee(abc.ABC):
                     reward = self._score(expert_pred, student_pred)
 
                 if verbose:
-                    self.log(f"Student model {j} fidelity: {reward}")
+                    self.log(f"Student model {i}-{j} fidelity: {reward}")
 
                 # Save student to list of iterations dt
                 self._students_by_iter[i].append((deepcopy(student), reward))
@@ -246,8 +246,8 @@ class Trustee(abc.ABC):
                     # Apply top-k prunning before calculating agreement
                     iter_tree = top_k_prune(self._top_students[j][0], top_k=top_k)
 
-                    iter_y_pred = iter_tree.predict(self._X_test)
-                    base_y_pred = base_tree.predict(self._X_test)
+                    iter_y_pred = iter_tree.predict(self._X_test.values)
+                    base_y_pred = base_tree.predict(self._X_test.values)
 
                     agreement[i].append(self._score(iter_y_pred, base_y_pred))
 
@@ -285,24 +285,24 @@ class Trustee(abc.ABC):
         return self._top_students
 
     @_check_if_trained
-    def get_n_features(self, student=None):
+    def get_n_features(self):
         """
-        Returns number of _features used in the top student model.
+        Returns number of features used in the top student model.
         """
         if not self._features:
-            self._features, self._nodes, self._branches = get_dt_info(self.student)
+            self._features, self._nodes, self._branches = get_dt_info(self._best_student)
 
         return len(self._features.keys())
 
     @_check_if_trained
-    def get_n_classes(self, student=None):
+    def get_n_classes(self):
         """
         Returns number of classes used in the top student model.
         """
         return self._best_student.tree_.n_classes[0]
 
     @_check_if_trained
-    def get_samples_sum(self, student=None):
+    def get_samples_sum(self):
         """
         Returns the sum of all samples in all non-leaf _nodes in best student model.
         """
@@ -345,15 +345,15 @@ class Trustee(abc.ABC):
         )[:top_k]
 
     @_check_if_trained
-    def get_samples_by_level(self, student=None):
+    def get_samples_by_level(self):
         """
         Returns list of samples by level of the best student.
         """
         if not self._nodes:
             self._features, self._nodes, self._branches = get_dt_info(self._best_student)
 
-        samples_by_level = list(np.zeros(student.get_depth() + 1))
-        nodes_by_level = list(np.zeros(student.get_depth() + 1).astype(int))
+        samples_by_level = list(np.zeros(self._best_student.get_depth() + 1))
+        nodes_by_level = list(np.zeros(self._best_student.get_depth() + 1).astype(int))
         for node in self._nodes:
             samples_by_level[node["level"]] += node["samples"]
 
@@ -364,14 +364,14 @@ class Trustee(abc.ABC):
         return samples_by_level
 
     @_check_if_trained
-    def get_leaves_by_level(self, student=None):
+    def get_leaves_by_level(self):
         """
         Returns list of leaves by level of the best student.
         """
         if not self._branches:
             self._features, self._nodes, self._branches = get_dt_info(self._best_student)
 
-        leaves_by_level = list(np.zeros(student.get_depth() + 1).astype(int))
+        leaves_by_level = list(np.zeros(self._best_student.get_depth() + 1).astype(int))
         for node in self._branches:
             leaves_by_level[node["level"]] += 1
 

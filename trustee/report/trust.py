@@ -5,7 +5,6 @@ The module that implements Trust Reports
 """
 import os
 import copy
-import torch
 import pickle
 import graphviz
 import numpy as np
@@ -17,7 +16,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, f1_score, r2_score
 
 from prettytable import PrettyTable
-from autogluon.tabular import TabularPredictor
 
 from trustee import ClassificationTrustee, RegressionTrustee
 from trustee.utils.tree import get_dt_info
@@ -52,7 +50,8 @@ class TrustReport:
         num_pruning_iter=10,
         train_size=0.7,
         predict_method_name="predict",
-        trustee_num_iter=100,
+        trustee_num_iter=50,
+        trustee_num_stability_iter=10,
         trustee_sample_size=0.5,
         trustee_max_leaf_nodes=None,
         trustee_max_depth=None,
@@ -82,6 +81,7 @@ class TrustReport:
         self.num_pruning_iter = num_pruning_iter
         self.predict_method_name = predict_method_name
         self.trustee_num_iter = trustee_num_iter
+        self.trustee_num_stability_iter = trustee_num_stability_iter
         self.trustee_sample_size = trustee_sample_size
         self.trustee_max_leaf_nodes = trustee_max_leaf_nodes
         self.trustee_max_depth = trustee_max_depth
@@ -322,7 +322,7 @@ class TrustReport:
         for node in self.max_dt_top_nodes:
             samples_by_class = [
                 (
-                    self.class_names[idx] if self.class_names and idx < len(self.class_names) else idx,
+                    self.class_names[idx] if self.class_names is not None and idx < len(self.class_names) else idx,
                     (count_left / self.max_dt.tree_.value[0][0][idx]) * 100,
                     (count_right / self.max_dt.tree_.value[0][0][idx]) * 100,
                 )
@@ -365,7 +365,7 @@ class TrustReport:
 
             branch_class = (
                 self.class_names[branch["class"]]
-                if self.class_names and branch["class"] < len(self.class_names)
+                if self.class_names is not None and branch["class"] < len(self.class_names)
                 else branch["class"],
             )
             top_branches.add_row(
@@ -391,7 +391,7 @@ class TrustReport:
                 f"{sum_samples} ({sum_samples_perc:.2f}%)",
                 "\n".join(
                     [
-                        f"{self.class_names[class_idx] if self.class_names and class_idx < len(self.class_names) else class_idx}:{class_perc:.2f}%"
+                        f"{self.class_names[class_idx] if self.class_names is not None and class_idx < len(self.class_names) else class_idx}:{class_perc:.2f}%"
                         for (class_idx, class_perc) in sum_class_samples_perc.items()
                     ]
                 ),
@@ -604,24 +604,27 @@ class TrustReport:
         ):
             raise ValueError("Missing either X and y arguments or X_train, X_test, y_train and y_test arguments.")
 
-        if self.X_train is None:
+        if self.X_train is not None:
+            # convert to pandas DataFrame to avoid dealing with other formats
+            self.X_train = pd.DataFrame(self.X_train)
+            self.X_test = pd.DataFrame(self.X_test)
+            self.y_train = pd.Series(self.y_train)
+            self.y_test = pd.Series(self.y_test)
+        else:
             # if data split is not given as a param, split the dataset randomly
             if self.verbose:
                 log("Splitting dataset for training and testing...")
-            if isinstance(self.X, pd.DataFrame):
-                X_indexes = np.arange(0, self.X.shape[0])
-                self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-                    X_indexes, self.y, train_size=self.train_size
-                )
-                self.X_train = self.X.iloc[self.X_train]
-                self.X_test = self.X.iloc[self.X_test]
-            else:
-                X_indexes = np.arange(0, len(self.X))
-                self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-                    X_indexes, self.y, train_size=self.train_size
-                )
-                self.X_train = np.array(self.X)[self.X_train]
-                self.X_test = np.array(self.X)[self.X_test]
+
+            # convert to pandas DataFrame to avoid dealing with other formats
+            self.X = pd.DataFrame(self.X)
+            self.y = pd.Series(self.y)
+
+            X_indexes = np.arange(0, self.X.shape[0])
+            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+                X_indexes, self.y, train_size=self.train_size
+            )
+            self.X_train = self.X.iloc[self.X_train]
+            self.X_test = self.X.iloc[self.X_test]
 
             if self.verbose:
                 log(f"X size: {len(self.X)}; y size: {len(self.y)}")
@@ -632,8 +635,6 @@ class TrustReport:
 
         if self.feature_names is not None:
             self.feature_names = list(self.feature_names)
-            if isinstance(self.X_train, pd.DataFrame):
-                self.feature_names = list(self.X_train.columns)
 
         if self.verbose:
             log("Done!")
@@ -644,6 +645,7 @@ class TrustReport:
         self,
         X_train=None,
         X_test=None,
+        trustee_num_stability_iter=None,
         trustee_ccp_alpha=0.0,
         trustee_max_leaf_nodes=None,
         trustee_max_depth=None,
@@ -678,7 +680,7 @@ class TrustReport:
                             if hasattr(layer, "reset_parameters"):
                                 layer.reset_parameters()
                     else:
-                        raise Exception("Not a pytorch model")
+                        raise Exception("Not a PyTorch model")
                 except Exception as warn2:
                     if self.verbose:
                         log("WARNING", warn2)
@@ -689,13 +691,15 @@ class TrustReport:
                         else self.blackbox.__class__()
                     )
 
-            if isinstance(self.blackbox, TabularPredictor):
+            # retrain model
+            if hasattr(self.blackbox, "_learner"):
+                # AutoGluon model
                 args = {}
-                args[self.blackbox._learner.label] = self.y_train.values
+                args[self.blackbox._learner.label] = self.y_train
                 training_data = X_train.assign(**args)
                 blackbox_copy.fit(training_data)
             else:
-                blackbox_copy.fit(X_train, self.y_train.values.ravel())
+                blackbox_copy.fit(X_train, self.y_train)
 
             del self.blackbox
 
@@ -713,10 +717,13 @@ class TrustReport:
             ClassificationTrustee(expert=blackbox_copy) if self.is_classify else RegressionTrustee(expert=blackbox_copy)
         )
 
+        stability_iter = trustee_num_stability_iter if trustee_num_stability_iter else self.trustee_num_stability_iter
         trustee.fit(
             X_train,
             self.y_train,
+            top_k=self.top_k,
             num_iter=self.trustee_num_iter,
+            num_stability_iter=stability_iter,
             samples_size=self.trustee_sample_size,
             predict_method_name=self.predict_method_name,
             max_leaf_nodes=trustee_max_leaf_nodes if trustee_max_leaf_nodes else self.trustee_max_leaf_nodes,
@@ -729,24 +736,16 @@ class TrustReport:
         if self.verbose:
             log("Done!")
 
-        dt, reward, idx = trustee.explain()
-        min_dt = trustee.prune(top_k=self.top_k)
+        dt, min_dt, agreement, reward = trustee.explain()
         if self.verbose:
-            log(f"Model explanation {idx} training fidelity: {reward}")
-            log(f"Top-k Prunned explanation size: {dt.tree_.node_count}")
+            log(f"Model explanation training (agreement, fidelity): ({agreement}, {reward})")
+            log(f"Top-k Prunned explanation size: {min_dt.tree_.node_count}")
 
         if trustee_use_features:
-            if isinstance(X_test, pd.DataFrame):
-                X_test = X_test.iloc[:, trustee_use_features]
-            elif isinstance(X_test, np.ndarray):
-                X_test = X_test[:, [trustee_use_features]]
-            elif torch.is_tensor(X_test):
-                X_test = X_test[:, [trustee_use_features]].clone().detach()
-            else:
-                X_test = np.array(X_test)[:, trustee_use_features]
+            X_test = X_test.iloc[:, trustee_use_features]
 
-        dt_y_pred = dt.predict(X_test)
-        min_dt_y_pred = min_dt.predict(X_test)
+        dt_y_pred = dt.predict(X_test.values)
+        min_dt_y_pred = min_dt.predict(X_test.values)
 
         if self.verbose:
             log("Model explanation global fidelity report:")
@@ -791,9 +790,7 @@ class TrustReport:
         if self.verbose:
             log("Collecting blackbox information...")
 
-        self.bb_n_input_features = (
-            len(self.X_train.columns) if isinstance(self.X_train, pd.DataFrame) else len(self.X_train[0])
-        )
+        self.bb_n_input_features = len(self.X_train.columns)
         self.bb_n_output_classes = len(np.unique(self.y_train))
         if self.verbose:
             log("Done!")
@@ -845,7 +842,7 @@ class TrustReport:
                 log(f"Iteration {top_k}/{self.max_dt.get_n_leaves()}")
 
             pruned_dt = self.trustee.prune(top_k=top_k)
-            pruned_dt_y_pred = pruned_dt.predict(self.X_test)
+            pruned_dt_y_pred = pruned_dt.predict(self.X_test.values)
 
             self.branch_iter.append(
                 {
@@ -875,7 +872,9 @@ class TrustReport:
             if self.verbose:
                 log(f"Iteration {i}/{self.max_iter}")
 
-            (trustee, y_pred, max_dt, max_dt_y_pred, min_dt, min_dt_y_pred) = self._fit_and_explain()
+            (trustee, y_pred, max_dt, max_dt_y_pred, min_dt, min_dt_y_pred) = self._fit_and_explain(
+                trustee_num_stability_iter=1  # prevents trustee`s outer loop from running so we can see how unstable explanations are
+            )
             top_branches = trustee.get_top_branches(top_k=max_dt.get_n_leaves())
             self.stability_iter.append(
                 {
@@ -904,7 +903,7 @@ class TrustReport:
                 log(f"Iteration {top_k}/{self.num_pruning_iter}")
 
             pruned_dt = self.trustee.prune(top_k=top_k)
-            pruned_dt_y_pred = pruned_dt.predict(self.X_test)
+            pruned_dt_y_pred = pruned_dt.predict(self.X_test.values)
 
             self.top_k_prune_iter.append(
                 {
@@ -1035,33 +1034,18 @@ class TrustReport:
         i = 0
         n_features_removed = 0
         top_feature_to_remove = self.max_dt_top_features[0][0]
-        if isinstance(self.X_train, pd.DataFrame):
-            X_train_iter = self.X_train.copy()
-            X_test_iter = self.X_test.copy()
-        elif isinstance(self.X_train, torch.Tensor):
-            X_train_iter = self.X_train.clone()
-            X_test_iter = self.X_test.clone()
-        else:
-            X_train_iter = np.copy(self.X_train)
-            X_test_iter = np.copy(self.X_test)
+        X_train_iter = self.X_train.copy()
+        X_test_iter = self.X_test.copy()
 
-        while i < self.max_iter and n_features_removed < self.bb_n_input_features:
+        while i < self.max_iter and n_features_removed < self.bb_n_input_features - 1:
             if self.verbose:
-                log(f"Iteration {i + 1}/{max(self.max_iter, self.bb_n_input_features)}")
+                log(f"Iteration {i + 1}/{min(self.max_iter, self.bb_n_input_features)}")
 
             # remove most significant feature
-            if isinstance(self.X_train, pd.DataFrame):
-                X_train_iter.iloc[:, top_feature_to_remove] = 0
-                X_test_iter.iloc[:, top_feature_to_remove] = 0
-            elif isinstance(self.X_train, torch.Tensor):
-                X_train_iter[:, top_feature_to_remove] = torch.zeros(len(self.X_train))
-                X_test_iter[:, top_feature_to_remove] = torch.zeros(len(self.X_test))
-            else:
-                X_train_iter[:, top_feature_to_remove] = np.zeros(len(self.X_train))
-                X_test_iter[:, top_feature_to_remove] = np.zeros(len(self.X_test))
+            X_train_iter.iloc[:, top_feature_to_remove] = 0
+            X_test_iter.iloc[:, top_feature_to_remove] = 0
 
             n_features_removed += 1
-
             _, y_pred, dt, dt_y_pred, _, _ = self._fit_and_explain(X_train=X_train_iter, X_test=X_test_iter)
 
             self.whitebox_iter.append(
@@ -1090,7 +1074,7 @@ class TrustReport:
         if self.verbose:
             log("Done!")
 
-    def _save_dts(self, output_dir):
+    def _save_dts(self, output_dir, save_all=False):
         """
         Save the decision trees.
 
@@ -1124,81 +1108,82 @@ class TrustReport:
                 special_characters=True,
             )
             graph = graphviz.Source(dot_data)
-            graph.render(f"{output_dir}/trust_report_dt_min")
+            graph.render(f"{output_dir}/trust_report_pruned_dt")
 
-        stability_output_dir = f"{output_dir}/stability_max"
-        if not os.path.exists(stability_output_dir):
-            os.makedirs(stability_output_dir)
+        if save_all:
+            stability_output_dir = f"{output_dir}/stability_max"
+            if not os.path.exists(stability_output_dir):
+                os.makedirs(stability_output_dir)
 
-        log("Saving stability decision trees...")
-        for idx, i in enumerate(self.stability_iter):
-            dot_data = tree.export_graphviz(
-                i["max_dt"],
-                class_names=self.class_names,
-                feature_names=self.feature_names,
-                filled=True,
-                rounded=True,
-                special_characters=True,
-            )
-            graph = graphviz.Source(dot_data)
-            graph.render(f"{stability_output_dir}/stability_dt_{idx}")
+            log("Saving stability decision trees...")
+            for idx, i in enumerate(self.stability_iter):
+                dot_data = tree.export_graphviz(
+                    i["max_dt"],
+                    class_names=self.class_names,
+                    feature_names=self.feature_names,
+                    filled=True,
+                    rounded=True,
+                    special_characters=True,
+                )
+                graph = graphviz.Source(dot_data)
+                graph.render(f"{stability_output_dir}/stability_dt_{idx}")
 
-        stability_output_dir = f"{output_dir}/stability_min"
-        if not os.path.exists(stability_output_dir):
-            os.makedirs(stability_output_dir)
+            stability_output_dir = f"{output_dir}/stability_min"
+            if not os.path.exists(stability_output_dir):
+                os.makedirs(stability_output_dir)
 
-        log("Saving stability decision trees...")
-        for idx, i in enumerate(self.stability_iter):
-            dot_data = tree.export_graphviz(
-                i["min_dt"],
-                class_names=self.class_names,
-                feature_names=self.feature_names,
-                filled=True,
-                rounded=True,
-                special_characters=True,
-            )
-            graph = graphviz.Source(dot_data)
-            graph.render(f"{stability_output_dir}/stability_dt_{idx}")
+            log("Saving stability decision trees...")
+            for idx, i in enumerate(self.stability_iter):
+                dot_data = tree.export_graphviz(
+                    i["min_dt"],
+                    class_names=self.class_names,
+                    feature_names=self.feature_names,
+                    filled=True,
+                    rounded=True,
+                    special_characters=True,
+                )
+                graph = graphviz.Source(dot_data)
+                graph.render(f"{stability_output_dir}/stability_dt_{idx}")
 
-        prunning_output_dir = f"{output_dir}/prunning"
-        if not os.path.exists(prunning_output_dir):
-            os.makedirs(prunning_output_dir)
+            prunning_output_dir = f"{output_dir}/prunning"
+            if not os.path.exists(prunning_output_dir):
+                os.makedirs(prunning_output_dir)
 
-        for idx, i in enumerate(self.ccp_iter):
-            dot_data = tree.export_graphviz(
-                i["dt"],
-                class_names=self.class_names,
-                feature_names=self.feature_names,
-                filled=True,
-                rounded=True,
-                special_characters=True,
-            )
-            graph = graphviz.Source(dot_data)
-            graph.render(f"{prunning_output_dir}/ccp_dt_{idx}_{i['dt'].tree_.node_count}")
+            for idx, i in enumerate(self.ccp_iter):
+                dot_data = tree.export_graphviz(
+                    i["dt"],
+                    class_names=self.class_names,
+                    feature_names=self.feature_names,
+                    filled=True,
+                    rounded=True,
+                    special_characters=True,
+                )
+                graph = graphviz.Source(dot_data)
+                graph.render(f"{prunning_output_dir}/ccp_dt_{idx}_{i['dt'].tree_.node_count}")
 
-        for idx, i in enumerate(self.max_depth_iter):
-            dot_data = tree.export_graphviz(
-                i["dt"],
-                class_names=self.class_names,
-                feature_names=self.feature_names,
-                filled=True,
-                rounded=True,
-                special_characters=True,
-            )
-            graph = graphviz.Source(dot_data)
-            graph.render(f"{prunning_output_dir}/max_depth_dt_{idx}_{i['dt'].tree_.node_count}")
+            for idx, i in enumerate(self.max_depth_iter):
+                dot_data = tree.export_graphviz(
+                    i["dt"],
+                    class_names=self.class_names,
+                    feature_names=self.feature_names,
+                    filled=True,
+                    rounded=True,
+                    special_characters=True,
+                )
+                graph = graphviz.Source(dot_data)
+                graph.render(f"{prunning_output_dir}/max_depth_dt_{idx}_{i['dt'].tree_.node_count}")
 
-        for idx, i in enumerate(self.max_leaves_iter):
-            dot_data = tree.export_graphviz(
-                i["dt"],
-                class_names=self.class_names,
-                feature_names=self.feature_names,
-                filled=True,
-                rounded=True,
-                special_characters=True,
-            )
-            graph = graphviz.Source(dot_data)
-            graph.render(f"{prunning_output_dir}/max_leaves_dt_{idx}_{i['dt'].tree_.node_count}")
+            for idx, i in enumerate(self.max_leaves_iter):
+                dot_data = tree.export_graphviz(
+                    i["dt"],
+                    class_names=self.class_names,
+                    feature_names=self.feature_names,
+                    filled=True,
+                    rounded=True,
+                    special_characters=True,
+                )
+                graph = graphviz.Source(dot_data)
+                graph.render(f"{prunning_output_dir}/max_leaves_dt_{idx}_{i['dt'].tree_.node_count}")
 
         if self.verbose:
             log("Done!")
@@ -1249,6 +1234,7 @@ class TrustReport:
             self.max_dt.tree_.n_node_samples[0],
             plots_output_dir,
             class_names=self.class_names,
+            is_classify=self.is_classify,
         )
         plot_samples_by_level(
             self.max_dt_samples_by_level,
@@ -1317,15 +1303,16 @@ class TrustReport:
             is_classify=self.is_classify,
         )
 
-        plot_distribution(
-            self.X if self.X is not None else self.X_train,
-            self.y if self.y is not None else self.y_train,
-            self.max_dt_top_branches,
-            plots_output_dir,
-            feature_names=self.feature_names,
-            class_names=self.class_names,
-            aggregate=aggregate,
-        )
+        if self.is_classify:
+            plot_distribution(
+                self.X if self.X is not None else self.X_train,
+                self.y if self.y is not None else self.y_train,
+                self.max_dt_top_branches,
+                plots_output_dir,
+                feature_names=self.feature_names,
+                class_names=self.class_names,
+                aggregate=aggregate,
+            )
 
         if not self.skip_retrain:
             plot_accuracy_by_feature_removed(
@@ -1336,32 +1323,6 @@ class TrustReport:
 
         if self.verbose:
             log("Done!")
-
-    def get_stable_explanations(self, threshold=0.9):
-        """Filters out explanations from Trustee sability analysis with less than threshold agreement."""
-        if not self.analyze_stability:
-            return [{"dt": self.max_dt, "mean_agreement": 0}]
-
-        stable = []
-        agreement = []
-
-        for i, _ in enumerate(self.stability_iter):
-            agreement.append([])
-            for j, _ in enumerate(self.stability_iter):
-                base_tree = self.stability_iter[i]["min_dt"]
-                iter_tree = self.stability_iter[j]["min_dt"]
-
-                X_test_values = self.X_test.values if isinstance(self.X_test, pd.DataFrame) else self.X_test
-                iter_y_pred = iter_tree.predict(X_test_values)
-                base_y_pred = base_tree.predict(X_test_values)
-
-                agreement[i].append(self._score(iter_y_pred, base_y_pred))
-
-            mean_agreement = np.mean(agreement[i])
-            if mean_agreement >= threshold:
-                stable.append({"mean_agreement": mean_agreement, "dt": self.stability_iter[i]["min_dt"]})
-
-        return sorted(stable, key=lambda p: p["mean_agreement"], reverse=True)
 
     @classmethod
     def load(cls, path):
@@ -1379,7 +1340,7 @@ class TrustReport:
 
         return report
 
-    def save(self, output_dir, aggregate=False, save_dts=False):
+    def save(self, output_dir, aggregate=False, save_all_dts=False):
         """Saves report and plots to output dir"""
         if output_dir:
             log = self.logger.log if self.logger else print
@@ -1399,9 +1360,7 @@ class TrustReport:
             with open(f"{report_output_dir}/trust_report.obj", "wb") as file:
                 pickle.dump(self, file)
 
-            if save_dts:
-                self._save_dts(report_output_dir)
-
+            self._save_dts(report_output_dir, save_all=save_all_dts)
             self.plot(report_output_dir, aggregate=aggregate)
 
             if self.verbose:

@@ -66,7 +66,6 @@ Sample Code
 
   from trustee import ClassificationTrustee
 
-  iris = datasets.load_iris()
   X, y = datasets.load_iris(return_X_y=True)
   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30)
 
@@ -117,7 +116,7 @@ Supported AI/ML Libraries
     `scikit-learn`  |:white_check_mark:|
     `Keras`         |:white_check_mark:|
     `Tensorflow`    |:white_check_mark:|
-    `Pytorch`       |:white_check_mark:|
+    `PyTorch`       |:white_check_mark:|
     `AutoGluon`     |:white_check_mark:|
     ==============  ===================
 
