@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trustee"
-version = "1.0.0"
+version = "1.0.1"
 description = "This package implements the Trustee framework to extract decision tree explanation from black-box ML models."
 authors = ["Arthur Selle Jacobs <asjacobs@inf.ufrgs.br>"]
 packages = [ { include = "trustee"} ]
