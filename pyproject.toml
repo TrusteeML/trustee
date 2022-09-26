@@ -30,6 +30,7 @@ termcolor = "^1.1.0"
 graphviz = ">=0.8.1"
 furo = "^2022.6.21"
 sphinxemoji = "^0.2.0"
+sphinx-gallery = "^0.11.1"
 
 [tool.poetry.dev-dependencies]
 Sphinx = "^5.1.1"

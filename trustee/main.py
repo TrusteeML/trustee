@@ -24,8 +24,12 @@ def _check_if_trained(func):
 
     Parameters
     ----------
-    func
+    func: callable
         Function to apply decorator to.
+    *args: tuple
+        Additional arguments should be passed as keyword arguments to `func`.
+    **kwargs: dict, optional
+        Extra arguments to `func`: refer to each func documentation for a list of all possible arguments.
     """
 
     @functools.wraps(func)
@@ -45,17 +49,22 @@ class Trustee(abc.ABC):
 
     def __init__(self, expert, student_class, logger=None):
         """
-        Trustee constructor
+        Trustee constructor.
 
         Parameters
         ----------
-        expert
-            The ML blackbox model to analyze.
-        student_class
-            Class of student to train based on blackbox model predictions
-        logger (optional)
-            A logger object
+        expert: object
+            The ML blackbox model to analyze. The expert model must have a `predict` method call implemented for
+            Trustee to work properly, unless explicitly stated otherwise using the `predict_method_name` argument
+            in the fit() method.
 
+        student_class: Class
+            Class of student to train based on blackbox model predictions. The given Class must implement a `fit()
+            and a `predict()` method interface for Trustee to work properly. The current implementation has been
+            tested using the DecisionTreeClassifier and DecisionTreeRegressor from scikit-learn.
+
+        logger: Logger object , default=None
+            A logger object to log messages to. If none is given, the print() method will be used to log messages.
         """
         self.log = logger.log if logger else print
         self.expert = expert
@@ -77,7 +86,23 @@ class Trustee(abc.ABC):
 
     @abc.abstractmethod
     def _score(self, y_true, y_pred):
-        """Score function for student models"""
+        """
+        Score function for student models. Compares the ground-truth predictions
+        of a blackbox model with the predictions of a student model.
+
+        Parameters
+        ----------
+        y_true: array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The ground-truth target values (class labels in classification, real numbers in regression).
+
+        y_pred: array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The predicted target values (class labels in classification, real numbers in regression).
+
+        Returns
+        -------
+        score: float
+            Calculated student model score.
+        """
 
     def fit(
         self,
@@ -103,20 +128,68 @@ class Trustee(abc.ABC):
 
         Parameters
         ----------
-        X
-        y
-        max_leaf_nodes
-        max_depth
-        ccp_alpha
-        train_size
-        num_iter
-        num_samples
-        samples_size
-        use_features
-        predict_method_name
-        optimization
-        aggregate
-        verbose
+        X: {array-like, sparse matrix} of shape (n_samples, n_features)
+            The training input samples. Internally, it will be converted to a pandas DataFrame.
+
+        y: array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The target values for X (class labels in classification, real numbers in regression).
+            Internally, it will be converted to a pandas Series.
+
+        top_k: int, default=10
+            Number of top-k branches, sorted by number of samples per branch, to keep after finding
+            decision tree with highest fidelity.
+
+        max_leaf_nodes: int, default=None
+            Grow a tree with max_leaf_nodes in best-first fashion. Best nodes are defined as
+            relative reduction in impurity. If None then unlimited number of leaf nodes.
+
+        max_depth: int, default=None
+            The maximum depth of the tree. If None, then nodes are expanded until all leaves are pure.
+
+        ccp_alpha: float, default=0.0
+            Complexity parameter used for Minimal Cost-Complexity Pruning. The subtree with the
+            largest cost complexity that is smaller than ccp_alpha will be chosen. By default,
+            no pruning is performed. See Minimal Cost-Complexity Pruning here for details:
+            https://scikit-learn.org/stable/modules/tree.html#minimal-cost-complexity-pruning
+
+        train_size: float or int, default=0.7
+            If float, should be between 0.0 and 1.0 and represent the proportion of the dataset
+            to include in the train split. If int, represents the absolute number of train samples.
+
+        num_iter: int, default=50
+            Number of iterations to repeat Trustee inner-loop for.
+
+        num_stability_iter: int, default=5
+            Number of stability to repeat Trustee stabilization outer-loop for.
+
+        num_samples: int, default=2000
+            The absolute number of samples to fetch from the training dataset split to train the
+            student decision tree model. If the `samples_size` argument is provided, this arg is
+            ignored.
+
+        samples_size: float, default=None
+            The fraction of the training dataset to use to train the student decision tree model.
+            If None, the value is automatically set to the `num_samples` provided value.
+
+        use_features: array-like, default=None
+            Array-like of integers representing the indexes of features from the `X` training samples.
+            If not None, only the features indicated by the provided indexes will be used to train the
+            student decision tree model.
+
+        predict_method_name: str, default="predict"
+            The method interface to use to get predictions from the expert model.
+            If no value is passed, the default `predict` interface is used.
+
+        optimization: {"fidelity", "accuracy"}, default="fidelity"
+            The comparison criteria to optimize the decision tree students in Trustee inner-loop.
+            Used for ablation study only.
+
+        aggregate: bool, default=True
+            Boolean indicating whether dataset aggregation should be used in Trustee inner-loop.
+            Used for ablation study only.
+
+        verbose: bool, default=False
+            Boolean indicating whether to log messages.
         """
         if verbose:
             self.log(f"Initializing training dataset using {self.expert} as expert model")
@@ -177,13 +250,14 @@ class Trustee(abc.ABC):
                     X_train_student = X_iter_train.iloc[:, use_features]
                     X_test_student = X_iter_test.iloc[:, use_features]
 
-                # Step 2: Traing DecisionTreeRegressor with sampled data
+                # Step 2: Training DecisionTreeRegressor with sampled data
                 student.fit(X_train_student.values, y_iter_train.values)
                 student_pred = student.predict(X_test_student.values)
 
                 if verbose:
                     self.log(
-                        f"Student model {i}-{j} trained with depth {student.get_depth()} and {student.get_n_leaves()} leaves:"
+                        f"Student model {i}-{j} trained with depth {student.get_depth()} "
+                        f"and {student.get_n_leaves()} leaves:"
                     )
                     self.log(f"Student model score: {self._score(y_iter_test, student_pred)}")
 
@@ -197,10 +271,10 @@ class Trustee(abc.ABC):
                     targets = pd.concat([targets, expert_pred])
 
                 if optimization == "accuracy":
-                    # Step 4: Calculate reward based on Decistion Tree Classifier accuracy
+                    # Step 4: Calculate reward based on Decision Tree Classifier accuracy
                     reward = self._score(y_iter_test, student_pred)
                 else:
-                    # Step 4: Calculate reward based on Decistion Tree Classifier fidelity to the Expert model
+                    # Step 4: Calculate reward based on Decision Tree Classifier fidelity to the Expert model
                     reward = self._score(expert_pred, student_pred)
 
                 if verbose:
@@ -218,32 +292,72 @@ class Trustee(abc.ABC):
     @_check_if_trained
     def explain(self, top_k=10):
         """
-        Returns explainable model that best imitates Expert model, based on calculated rewards.
+        Returns explainable model that best imitates Expert model, based on highest mean agreement and highest fidelity.
+
+        Returns
+        -------
+        top_student: tuple
+            (dt, pruned_dt, agreement, reward)
+
+            - dt: {DecisionTreeClassifier, DecisionTreeRegressor}
+                Unconstrained fitted student model.
+
+            - pruned_dt: {DecisionTreeClassifier, DecisionTreeRegressor}
+                Top-k pruned fitted student model.
+
+            - agreement: float
+                Mean agreement of pruned student model with respect to others.
+
+            - reward: float
+                Fidelity of student model to the expert model.
         """
-        # Return dt with highest mean agreement when pruned (with no thrshold)
         stable = self.get_stable(top_k=top_k, threshold=0, sort=False)
         return max(stable, key=lambda item: item[2])
 
     @_check_if_trained
     def get_stable(self, top_k=10, threshold=0.9, sort=True):
         """
-        Filters out explanations from Trustee sability analysis with less than threshold agreement.
+        Filters out explanations from Trustee stability analysis with less than threshold agreement.
 
         Parameters
         ----------
-        top_k = 10
-        threshold = 0.9
-        sort = True
+        top_k: int, default=10
+            Number of top-k branches, sorted by number of samples per branch, to keep after finding
+            decision tree with highest fidelity.
+
+        threshold: float, default=0.9
+            Remove any student decision tree explanation if their mean agreement goes below given threshold.
+            To keep all students regardless of mean agreement, pass 0.
+
+        sort: bool, default=True
+            Boolean indicating whether to sort returned stable student explanation based on mean agreement.
+
+        Returns
+        -------
+        stable_explanations: array-like of tuple
+            [(dt, pruned_dt, agreement, reward), ...]
+
+            - dt: {DecisionTreeClassifier, DecisionTreeRegressor}
+                Unconstrained fitted student model.
+
+            - pruned_dt: {DecisionTreeClassifier, DecisionTreeRegressor}
+                Top-k pruned fitted student model.
+
+            - agreement: float
+                Mean agreement of pruned student model with respect to others.
+
+            - reward: float
+                Fidelity of student model to the expert model.
         """
         if len(self._stable_students) == 0:
             agreement = []
             # Calculate pair-wise agreement of all top students generated during inner loop
             for i, _ in enumerate(self._top_students):
                 agreement.append([])
-                # Apply top-k prunning before calculating agreement
+                # Apply top-k pruning before calculating agreement
                 base_tree = top_k_prune(self._top_students[i][0], top_k=top_k)
                 for j, _ in enumerate(self._top_students):
-                    # Apply top-k prunning before calculating agreement
+                    # Apply top-k pruning before calculating agreement
                     iter_tree = top_k_prune(self._top_students[j][0], top_k=top_k)
 
                     iter_y_pred = iter_tree.predict(self._X_test.values)
@@ -273,14 +387,36 @@ class Trustee(abc.ABC):
     @_check_if_trained
     def get_all_students(self):
         """
-        Returns list of all (student, reward) obtained during the inner-loop process.
+        Get list of all (student, reward) obtained during the inner-loop process.
+
+        Returns
+        -------
+        students_by_iter: array-like of shape (num_stability_iter, num_iter) of tuple (dt, reward)
+            Matrix with all student models trained during `fit()`.
+
+            - dt: {DecisionTreeClassifier, DecisionTreeRegressor}
+                Unconstrained fitted student model.
+
+            - reward: float
+                Fidelity of student model to the expert model.
         """
         return self._students_by_iter
 
     @_check_if_trained
     def get_top_students(self):
         """
-        Returns list of top (students, reward) obtained during the outer-loop process.
+        Get list of top (students, reward) obtained during the outer-loop process.
+
+        Returns
+        -------
+        top_students: array-like of shape (num_stability_iter,) of tuple (dt, reward)
+            List with top student models trained during `fit()`.
+
+            - dt: {DecisionTreeClassifier, DecisionTreeRegressor}
+                Unconstrained fitted student model.
+
+            - reward: float
+                Fidelity of student model to the expert model.
         """
         return self._top_students
 
@@ -288,6 +424,11 @@ class Trustee(abc.ABC):
     def get_n_features(self):
         """
         Returns number of features used in the top student model.
+
+        Returns
+        -------
+        n_features: int
+            Number of features used in top student model.
         """
         if not self._features:
             self._features, self._nodes, self._branches = get_dt_info(self._best_student)
@@ -298,13 +439,23 @@ class Trustee(abc.ABC):
     def get_n_classes(self):
         """
         Returns number of classes used in the top student model.
+
+        Returns
+        -------
+        n_classes: int
+            Number of classes outputted in top student model.
         """
         return self._best_student.tree_.n_classes[0]
 
     @_check_if_trained
     def get_samples_sum(self):
         """
-        Returns the sum of all samples in all non-leaf _nodes in best student model.
+        Get the sum of all samples in all non-leaf _nodes in best student model.
+
+        Returns
+        -------
+        samples_sum: int
+            Sum of all samples covered by non-leaf nodes in top student model.
         """
         left = self._best_student.tree_.children_left
         right = self._best_student.tree_.children_right
@@ -315,7 +466,19 @@ class Trustee(abc.ABC):
     @_check_if_trained
     def get_top_branches(self, top_k=10):
         """
-        Returns list of top _branches of the best student.
+        Returns list of top-k _branches of the best student, sorted by the number of samples the branch classifies.
+
+        Parameters
+        ----------
+        top_k: int, default=10
+            Number of top-k branches, sorted by number of samples per branch, to return.
+
+        Returns
+        -------
+        top_branches: array-like of dict
+            Dict of top-k branches from top student model.
+
+            - dict: { "level": int, "path": array-like of dict, "class": int, "prob": float, "samples": int}
         """
         if not self._branches:
             self._features, self._nodes, self._branches = get_dt_info(self._best_student)
@@ -325,7 +488,20 @@ class Trustee(abc.ABC):
     @_check_if_trained
     def get_top_features(self, top_k=10):
         """
-        Returns list of top _features of the best student.
+        Get list of top _features of the best student, sorted by the number of samples the feature is used to classify.
+
+        Parameters
+        ----------
+        top_k: int, default=10
+            Number of top-k features, sorted by number of samples per branch, to return.
+
+
+        Returns
+        -------
+        top_features: array-like of dict
+            List of top-k features from top student model.
+
+            - dict {"<feature>(int)" : {"count": int"samples": int}}
         """
         if not self._features:
             self._features, self._nodes, self._branches = get_dt_info(self._best_student)
@@ -335,7 +511,24 @@ class Trustee(abc.ABC):
     @_check_if_trained
     def get_top_nodes(self, top_k=10):
         """
-        Returns list of top _nodes of the best student.
+        Returns list of top _nodes of the best student, sorted by the proportion of samples split by each node.
+
+        The proportion of samples is calculated based on the impurity decrease equation is the following::
+            n_samples * abs(left_impurity - right_impurity)
+
+        Parameters
+        ----------
+        top_k: int, default=10
+            Number of top-k nodes, sorted by number of samples per branch, to return.
+
+        Returns
+        -------
+        top_nodes: array-like of dict
+            List of top-k nodes from top student model.
+
+            - dict: {"idx": int, "level": int, "feature": int, "threshold": float, "samples": int,
+                     "values": tuple of int, "gini_split": tuple of float, "data_split": tuple of float,
+                     "data_split_by_class": array-like of tuple of float}
         """
         if not self._nodes:
             self._features, self._nodes, self._branches = get_dt_info(self._best_student)
@@ -347,26 +540,34 @@ class Trustee(abc.ABC):
     @_check_if_trained
     def get_samples_by_level(self):
         """
-        Returns list of samples by level of the best student.
+        Get number of samples by level of the best student.
+
+        Returns
+        -------
+        samples_by_level: dict of int
+            Dict of samples by level. {"<level>(int)": <samples>(int)}
         """
         if not self._nodes:
             self._features, self._nodes, self._branches = get_dt_info(self._best_student)
 
         samples_by_level = list(np.zeros(self._best_student.get_depth() + 1))
-        nodes_by_level = list(np.zeros(self._best_student.get_depth() + 1).astype(int))
         for node in self._nodes:
             samples_by_level[node["level"]] += node["samples"]
 
         for node in self._branches:
             samples_by_level[node["level"]] += node["samples"]
-            nodes_by_level[node["level"]] += 1
 
         return samples_by_level
 
     @_check_if_trained
     def get_leaves_by_level(self):
         """
-        Returns list of leaves by level of the best student.
+        Returns number of leaves by level of the best student.
+
+        Returns
+        -------
+        leaves_by_level: dict of int
+            Dict of leaves by level. {"<level>(int)": <leaves>(int)}
         """
         if not self._branches:
             self._features, self._nodes, self._branches = get_dt_info(self._best_student)
@@ -384,8 +585,16 @@ class Trustee(abc.ABC):
 
         Parameters
         ----------
-        top_k
-        max_impurity
+        top_k: int, default=10
+            Number of top-k branches, sorted by number of samples per branch, to return.
+
+        max_impurity: float, default=0.10
+            Maximum impurity allowed in a branch. Will prune anything below that impurity level.
+
+        Returns
+        -------
+        top_k_pruned_student: {DecisionTreeClassifier, DecisionTreeRegressor}
+            Top-k pruned best fitted student model.
         """
         return top_k_prune(self._best_student, top_k=top_k, max_impurity=max_impurity)
 
@@ -393,7 +602,7 @@ class Trustee(abc.ABC):
 class ClassificationTrustee(Trustee):
     """
     Implements the Trust-oriented Decision Tree Extraction (Trustee) algorithm to train
-    a student Decision Tree Classifier based on observations from an Expert classification model.
+    a student DecisionTreeClassifier based on observations from an Expert classification model.
     """
 
     def __init__(self, expert, logger=None):
@@ -402,23 +611,32 @@ class ClassificationTrustee(Trustee):
 
         Parameters
         ----------
-        expert
-            The ML blackbox model to analyze.
-        student_class
-            Class of student to train based on blackbox model predictions
-        logger (optional)
-            A logger object
+        expert: object
+            The ML blackbox model to analyze. The expert model must have a `predict` method call implemented for
+            Trustee to work properly, unless explicitly stated otherwise using the `predict_method_name` argument
+            in the fit() method.
+        logger: Logger object , default=None
+            A logger object to log messages to. If none is given, the print() method will be used to log messages.
         """
         super().__init__(expert, student_class=DecisionTreeClassifier, logger=logger)
 
     def _score(self, y_true, y_pred, average="macro"):
         """
-        F1-score function for classification student models
+        Score function for student models. Compares the ground-truth predictions
+        of a blackbox model with the predictions of a student model, using F1-score.
 
         Parameters
         ----------
-        y_true
-        y_pred
+        y_true: array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The ground-truth target values (class labels in classification, real numbers in regression).
+
+        y_pred: array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The predicted target values (class labels in classification, real numbers in regression).
+
+        Returns
+        -------
+        score: float
+            Calculated F1-score between student model predictions and expert model ground-truth.
         """
         return f1_score(y_true, y_pred, average=average)
 
@@ -426,7 +644,7 @@ class ClassificationTrustee(Trustee):
 class RegressionTrustee(Trustee):
     """
     Implements the Trust-oriented Decision Tree Extraction (Trustee) algorithm to train a
-    student Decision Tree Regressor based on observations from an Expert regression model.
+    student DecisionTreeRegressor based on observations from an Expert regression model.
     """
 
     def __init__(self, expert, logger=None):
@@ -435,22 +653,31 @@ class RegressionTrustee(Trustee):
 
         Parameters
         ----------
-        expert
-            The ML blackbox model to analyze.
-        student_class
-            Class of student to train based on blackbox model predictions
-        logger (optional)
-            A logger object
+        expert: object
+            The ML blackbox model to analyze. The expert model must have a `predict` method call implemented for
+            Trustee to work properly, unless explicitly stated otherwise using the `predict_method_name` argument
+            in the fit() method.
+        logger: Logger object , default=None
+            A logger object to log messages to. If none is given, the print() method will be used to log messages.
         """
         super().__init__(expert=expert, student_class=DecisionTreeRegressor, logger=logger)
 
     def _score(self, y_true, y_pred):
         """
-        R2-score function for regression student models
+        Score function for student models. Compares the ground-truth predictions
+        of a blackbox model with the predictions of a student model, using R2-score.
 
         Parameters
         ----------
-        y_true
-        y_pred
+        y_true: array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The ground-truth target values (class labels in classification, real numbers in regression).
+
+        y_pred: array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The predicted target values (class labels in classification, real numbers in regression).
+
+        Returns
+        -------
+        score: float
+            Calculated R2-score between student model predictions and expert model ground-truth.
         """
         return r2_score(y_true, y_pred)

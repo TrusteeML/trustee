@@ -35,7 +35,7 @@ from .plot import (
 
 
 class TrustReport:
-    """Class to generate trust report"""
+    """Class to generate Trust Report."""
 
     def __init__(
         self,
@@ -67,7 +67,113 @@ class TrustReport:
         is_classify=True,
     ):
         """
-        Builds trust report for given black-box model using the Trustee method to extract white-box explanations as Decision Trees.
+        Builds Trust Report for given blackbox model using the Trustee method
+        to extract whitebox explanations as Decision Trees.
+
+        Parameters
+        ----------
+        blackbox: object
+            The ML blackbox model to analyze. The expert model must have a `predict` method call implemented for
+            Trustee to work properly, unless explicitly stated otherwise using the `predict_method_name`.
+
+        X: {array-like, sparse matrix} of shape (n_samples, n_features)
+            The training input samples. Internally, it will be converted to a pandas DataFrame.
+            Either (X, y) or (X_train, X_test, y_train, y_test) must be provided.
+
+        y: array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The target values for X (class labels in classification, real numbers in regression).
+            Internally, it will be converted to a pandas Series.
+            Either (X, y) or (X_train, X_test, y_train, y_test) must be provided.
+
+        X_train: {array-like, sparse matrix} of shape (n_samples, n_features)
+            The training input samples. Internally, it will be converted to a pandas DataFrame.
+            Use this argument if a fixed train-test split is to be used.
+            Either (X, y) or (X_train, X_test, y_train, y_test) must be provided.
+
+        X_test: {array-like, sparse matrix} of shape (n_samples, n_features)
+            The training input samples. Internally, it will be converted to a pandas DataFrame.
+            Use this argument if a fixed train-test split is to be used.
+            Either (X, y) or (X_train, X_test, y_train, y_test) must be provided.
+
+        y_train: array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The target values for X (class labels in classification, real numbers in regression).
+            Internally, it will be converted to a pandas Series.
+            Use this argument if a fixed train-test split is to be used.
+            Either (X, y) or (X_train, X_test, y_train, y_test) must be provided.
+
+        y: array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The target values for X (class labels in classification, real numbers in regression).
+            Internally, it will be converted to a pandas Series.
+            Use this argument if a fixed train-test split is to be used.
+            Either (X, y) or (X_train, X_test, y_train, y_test) must be provided.
+
+        max_iter: int, default=10
+            Number of iterations to repeat several analyses in the Trust Report,
+            including feature removal and branch analysis.
+
+        num_pruning_iter: int, default=10
+            Number of iterations to repeat the pruning analysis.
+
+        train_size: float or int, default=0.7
+            If float, should be between 0.0 and 1.0 and represent the proportion of the dataset
+            to include in the train split. If int, represents the absolute number of train samples.
+
+        predict_method_name: str, default="predict"
+            The method interface to use to get predictions from the expert model.
+            If no value is passed, the default `predict` interface is used.
+
+        trustee_num_iter: int, default=50
+            Number of iterations to repeat Trustee inner-loop for.
+
+        trustee_num_stability_iter: int, default=5
+            Number of stability to repeat Trustee stabilization outer-loop for.
+
+        trustee_samples_size: float, default=None
+            The fraction of the training dataset to use to train the student decision tree model.
+            If None, the value is automatically set to the `num_samples` provided value.
+
+        trustee_max_leaf_nodes: int, default=None
+            Grow a tree with max_leaf_nodes in best-first fashion. Best nodes are defined as
+            relative reduction in impurity. If None then unlimited number of leaf nodes.
+
+        trustee_max_depth: int, default=None
+            The maximum depth of the tree. If None, then nodes are expanded until all leaves are pure.
+
+        trustee_ccp_alpha: float, default=0.0
+            Complexity parameter used for Minimal Cost-Complexity Pruning. The subtree with the
+            largest cost complexity that is smaller than ccp_alpha will be chosen. By default,
+            no pruning is performed. See Minimal Cost-Complexity Pruning here for details:
+            https://scikit-learn.org/stable/modules/tree.html#minimal-cost-complexity-pruning
+
+        analyze_branches: bool, default=False
+            Boolean indicating whether to perform the Trust Report branch analysis of Trustee explanations.
+
+        analyze_stability: bool, default=False
+            Boolean indicating whether to perform the Trust Report stability analysis of Trustee explanations.
+
+        skip_retrain: bool, default=False
+            Boolean indicating whether the Trust Report should attempt to retrain the given blackbox model.
+            Used to evaluate the impact of each feature in training by iteratively removing top features.
+            Works well for scikit-explain model, but can be troublesome for other libraries (especially AutoGluon).
+
+        top_k: int, default=10
+            Number of top-k branches, sorted by number of samples per branch, to keep after finding
+            decision tree with highest fidelity.
+
+        verbose: bool, default=False
+            Boolean indicating whether to log messages.
+
+        logger: Logger object , default=None
+            A logger object to log messages to. If none is given, the print() method will be used to log messages.
+
+        class_names: array-like of str, default=None
+            List of class names to use when plotting decision trees and graphs.
+
+        feature_names: array-like of str, default=None,
+            List of feature names to use when plotting decision trees and graphs.
+
+        is_classify: bool, default=True,
+            Whether given blackbox is a classifier or regressor. The outputted plots change depending on chosen value.
         """
         self.blackbox = blackbox
         self.X = X
@@ -98,6 +204,8 @@ class TrustReport:
 
         self.step = 0
         """
+            Used for progress bar.
+
             total_steps = 
                 _prepare_data (1) + 
                 _collect_blackbox (1) +
@@ -170,7 +278,14 @@ class TrustReport:
         self.trustee.expert = None
 
     def __str__(self):
-        """Formats collected data into a reporto using PrettyTable"""
+        """
+        Formats collected data into a report using PrettyTable.
+
+        Returns
+        -------
+        report: str
+            Formatted Trust Report.
+        """
         report = PrettyTable(title="Classification Trust Report", header=False)
 
         summary = PrettyTable(title="Summary")
@@ -575,10 +690,20 @@ class TrustReport:
     def _progress(self, finish=False, length=100, fill="█", end="\r"):
         """
         Call in a loop to create terminal progress bar
-        @params:
-            length      - Optional  : character length of bar (Int)
-            fill        - Optional  : bar fill character (Str)
-            end         - Optional  : end character (e.g. "\r", "\r\n") (Str)
+
+        Parameters
+        ----------
+            finish: bool, default=False
+                Force progress bar to finish.
+
+            length: int, default=100
+                Character length of bar.
+
+            fill: str, default="█"
+                Bar fill character.
+
+            end: str, default="\r"
+                End character (e.g. "\r", "\r\n")
         """
         self.step = self.step + 1
         if self.step > self.total_steps or finish:
@@ -593,7 +718,7 @@ class TrustReport:
             print()
 
     def _prepare_data(self):
-        """Data preparation for trust report"""
+        """Data preparation for Trust Report"""
         log = self.logger.log if self.logger else print
 
         if self.verbose:
@@ -649,10 +774,40 @@ class TrustReport:
         trustee_ccp_alpha=0.0,
         trustee_max_leaf_nodes=None,
         trustee_max_depth=None,
-        trustee_use_features=None,
     ):
         """
-        Fits blacbox with the given X and y data, and uses Trustee to extract DT explanation
+        Fits blackbox with the given X and y data, and uses Trustee to extract DT explanation
+
+        Parameters
+        ----------
+            X_train: {array-like, sparse matrix} of shape (n_samples, n_features), default=None
+                The training input samples.
+                If none is provided the default TrustReport value is used.
+
+            X_test: {array-like, sparse matrix} of shape (n_samples, n_features), default=None
+                The test input samples.
+                If none is provided the default TrustReport value is used.
+
+            trustee_num_stability_iter: int, default=None
+                Number of stability to repeat Trustee stabilization outer-loop for.
+                If none is provided the default TrustReport value is used.
+
+            trustee_ccp_alpha: float, default=0.0
+                Complexity parameter used for Minimal Cost-Complexity Pruning. The subtree with the
+                largest cost complexity that is smaller than ccp_alpha will be chosen. By default,
+                no pruning is performed. See Minimal Cost-Complexity Pruning here for details:
+                https://scikit-learn.org/stable/modules/tree.html#minimal-cost-complexity-pruning
+
+                If none is provided the default TrustReport value is used.
+
+            trustee_max_leaf_nodes: int, default=None
+                Grow a tree with max_leaf_nodes in best-first fashion. Best nodes are defined as
+                relative reduction in impurity. If None then unlimited number of leaf nodes.
+                If none is provided the default TrustReport value is used.
+
+            trustee_max_depth: int, default=None
+                The maximum depth of the tree. If None, then nodes are expanded until all leaves are pure.
+                If none is provided the default TrustReport value is used.
         """
         log = self.logger.log if self.logger else print
 
@@ -729,7 +884,6 @@ class TrustReport:
             max_leaf_nodes=trustee_max_leaf_nodes if trustee_max_leaf_nodes else self.trustee_max_leaf_nodes,
             max_depth=trustee_max_depth if trustee_max_depth else self.trustee_max_depth,
             ccp_alpha=trustee_ccp_alpha if trustee_ccp_alpha else self.trustee_ccp_alpha,
-            use_features=trustee_use_features,
             verbose=self.verbose,
         )
 
@@ -740,9 +894,6 @@ class TrustReport:
         if self.verbose:
             log(f"Model explanation training (agreement, fidelity): ({agreement}, {reward})")
             log(f"Top-k Prunned explanation size: {min_dt.tree_.node_count}")
-
-        if trustee_use_features:
-            X_test = X_test.iloc[:, trustee_use_features]
 
         dt_y_pred = dt.predict(X_test.values)
         min_dt_y_pred = min_dt.predict(X_test.values)
@@ -873,7 +1024,8 @@ class TrustReport:
                 log(f"Iteration {i}/{self.max_iter}")
 
             (trustee, y_pred, max_dt, max_dt_y_pred, min_dt, min_dt_y_pred) = self._fit_and_explain(
-                trustee_num_stability_iter=1  # prevents trustee`s outer loop from running so we can see how unstable explanations are
+                # prevents trustee`s outer loop from running so we can see how unstable explanations are
+                trustee_num_stability_iter=1
             )
             top_branches = trustee.get_top_branches(top_k=max_dt.get_n_leaves())
             self.stability_iter.append(
@@ -1080,8 +1232,11 @@ class TrustReport:
 
         Parameters
         ----------
-        output_dir : str
+        output_dir: str
             The output directory to save the decision trees.
+
+        save_all: bool, default=False
+            Whether to save all generated decision trees or just the main explanation.
         """
         log = self.logger.log if self.logger else print
         if self.verbose:
@@ -1194,8 +1349,12 @@ class TrustReport:
 
         Parameters
         ----------
-        output_dir : str
+        output_dir: str
             The output directory to save the plots.
+
+        aggregate: bool, default=False
+            Whether to attempt to aggregate most important features based on the values seen in the data and branches.
+            Does not always work properly, but can be useful to analyze the given dataset.
         """
         log = self.logger.log if self.logger else print
         if self.verbose:
@@ -1327,12 +1486,17 @@ class TrustReport:
     @classmethod
     def load(cls, path):
         """
-        Load the trust report from a file.
+        Load the Trust Report from a file.
 
         Parameters
         ----------
-        path : str
+        path: str
             The path to the file.
+
+        Returns
+        -------
+        report: TrustReport
+            Loaded Trust Report from file.
         """
         report = None
         with open(path, "rb") as file:
@@ -1341,7 +1505,21 @@ class TrustReport:
         return report
 
     def save(self, output_dir, aggregate=False, save_all_dts=False):
-        """Saves report and plots to output dir"""
+        """
+        Saves report and plots to output dir
+
+        Parameters
+        ----------
+        output_dir: str
+            The output directory to save the plots.
+
+        aggregate: bool, default=False
+            Whether to attempt to aggregate most important features based on the values seen in the data and branches.
+            Does not always work properly, but can be useful to analyze the given dataset.
+
+        save_all_dts: bool, default=False
+            Whether to save all generated decision trees or just the main explanation.
+        """
         if output_dir:
             log = self.logger.log if self.logger else print
             if self.verbose:

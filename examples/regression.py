@@ -1,3 +1,10 @@
+"""
+RegressionTrustee
+=================
+
+Simple example on how to use the ClassificationTrustee class to extract
+a decision tree from a MLPRegressor (neural network) from scikit-learn.
+"""
 # importing required libraries
 # importing Scikit-learn library and datasets package
 import graphviz

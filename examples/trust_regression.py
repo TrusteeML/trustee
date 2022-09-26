@@ -1,3 +1,12 @@
+"""
+TrustReport for Regression
+==========================
+
+Simple example on how to use the TrustReport class to analyze the explanations
+produced by RegressionTrustee from a MLPRegressor (neural network) from scikit-learn.
+Notice that using the method `TrustReport.load()`, one can load a previously
+generated report saved using `trust_report.save()`.
+"""
 import os
 
 # importing required libraries

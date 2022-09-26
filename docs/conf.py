@@ -32,6 +32,7 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.napoleon",
     "sphinxemoji.sphinxemoji",
+    "sphinx_gallery.gen_gallery",
 ]
 
 
@@ -59,4 +60,9 @@ html_theme_options = {
             "class": "",
         },
     ],
+}
+
+sphinx_gallery_conf = {
+    "examples_dirs": "../examples",  # path to your example scripts
+    "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
 }
