@@ -20,6 +20,7 @@ the :doc:`api` section.
   <style>
     .buttons {
       display: flex;
+      flex-wrap: wrap;
       justify-content: flex-end; 
     }
 
@@ -30,13 +31,13 @@ the :doc:`api` section.
     }
 
     .buttons svg {
-      font-size: 2em;
+      font-size: 1.5em;
       height: 1em;
       width: 1em;
     }
 
     .buttons .label {
-      margin-left: 5px;
+      margin-left: 10px;
     } 
   </style>
   <div class="buttons">
