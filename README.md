@@ -42,7 +42,7 @@ y_pred = clf.predict(X_test)
 
 trustee = ClassificationTrustee(expert=clf)
 trustee.fit(X_train, y_train, num_iter=50, num_stability_iter=10, samples_size=0.3, verbose=True)
-dt = trustee.explain()
+dt, pruned_dt, agreement, reward = trustee.explain()
 dt_y_pred = dt.predict(X_test)
 
 print("Model explanation global fidelity report:")
