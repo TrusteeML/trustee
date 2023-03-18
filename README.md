@@ -1,6 +1,7 @@
+<img src="https://github.com/TrusteeML/trustee/blob/master/docs/_static/logo.png?raw=true" alt="Trustee" width="400"/>
+
 [![Downloads](https://static.pepy.tech/personalized-badge/trustee?period=total&units=international_system&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/trustee)
 
-<img src="https://github.com/TrusteeML/trustee/blob/master/docs/_static/logo.png?raw=true" alt="Trustee" width="400"/>
 
 This package implements the `trustee` framework to extract decision tree explanation from black-box ML models.
 For more information, please visit the [documentation website](https://trusteeml.github.io).
