@@ -16,6 +16,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from trustee.utils.tree import get_dt_info, top_k_prune
+from trustee.utils.dataset import convert_to_df, convert_to_series
 
 
 def _check_if_trained(func):
@@ -198,14 +199,14 @@ class Trustee(abc.ABC):
             raise ValueError("Features (X) and target (y) values should have the same length.")
 
         # convert data to np array to facilitate processing
-        X = pd.DataFrame(X)
-        y = pd.Series(y)
+        X = convert_to_df(X)
+        y = convert_to_series(y)
 
         # split input array to train DTs and evaluate agreement
         self._X_train, self._X_test, self._y_train, self._y_test = train_test_split(X, y, train_size=train_size)
 
         features = self._X_train
-        targets = pd.Series(getattr(self.expert, predict_method_name)(self._X_train))
+        targets = convert_to_series(getattr(self.expert, predict_method_name)(self._X_train))
 
         if hasattr(targets, "shape") and len(targets.shape) >= 2:
             targets = targets.ravel()

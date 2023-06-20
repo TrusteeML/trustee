@@ -19,6 +19,7 @@ from prettytable import PrettyTable
 
 from trustee import ClassificationTrustee, RegressionTrustee
 from trustee.utils.tree import get_dt_info
+from trustee.utils.dataset import convert_to_df, convert_to_series
 
 from .plot import (
     plot_top_nodes,
@@ -731,18 +732,18 @@ class TrustReport:
 
         if self.X_train is not None:
             # convert to pandas DataFrame to avoid dealing with other formats
-            self.X_train = pd.DataFrame(self.X_train)
-            self.X_test = pd.DataFrame(self.X_test)
-            self.y_train = pd.Series(self.y_train)
-            self.y_test = pd.Series(self.y_test)
+            self.X_train = convert_to_df(self.X_train)
+            self.X_test = convert_to_df(self.X_test)
+            self.y_train = convert_to_series(self.y_train)
+            self.y_test = convert_to_series(self.y_test)
         else:
             # if data split is not given as a param, split the dataset randomly
             if self.verbose:
                 log("Splitting dataset for training and testing...")
 
             # convert to pandas DataFrame to avoid dealing with other formats
-            self.X = pd.DataFrame(self.X)
-            self.y = pd.Series(self.y)
+            self.X = convert_to_df(self.X)
+            self.y = convert_to_series(self.y)
 
             X_indexes = np.arange(0, self.X.shape[0])
             self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(

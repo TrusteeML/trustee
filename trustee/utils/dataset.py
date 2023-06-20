@@ -8,6 +8,46 @@ from pandas.api.types import CategoricalDtype
 from trustee.enums.feature_type import FeatureType
 
 
+def convert_to_df(data):
+    """
+    Converts data to a pandas DataFrame.
+
+    Args:
+        - data
+            Data to be converted
+
+    Returns: pd.DataFrame
+    """
+    if isinstance(data, pd.DataFrame):
+        return data
+    elif isinstance(data, pd.Series):
+        return pd.DataFrame(data)
+    elif isinstance(data, np.ndarray):
+        return pd.DataFrame(data)
+    else:
+        raise ValueError("Data must be a pandas dataframe or numpy array")
+
+
+def convert_to_series(data):
+    """
+    Converts data to a pandas Series.
+
+    Args:
+        - data
+            Data to be converted
+
+    Returns: pd.Series
+    """
+    if isinstance(data, pd.Series):
+        return data
+    elif isinstance(data, pd.DataFrame):
+        return data.iloc[:, 0]
+    elif isinstance(data, np.ndarray):
+        return pd.Series(data.flatten())
+    else:
+        raise ValueError("Data must be a pandas dataframe or numpy array")
+
+
 def read(path_or_buffer, metadata={}, verbose=False, logger=None, as_df=False):
     """
     Reads dataset from a CSV and returns it as dataframe
@@ -15,7 +55,7 @@ def read(path_or_buffer, metadata={}, verbose=False, logger=None, as_df=False):
     Args:
         - path
             Path to read dataset from
-    Returns: None
+    Returns:
         - X
             Features from dataset as an np.array or dataframe (if as_df == True)
         - y

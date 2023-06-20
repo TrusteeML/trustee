@@ -1,6 +1,6 @@
-import rootpath
 import numpy as np
 
+from . import rootpath
 from trustee.enums.feature_type import FeatureType
 
 WINE_DATASET_META = {

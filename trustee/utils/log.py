@@ -1,9 +1,10 @@
 import logging
-import rootpath
+
+from . import rootpath
 
 
 class Logger(logging.getLoggerClass()):
-    """ Initialze log with output to given path """
+    """Initialze log with output to given path"""
 
     def __init__(
         self,
@@ -28,5 +29,5 @@ class Logger(logging.getLoggerClass()):
         self.addHandler(file_handler)
 
     def log(self, *args, level=logging.INFO):
-        """ Logs message with log with given level """
+        """Logs message with log with given level"""
         super().log(level, " ".join([str(arg) for arg in args]))
