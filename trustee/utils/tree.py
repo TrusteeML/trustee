@@ -2,7 +2,7 @@ import numpy as np
 
 from copy import deepcopy
 
-from sklearn.tree._tree import TREE_LEAF, TREE_UNDEFINED
+from sklearn.tree._tree import TREE_LEAF, TREE_UNDEFINED, NODE_DTYPE
 
 
 def prune_index(dt, index, prune_level):
@@ -17,7 +17,7 @@ def prune_index(dt, index, prune_level):
     dt.tree_.children_left[index] = TREE_LEAF if prune_level == 0 else TREE_UNDEFINED
     dt.tree_.children_right[index] = TREE_LEAF if prune_level == 0 else TREE_UNDEFINED
 
-    # if there are shildren, visit them as well
+    # if there are children, visit them as well
     if left_idx != TREE_LEAF and right_idx != TREE_LEAF:
         prune_index(dt, left_idx, prune_level + 1)
         prune_index(dt, right_idx, prune_level + 1)
@@ -27,16 +27,12 @@ def get_dt_dict(dt):
     """Iterates through the given Decision Tree to collect updated tree node structure"""
     children_left = dt.tree_.children_left
     children_right = dt.tree_.children_right
-    features = dt.tree_.feature
-    thresholds = dt.tree_.threshold
-    samples = dt.tree_.n_node_samples
-    weighted_samples = dt.tree_.weighted_n_node_samples
-    impurity = dt.tree_.impurity
-    values = dt.tree_.value
+    dt_state = dt.tree_.__getstate__()
+    nodes_arr = dt_state["nodes"]
+    values_arr = dt_state["values"]
 
     idx_inc = 0
     nodes = []
-    # values = []
 
     def walk_tree(node, level, idx):
         """Recursively iterates through all nodes in given decision tree and returns them as a list."""
@@ -57,12 +53,8 @@ def get_dt_dict(dt):
                 "left": left,
                 "right": right,
                 "level": level,
-                "feature": features[node],
-                "threshold": thresholds[node],
-                "impurity": impurity[node],
-                "samples": samples[node],
-                "values": values[node],
-                "weighted_samples": weighted_samples[node],
+                "node_tuple": nodes_arr[node],
+                "values_tuple": values_arr[node],
             }
         )
 
@@ -70,40 +62,18 @@ def get_dt_dict(dt):
 
     walk_tree(0, 0, idx_inc)
 
-    node_dtype = [
-        ("left_child", "<i8"),
-        ("right_child", "<i8"),
-        ("feature", "<i8"),
-        ("threshold", "<f8"),
-        ("impurity", "<f8"),
-        ("n_node_samples", "<i8"),
-        ("weighted_n_node_samples", "<f8"),
-    ]
-    node_ndarray = np.array([], dtype=node_dtype)
-    node_values = []
     max_depth = 0
+    node_values = []
+    node_ndarray = np.array([], dtype=NODE_DTYPE)
+
     for node in sorted(nodes, key=lambda x: x["idx"]):
         if node["level"] > max_depth:
             max_depth = node["level"]
 
-        node_ndarray = np.append(
-            node_ndarray,
-            np.array(
-                [
-                    (
-                        node["left"],
-                        node["right"],
-                        node["feature"],
-                        node["threshold"],
-                        node["impurity"],
-                        node["samples"],
-                        node["weighted_samples"],
-                    )
-                ],
-                dtype=node_dtype,
-            ),
-        )
-        node_values.append(node["values"])
+        node_tuple = (node["left"], node["right"], *tuple(node["node_tuple"])[2:])
+        node_ndarray = np.append(node_ndarray, np.array([node_tuple], dtype=NODE_DTYPE))
+        node_values.append(node["values_tuple"])
+
     value_ndarray = np.array(node_values, dtype=np.float64)
 
     dt_dict = {
@@ -191,7 +161,7 @@ def top_k_prune(dt, top_k, max_impurity=0.1):
 
     nodes_to_keep = set({})
     for branch in top_branches:
-        for (node, _, _, _) in branch["path"]:
+        for node, _, _, _ in branch["path"]:
             if dt.tree_.impurity[node] > max_impurity:
                 nodes_to_keep.add(node)
 

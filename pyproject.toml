@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trustee"
-version = "1.1.4"
+version = "1.1.5"
 readme = "README.md"
 description = "This package implements the Trustee framework to extract decision tree explanation from black-box ML models."
 homepage = "https://trusteeml.github.io"
