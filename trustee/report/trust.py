@@ -66,6 +66,7 @@ class TrustReport:
         class_names=None,
         feature_names=None,
         is_classify=True,
+        use_features=None,
     ):
         """
         Builds Trust Report for given blackbox model using the Trustee method
@@ -175,6 +176,11 @@ class TrustReport:
 
         is_classify: bool, default=True,
             Whether given blackbox is a classifier or regressor. The outputted plots change depending on chosen value.
+
+        use_features: array-like, default=None
+            Array-like of integers representing the indexes of features from the `X` training samples.
+            If not None, only the features indicated by the provided indexes will be used to train the
+            student decision tree model.
         """
         self.blackbox = blackbox
         self.X = X
@@ -202,6 +208,7 @@ class TrustReport:
         self.class_names = class_names
         self.feature_names = feature_names
         self.is_classify = is_classify
+        self.use_features = use_features or np.arange(0, len(X_train.columns))
 
         self.step = 0
         """
@@ -886,6 +893,7 @@ class TrustReport:
             max_depth=trustee_max_depth if trustee_max_depth else self.trustee_max_depth,
             ccp_alpha=trustee_ccp_alpha if trustee_ccp_alpha else self.trustee_ccp_alpha,
             verbose=self.verbose,
+            use_features=self.use_features,
         )
 
         if self.verbose:
@@ -896,8 +904,8 @@ class TrustReport:
             log(f"Model explanation training (agreement, fidelity): ({agreement}, {reward})")
             log(f"Top-k Prunned explanation size: {min_dt.tree_.node_count}")
 
-        dt_y_pred = dt.predict(X_test.values)
-        min_dt_y_pred = min_dt.predict(X_test.values)
+        dt_y_pred = dt.predict(X_test.iloc[:, self.use_features].values)
+        min_dt_y_pred = min_dt.predict(X_test.iloc[:, self.use_features].values)
 
         if self.verbose:
             log("Model explanation global fidelity report:")
@@ -994,7 +1002,7 @@ class TrustReport:
                 log(f"Iteration {top_k}/{self.max_dt.get_n_leaves()}")
 
             pruned_dt = self.trustee.prune(top_k=top_k)
-            pruned_dt_y_pred = pruned_dt.predict(self.X_test.values)
+            pruned_dt_y_pred = pruned_dt.predict(self.X_test.iloc[:, self.use_features].values)
 
             self.branch_iter.append(
                 {
@@ -1056,7 +1064,7 @@ class TrustReport:
                 log(f"Iteration {top_k}/{self.num_pruning_iter}")
 
             pruned_dt = self.trustee.prune(top_k=top_k)
-            pruned_dt_y_pred = pruned_dt.predict(self.X_test.values)
+            pruned_dt_y_pred = pruned_dt.predict(self.X_test.iloc[:, self.use_features].values)
 
             self.top_k_prune_iter.append(
                 {
@@ -1190,9 +1198,9 @@ class TrustReport:
         X_train_iter = self.X_train.copy()
         X_test_iter = self.X_test.copy()
 
-        while i < self.max_iter and n_features_removed < self.bb_n_input_features - 1:
+        while i < self.max_iter and n_features_removed < len(self.use_features) - 1:
             if self.verbose:
-                log(f"Iteration {i + 1}/{min(self.max_iter, self.bb_n_input_features)}")
+                log(f"Iteration {i + 1}/{min(self.max_iter, len(self.use_features))}")
 
             # remove most significant feature
             X_train_iter.iloc[:, top_feature_to_remove] = 0
@@ -1246,7 +1254,7 @@ class TrustReport:
         dot_data = tree.export_graphviz(
             self.max_dt,
             class_names=self.class_names,
-            feature_names=self.feature_names,
+            feature_names=[self.feature_names[i] for i in self.use_features],
             filled=True,
             rounded=True,
             special_characters=True,
@@ -1258,7 +1266,7 @@ class TrustReport:
             dot_data = tree.export_graphviz(
                 self.min_dt,
                 class_names=self.class_names,
-                feature_names=self.feature_names,
+                feature_names=[self.feature_names[i] for i in self.use_features],
                 filled=True,
                 rounded=True,
                 special_characters=True,
@@ -1419,7 +1427,7 @@ class TrustReport:
 
         plot_stability(
             self.stability_iter,
-            self.X_test,
+            self.X_test.iloc[:, self.use_features],
             self.y_test,
             self.max_dt,
             "max_dt",
@@ -1431,7 +1439,7 @@ class TrustReport:
 
         plot_stability(
             self.stability_iter,
-            self.X_test,
+            self.X_test.iloc[:, self.use_features],
             self.y_test,
             self.min_dt,
             "min_dt",
@@ -1443,7 +1451,7 @@ class TrustReport:
 
         plot_stability_heatmap(
             self.stability_iter,
-            self.X_test,
+            self.X_test.iloc[:, self.use_features],
             self.y_test,
             "max_dt",
             self.max_dt_top_branches,
@@ -1454,7 +1462,7 @@ class TrustReport:
 
         plot_stability_heatmap(
             self.stability_iter,
-            self.X_test,
+            self.X_test.iloc[:, self.use_features],
             self.y_test,
             "min_dt",
             self.max_dt_top_branches,
