@@ -85,6 +85,8 @@ class Trustee(abc.ABC):
         self._nodes = None
         self._branches = None
 
+        self._student_use_features: np.array = []
+
     @abc.abstractmethod
     def _score(self, y_true, y_pred):
         """
@@ -202,6 +204,8 @@ class Trustee(abc.ABC):
         X = convert_to_df(X)
         y = convert_to_series(y)
 
+        self._student_use_features = use_features or np.arange(0, len(X.columns))
+
         # split input array to train DTs and evaluate agreement
         self._X_train, self._X_test, self._y_train, self._y_test = train_test_split(X, y, train_size=train_size)
 
@@ -244,12 +248,8 @@ class Trustee(abc.ABC):
                 X_iter_train, X_iter_test, y_iter_train, y_iter_test = train_test_split(
                     X_iter, y_iter, train_size=train_size
                 )
-
-                X_train_student = X_iter_train
-                X_test_student = X_iter_test
-                if use_features is not None:
-                    X_train_student = X_iter_train.iloc[:, use_features]
-                    X_test_student = X_iter_test.iloc[:, use_features]
+                X_train_student = X_iter_train.iloc[:, self._student_use_features]
+                X_test_student = X_iter_test.iloc[:, self._student_use_features]
 
                 # Step 2: Training DecisionTreeRegressor with sampled data
                 student.fit(X_train_student.values, y_iter_train.values)
@@ -361,8 +361,8 @@ class Trustee(abc.ABC):
                     # Apply top-k pruning before calculating agreement
                     iter_tree = top_k_prune(self._top_students[j][0], top_k=top_k)
 
-                    iter_y_pred = iter_tree.predict(self._X_test.values)
-                    base_y_pred = base_tree.predict(self._X_test.values)
+                    iter_y_pred = iter_tree.predict(self._X_test.iloc[:, self._student_use_features].values)
+                    base_y_pred = base_tree.predict(self._X_test.iloc[:, self._student_use_features].values)
 
                     agreement[i].append(self._score(iter_y_pred, base_y_pred))
 
