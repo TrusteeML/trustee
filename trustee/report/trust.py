@@ -208,7 +208,7 @@ class TrustReport:
         self.class_names = class_names
         self.feature_names = feature_names
         self.is_classify = is_classify
-        self.use_features = use_features or np.arange(0, X_train.shape[1])
+        self.use_features = use_features if use_features is not None else np.arange(0, X_train.shape[1])
 
         self.step = 0
         """
