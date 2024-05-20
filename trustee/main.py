@@ -204,7 +204,7 @@ class Trustee(abc.ABC):
         X = convert_to_df(X)
         y = convert_to_series(y)
 
-        self._student_use_features = use_features or np.arange(0, len(X.columns))
+        self._student_use_features = use_features if use_features is not None else np.arange(0, len(X.columns))
 
         # split input array to train DTs and evaluate agreement
         self._X_train, self._X_test, self._y_train, self._y_test = train_test_split(X, y, train_size=train_size)

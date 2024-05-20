@@ -499,6 +499,11 @@ def plot_accuracy_by_feature_removed(whitebox_iter, output_dir, feature_names=[]
 
 
 def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_names=[], class_names=[]):
+    if isinstance(X, pd.DataFrame):
+        X = X.values
+    if isinstance(y, pd.Series):
+        y = y.values
+
     """Plots the distribution of the data based on the top branches"""
     if not np.array(X).size or not np.array(y).size or not np.array(top_branches).size:
         return

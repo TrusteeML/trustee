@@ -208,7 +208,7 @@ class TrustReport:
         self.class_names = class_names
         self.feature_names = feature_names
         self.is_classify = is_classify
-        self.use_features = use_features or np.arange(0, len(X_train.columns))
+        self.use_features = use_features if use_features is not None else np.arange(0, X_train.shape[1])
 
         self.step = 0
         """
@@ -950,7 +950,7 @@ class TrustReport:
         if self.verbose:
             log("Collecting blackbox information...")
 
-        self.bb_n_input_features = len(self.X_train.columns)
+        self.bb_n_input_features = self.X_train.shape[1]
         self.bb_n_output_classes = len(np.unique(self.y_train))
         if self.verbose:
             log("Done!")
