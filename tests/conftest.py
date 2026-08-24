@@ -1,6 +1,7 @@
 """Shared fixtures for the Trustee test suite."""
 
 import matplotlib
+import numpy as np
 import pytest
 from sklearn import datasets
 from sklearn.ensemble import RandomForestClassifier
@@ -11,6 +12,17 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 matplotlib.use("Agg")
 
 RANDOM_STATE = 0
+
+
+@pytest.fixture(autouse=True)
+def deterministic_random():
+    """Seed the global RNG before every test.
+
+    Trustee.fit() samples with np.random.choice and calls train_test_split without a
+    random_state, so both draw from NumPy's global state. Without this, results differ
+    run to run and any assertion on fidelity or agreement is flaky.
+    """
+    np.random.seed(RANDOM_STATE)
 
 
 @pytest.fixture(scope="session")

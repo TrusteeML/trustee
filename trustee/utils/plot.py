@@ -332,7 +332,7 @@ def plot_stacked_bars(x, y, y_placeholder=None, ylim=None, xlabel=None, ylabel=N
             bottom=bottom_by_y[i - 1] if i > 0 and bottom_by_y else 0,
             # hatch=hatches[i] if i < len(hatches) else None,
             color=colors[i] if i < len(colors) else None,
-            label=labels[i] if labels else "",
+            label=labels[i] if labels and i < len(labels) else "",
         )
         # ax.bar_label(rects, label_type="center", fmt="%.2f", padding=5)
 

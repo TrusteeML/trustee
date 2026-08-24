@@ -51,6 +51,7 @@ sphinx-gallery = ">=0.17"
 black = ">=24.8"
 flake8 = ">=7.1"
 pytest = ">=8.3"
+pytest-cov = ">=5.0"
 
 [tool.black]
 line-length = 120
@@ -64,6 +65,10 @@ filterwarnings = [
     "error::FutureWarning",
     # TrustReport fits a classifier probe even for regression blackboxes
     "default:The number of unique classes is greater than:UserWarning",
+    # joblib 1.5.3 (latest) sets ndarray.shape directly in numpy_pickle.py, which
+    # NumPy 2.5 deprecated. Nothing in Trustee can avoid it -- it fires on any
+    # joblib load. Scoped to the exact message so the category stays an error.
+    "default:Setting the shape on a NumPy array has been deprecated:DeprecationWarning",
 ]
 
 [build-system]

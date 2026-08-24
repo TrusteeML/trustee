@@ -16,6 +16,18 @@ from trustee.utils import plot
 from trustee.utils.tree import get_dt_info
 
 
+def _class_label(class_names, index, default=None):
+    """Resolves a class index to its display name, falling back to the index itself.
+
+    Every plotting entry point in this module defaults `class_names` to an empty list,
+    so an `is not None` check alone is not enough -- indexing it raises IndexError. This
+    also tolerates a `class_names` shorter than the number of classes in the tree.
+    """
+    if class_names is not None and not isinstance(index, str) and index < len(class_names):
+        return class_names[index]
+    return index if default is None else default
+
+
 def plot_top_features(top_features, dt_sum_samples, dt_nodes, output_dir, feature_names=[]):
     """Uses top features information and plots CDF with it"""
     if not np.array(top_features).size or not np.array(dt_sum_samples).size or not np.array(dt_nodes).size:
@@ -132,7 +144,7 @@ def plot_top_branches(
     colors_by_class = {}
     colors_by_samples = []
     for branch in top_branches:
-        class_label = class_names[branch["class"]] if class_names is not None else branch["class"]
+        class_label = _class_label(class_names, branch["class"])
         if class_label not in colors_by_class:
             colors_by_class[class_label] = (
                 colors.pop() if colors else "#%02x%02x%02x" % tuple(np.random.randint(256, size=3))
@@ -376,7 +388,7 @@ def plot_stability(
     if is_classify:
         top_branch_agreement = {}
         for branch in top_branches[:5]:
-            class_name = class_names[branch["class"]] if class_names is not None else branch["class"]
+            class_name = _class_label(class_names, branch["class"])
             class_id = class_name if class_name in agreement_by_class else branch["class"]
             top_branch_agreement[class_id] = agreement_by_class[class_id]
 
@@ -386,10 +398,7 @@ def plot_stability(
             ylim=(0, 1),
             xlabel="Iteration",
             ylabel="Agreement (Score)",
-            labels=[
-                class_names[group] if class_names is not None and not isinstance(group, str) else group
-                for group, _ in top_branch_agreement.items()
-            ],
+            labels=[_class_label(class_names, group) for group, _ in top_branch_agreement.items()],
             path=f"{output_dir}/{base_tree_key}_stability_by_class.pdf",
             size=(6, 4),
         )
@@ -471,7 +480,7 @@ def plot_stability_heatmap(
     if is_classify:
         top_branch_agreement = {}
         for branch in top_branches[:5]:
-            class_name = class_names[branch["class"]] if class_names is not None else branch["class"]
+            class_name = _class_label(class_names, branch["class"])
             class_id = class_name if class_name in agreement_by_class else branch["class"]
             top_branch_agreement[class_id] = agreement_by_class[class_id]
 
@@ -479,7 +488,7 @@ def plot_stability_heatmap(
             plot.plot_heatmap(
                 np.array(group_agreement[:heatmap_size]),
                 labels=range(min(len(stability_iter), heatmap_size)),
-                path=f"{output_dir}/{tree_key}_{class_names[group] if class_names is not None and not isinstance(group, str) else group}_stability_heatmap.pdf",
+                path=f"{output_dir}/{tree_key}_{_class_label(class_names, group)}_stability_heatmap.pdf",
             )
 
 
@@ -562,20 +571,30 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
                 return -1
 
         grouper = [next(p for p in non_opt_prefixes if p in c) for c in non_opt_df.columns]
-        non_opt_df = non_opt_df.groupby(grouper, axis=1).apply(
-            lambda x: x.astype(str).apply("".join, axis=1).apply(bin_to_int)
+        # pandas 2.0 removed DataFrame.groupby(axis=1). Group the bit columns by their
+        # prefix explicitly instead, preserving column order so the bits keep their
+        # significance, then fold each group into the integer it encodes.
+        non_opt_df = pd.DataFrame(
+            {
+                prefix: non_opt_df[[col for col, group in zip(non_opt_df.columns, grouper) if group == prefix]]
+                .astype(str)
+                .apply("".join, axis=1)
+                .apply(bin_to_int)
+                for prefix in dict.fromkeys(grouper)
+            },
+            index=non_opt_df.index,
         )
         df = pd.concat([non_opt_df, opt_df], axis=1)
 
     df["label"] = y
-    if class_names is not None and is_numeric_dtype(df["label"]):
-        df["label"] = df["label"].map(lambda x: class_names[int(x)])
+    if class_names is not None and len(class_names) > 0 and is_numeric_dtype(df["label"]):
+        df["label"] = df["label"].map(lambda x: _class_label(class_names, int(x)))
 
     num_classes = len(np.unique(y))
     split_dfs = [x for _, x in df.groupby("label")]
 
     for idx, branch in enumerate(top_branches):
-        branch_class = class_names[branch["class"]] if class_names is not None else str(branch["class"])
+        branch_class = _class_label(class_names, branch["class"], default=str(branch["class"]))
         branch_output_dir = f"{plots_output_dir}/{idx}_branch_{branch_class}"
 
         if not os.path.exists(branch_output_dir):

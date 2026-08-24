@@ -73,7 +73,9 @@ jobs:
               run: poetry install --with dev
 
             - name: Run tests
-              run: poetry run pytest -v
+              # The floor sits just under the current figure so coverage cannot quietly
+              # regress; raise it as coverage improves rather than lowering it.
+              run: poetry run pytest -v --cov=trustee --cov-report=term-missing --cov-fail-under=90
 
     examples:
         name: Examples

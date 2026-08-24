@@ -112,3 +112,89 @@ class TestRead:
         _, y, columns, _, _ = read(path, metadata=metadata, as_df=True)
         assert "label" not in list(columns)
         assert np.asarray(y).ravel().tolist() == [0, 1]
+
+
+class TestReadVerbose:
+    def test_verbose_prints_a_summary(self, csv_path, capsys):
+        read(csv_path, metadata=METADATA, verbose=True, as_df=True)
+        out = capsys.readouterr().out
+        assert "Metadata start." in out
+        assert "Pandas read_csv complete." in out
+        assert "Total memory usage" in out
+
+    def test_verbose_routes_through_a_logger(self, csv_path, tmp_path):
+        from trustee.utils.log import Logger
+
+        log_file = tmp_path / "read.log"
+        read(csv_path, metadata=METADATA, verbose=True, logger=Logger(path=str(log_file)), as_df=True)
+        assert "Metadata start." in log_file.read_text()
+
+
+class TestReadCategories:
+    def test_applies_an_ordered_categorical_dtype(self, tmp_path):
+        path = tmp_path / "sized.csv"
+        path.write_text("size,score\nsmall,1\nlarge,3\nmedium,2\n")
+        metadata = {
+            "has_header": True,
+            "fields": [
+                ("size", FeatureType.NUMERICAL, None, False),
+                ("score", FeatureType.NUMERICAL, None, True),
+            ],
+            "categories": {"size": ["small", "medium", "large"]},
+        }
+        X, _, _, _, _ = read(str(path), metadata=metadata, as_df=True)
+        assert str(X["size"].dtype) == "category"
+        assert X["size"].cat.ordered
+        assert list(X["size"].cat.categories) == ["small", "medium", "large"]
+
+
+class TestReadDelimiter:
+    def test_honours_a_custom_delimiter(self, tmp_path):
+        path = tmp_path / "semi.csv"
+        path.write_text("a;b\n1;2\n3;4\n")
+        metadata = {
+            "has_header": True,
+            "delimiter": ";",
+            "fields": [
+                ("a", FeatureType.NUMERICAL, None, False),
+                ("b", FeatureType.NUMERICAL, None, True),
+            ],
+        }
+        X, y, _, _, _ = read(str(path), metadata=metadata, as_df=True)
+        assert list(X.columns) == ["a"]
+        assert np.asarray(y).ravel().tolist() == [2, 4]
+
+
+class TestReadDirectory:
+    def test_concatenates_every_csv_in_a_directory(self, tmp_path):
+        data_dir = tmp_path / "parts"
+        data_dir.mkdir()
+        (data_dir / "part1.csv").write_text("a,b\n1,2\n3,4\n")
+        (data_dir / "part2.csv").write_text("a,b\n5,6\n")
+        metadata = {
+            "has_header": True,
+            "is_dir": True,
+            "fields": [
+                ("a", FeatureType.NUMERICAL, None, False),
+                ("b", FeatureType.NUMERICAL, None, True),
+            ],
+        }
+        X, y, _, _, _ = read(str(data_dir), metadata=metadata, as_df=True)
+        assert len(X) == 3
+        assert sorted(np.asarray(y).ravel().tolist()) == [2, 4, 6]
+
+
+class TestReadConverters:
+    def test_applies_a_converter_per_column(self, tmp_path):
+        path = tmp_path / "conv.csv"
+        path.write_text("label,score\nBENIGN,1\nBot,2\n")
+        metadata = {
+            "has_header": True,
+            "fields": [
+                ("label", FeatureType.NUMERICAL, None, False),
+                ("score", FeatureType.NUMERICAL, None, True),
+            ],
+            "converters": {"label": lambda v: {"BENIGN": 0, "Bot": 1}.get(v.strip(), -1)},
+        }
+        X, _, _, _, _ = read(str(path), metadata=metadata, as_df=True)
+        assert X["label"].tolist() == [0, 1]
