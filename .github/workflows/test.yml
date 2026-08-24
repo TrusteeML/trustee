@@ -18,8 +18,8 @@ jobs:
         name: Lint
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v5
-            - uses: actions/setup-python@v6
+            - uses: actions/checkout@v7
+            - uses: actions/setup-python@v7
               with:
                   python-version: "3.12"
             - name: Install Poetry
@@ -48,9 +48,9 @@ jobs:
                     - os: windows-latest
                       python-version: "3.12"
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v7
 
-            - uses: actions/setup-python@v6
+            - uses: actions/setup-python@v7
               with:
                   python-version: ${{ matrix.python-version }}
 
@@ -79,8 +79,8 @@ jobs:
         name: Examples
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v5
-            - uses: actions/setup-python@v6
+            - uses: actions/checkout@v7
+            - uses: actions/setup-python@v7
               with:
                   python-version: "3.12"
             - name: Install Graphviz
@@ -109,8 +109,8 @@ jobs:
         name: Build distributions
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v5
-            - uses: actions/setup-python@v6
+            - uses: actions/checkout@v7
+            - uses: actions/setup-python@v7
               with:
                   python-version: "3.12"
             - name: Install Poetry
@@ -136,7 +136,7 @@ jobs:
                   python -m venv /tmp/wheeltest
                   /tmp/wheeltest/bin/pip install --quiet dist/*.whl
                   /tmp/wheeltest/bin/python -c "import trustee; print('trustee', trustee.__version__)"
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v7
               with:
                   name: dist
                   path: dist/
