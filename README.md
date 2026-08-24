@@ -16,7 +16,7 @@ This section contains basic information and instructions to get started with Tru
 
 ### Python Version
 
-Trustee supports `Python >=3.7`.
+Trustee supports `Python >=3.11`.
 
 ### Install Trustee
 

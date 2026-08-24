@@ -1,42 +1,71 @@
-[tool.poetry]
+[project]
 name = "trustee"
-version = "1.1.6"
-readme = "README.md"
+version = "1.2.0"
 description = "This package implements the Trustee framework to extract decision tree explanation from black-box ML models."
-homepage = "https://trusteeml.github.io"
-repository = "https://github.com/TrusteeML/trustee"
-authors = ["Arthur Selle Jacobs <asjacobs@inf.ufrgs.br>"]
-packages = [ { include = "trustee"} ]
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Arthur Selle Jacobs", email = "asjacobs@inf.ufrgs.br" }]
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = ["explainability", "interpretability", "machine-learning", "decision-tree", "xai"]
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "scikit-learn>=1.3",
+    "matplotlib>=3.8",
+    "joblib>=1.3",
+    "prettytable>=3.9",
+    "graphviz>=0.20.1",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.7"
-numpy = ">=1.19.0"
-scipy = "^1.4.1"
-pandas = "^1.1.0"
-scikit-learn = ">=0.23.2"
-matplotlib = "^3.3.1"
-setuptools = "^57.0.0"
-prettytable = "3.0.0"
-termcolor = "^1.1.0"
-graphviz = ">=0.8.1"
-furo = "^2022.6.21"
-sphinxemoji = "^0.2.0"
-sphinx-gallery = "^0.11.1"
+[project.urls]
+Homepage = "https://trusteeml.github.io"
+Repository = "https://github.com/TrusteeML/trustee"
+Documentation = "https://trusteeml.github.io"
+Issues = "https://github.com/TrusteeML/trustee/issues"
 
-[tool.poetry.dev-dependencies]
-Sphinx = "^5.1.1"
+[tool.poetry]
+packages = [{ include = "trustee" }]
+
+[tool.poetry.group.docs.dependencies]
+sphinx = ">=7.4"
+furo = ">=2024.8.6"
+sphinxemoji = ">=0.3.1"
+sphinx-gallery = ">=0.17"
+
+[tool.poetry.group.dev.dependencies]
+black = ">=24.8"
+flake8 = ">=7.1"
+pytest = ">=8.3"
 
 [tool.black]
 line-length = 120
+target-version = ["py311"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config"
+filterwarnings = [
+    "error::DeprecationWarning",
+    "error::FutureWarning",
+    # TrustReport fits a classifier probe even for regression blackboxes
+    "default:The number of unique classes is greater than:UserWarning",
+]
 
 [build-system]
-requires = ["poetry>=0.12", "setuptools>=^57.0.0"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"

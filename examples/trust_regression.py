@@ -7,6 +7,7 @@ produced by RegressionTrustee from a MLPRegressor (neural network) from scikit-l
 Notice that using the method `TrustReport.load()`, one can load a previously
 generated report saved using `trust_report.save()`.
 """
+
 import os
 
 # importing required libraries

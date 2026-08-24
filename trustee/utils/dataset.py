@@ -143,7 +143,7 @@ def read(path_or_buffer, metadata={}, verbose=False, logger=None, as_df=False):
         log("Pandas read_csv complete.")
 
     if "categories" in metadata:
-        for (column, categories) in metadata["categories"].items():
+        for column, categories in metadata["categories"].items():
             category = CategoricalDtype(categories=categories, ordered=True)
             df[column] = df[column].astype(category)
 
@@ -165,12 +165,14 @@ def read(path_or_buffer, metadata={}, verbose=False, logger=None, as_df=False):
 
     y = df[names[result]].copy()
 
-    X = df.drop(columns=names[result], axis=1)
+    X = df.drop(columns=names[result])
     # resulting dataset corresponds to feature variables only, so encode it if necessary
     if dummies:
         dummy_cols = [names[i] for i in dummies]
         categorical = [[] for _ in dummy_cols]
-        X = pd.get_dummies(X, columns=dummy_cols)
+        # pandas >= 2.0 encodes dummies as bool by default, which would make the returned
+        # numpy array fall back to `object` dtype and silently skip the nan_to_num below.
+        X = pd.get_dummies(X, columns=dummy_cols, dtype=np.uint8)
         for i, _ in enumerate(X.columns):
             for j, _ in enumerate(dummy_cols):
                 cat_feat = dummy_cols[j]

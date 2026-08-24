@@ -1,17 +1,18 @@
 """
-    This code was copied from the python-rootpath project linked below. 
-    We copied this snippet of code with no intention of stealing their code, 
-    but to fix an install issue due rootpath depending on codecov.
+This code was copied from the python-rootpath project linked below.
+We copied this snippet of code with no intention of stealing their code,
+but to fix an install issue due rootpath depending on codecov.
 
-    To avoid further issues like this in the future, it seemed like a good idea 
-    to just incorporate the specific function we needed from the project.
+To avoid further issues like this in the future, it seemed like a good idea
+to just incorporate the specific function we needed from the project.
 
-    * python-rootpath:
-        - https://github.com/grimen/python-rootpath
-    * linked issues:
-        - https://github.com/TrusteeML/trustee/issues/2
-        - https://community.codecov.com/t/codecov-yanked-from-pypi-all-versions/4259/11
+* python-rootpath:
+    - https://github.com/grimen/python-rootpath
+* linked issues:
+    - https://github.com/TrusteeML/trustee/issues/2
+    - https://community.codecov.com/t/codecov-yanked-from-pypi-all-versions/4259/11
 """
+
 # =========================================
 #       IMPORTS
 # --------------------------------------
@@ -19,10 +20,8 @@
 import sys
 import os
 import re
-import six
 
 from os import path, listdir
-
 
 # =========================================
 #       CONSTANTS
@@ -38,7 +37,6 @@ DEFAULT_ROOT_FILENAME_MATCH_PATTERN = ".git|requirements.txt"
 
 
 def detect(current_path=None, pattern=None):
-
     """
     Find project root path from specified file/directory path,
     based on common project root file pattern.
@@ -61,7 +59,7 @@ def detect(current_path=None, pattern=None):
         current_path = path.dirname(current_path)
 
     def find_root_path(current_path, pattern=None):
-        if isinstance(pattern, six.string_types):
+        if isinstance(pattern, str):
             pattern = re.compile(pattern)
 
         detecting = True

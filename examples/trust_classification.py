@@ -7,6 +7,7 @@ produced by ClassificationTrustee from a RandomForestClassifier from scikit-lear
 Notice that using the method `TrustReport.load()`, one can load a previously
 generated report saved using `trust_report.save()`.
 """
+
 import os
 
 # importing required libraries

@@ -2,7 +2,30 @@ import numpy as np
 
 from copy import deepcopy
 
+from sklearn.base import is_classifier
 from sklearn.tree._tree import TREE_LEAF, TREE_UNDEFINED, NODE_DTYPE
+
+
+def get_node_counts(dt):
+    """
+    Returns the ``tree_.value`` array of the given decision tree expressed as (weighted) sample
+    counts, of shape (node_count, n_outputs, n_classes).
+
+    Since scikit-learn 1.3, ``tree_.value`` of a classifier holds the *fraction* of samples of each
+    class per node (each node sums to 1) instead of the raw sample counts it used to hold. This
+    helper undoes that normalization so that callers always get counts, regardless of the
+    scikit-learn version installed. Regressor values, which hold the mean target value, are
+    returned unchanged.
+    """
+    values = dt.tree_.value
+    if not is_classifier(dt):
+        return values
+
+    weights = dt.tree_.weighted_n_node_samples
+    if np.allclose(values.sum(axis=2), 1.0):  # scikit-learn >= 1.3 stores normalized fractions
+        return values * weights[:, np.newaxis, np.newaxis]
+
+    return values
 
 
 def prune_index(dt, index, prune_level):
@@ -92,8 +115,9 @@ def get_dt_info(dt):
     children_right = dt.tree_.children_right
     features = dt.tree_.feature
     thresholds = dt.tree_.threshold
-    values = dt.tree_.value
+    values = get_node_counts(dt)
     samples = dt.tree_.n_node_samples
+    weighted_samples = dt.tree_.weighted_n_node_samples
     impurity = dt.tree_.impurity
 
     splits = []
@@ -102,12 +126,10 @@ def get_dt_info(dt):
     def walk_tree(node, level, path):
         """Recursively iterates through all nodes in given decision tree and returns them as a list."""
         if children_left[node] == children_right[node]:  # if leaf node
-            node_class = np.argmax(values[node][0]) if len(np.array(values[node][0])) > 1 else values[node][0][0]
-            node_prob = (
-                (values[node][0][node_class] / np.sum(values[node][0])) * 100
-                if np.array(values[node][0]).ndim > 1
-                else 0
-            )
+            node_values = np.asarray(values[node][0])
+            is_multiclass = len(node_values) > 1
+            node_class = np.argmax(node_values) if is_multiclass else node_values[0]
+            node_prob = (node_values[node_class] / np.sum(node_values)) * 100 if is_multiclass else 0
             return [
                 {
                     "level": level,
@@ -138,7 +160,7 @@ def get_dt_info(dt):
                 "samples": samples[node],
                 "values": values[node],
                 "gini_split": (impurity[left], impurity[right]),
-                "data_split": (np.sum(values[left]), np.sum(values[right])),
+                "data_split": (weighted_samples[left], weighted_samples[right]),
                 "data_split_by_class": [
                     (c_left, c_right) for (c_left, c_right) in zip(values[left][0], values[right][0])
                 ],

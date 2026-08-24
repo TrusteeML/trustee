@@ -132,7 +132,6 @@ def plot_lines(x, y, xlim=None, ylim=None, labels=[], title=None, xlabel=None, y
 
 def plot_bars(x, y, ylim=None, xlabel=None, ylabel=None, labels=[], title=None, path=None):
     """Util function to plot bars"""
-    plt.figure(figsize=(30, 3))  # width:20, height:3
     width = 0.4
     fig, ax = plt.subplots()
     locs = np.arange(len(x))  # the label locations
@@ -196,8 +195,6 @@ def plot_lines_and_bars(
     path=None,
 ):
     """Util function to plot lines"""
-    plt.figure(figsize=(40, 3))  # width:20, height:3
-
     width = 0.4
     fig, ax = plt.subplots()
     locs = np.arange(len(x))  # the label locations
@@ -279,7 +276,6 @@ def plot_lines_and_bars(
 
 
 def plot_stacked_bars(x, y, y_placeholder=None, ylim=None, xlabel=None, ylabel=None, labels=[], title=None, path=None):
-    plt.figure(figsize=(50, 10))  # width:20, height:3
     """Util function to plot stacker bars"""
     fig, ax = plt.subplots()
     width = 0.8
@@ -370,7 +366,6 @@ def plot_stacked_bars_split(
     x, y_a, y_b, y_placeholder=None, ylim=None, xlabel=None, ylabel=None, labels=[], title=None, path=None
 ):
     """Util function to plot stacker bars"""
-    plt.figure(figsize=(50, 3))  # width:50, height:3
     fig, ax = plt.subplots()
     width = 0.8
     colors = [
@@ -442,11 +437,9 @@ def plot_stacked_bars_split(
             new_locs - (width / 2),
             values_a,
             width,
-            bottom=bottom_by_y[i - 1]
-            if i > 0 and bottom_by_y
-            else bottom_by_y_a[i - 1]
-            if i > 0 and bottom_by_y_a
-            else 0,
+            bottom=(
+                bottom_by_y[i - 1] if i > 0 and bottom_by_y else bottom_by_y_a[i - 1] if i > 0 and bottom_by_y_a else 0
+            ),
             # hatch=hatches[i] if i < len(hatches) else None,
             color=colors[i] if i < len(colors) else None,
             label=labels[i] if labels and i < len(labels) else None,
@@ -455,11 +448,9 @@ def plot_stacked_bars_split(
             new_locs + (width / 2),
             values_b,
             width,
-            bottom=bottom_by_y[i - 1]
-            if i > 0 and bottom_by_y
-            else bottom_by_y_b[i - 1]
-            if i > 0 and bottom_by_y_b
-            else 0,
+            bottom=(
+                bottom_by_y[i - 1] if i > 0 and bottom_by_y else bottom_by_y_b[i - 1] if i > 0 and bottom_by_y_b else 0
+            ),
             # hatch=hatches[i] if i < len(hatches) else None,
             color=colors[i] if i < len(colors) else None,
             # label=labels[i] if labels else "",

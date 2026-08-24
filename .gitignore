@@ -140,3 +140,10 @@ dmypy.json
 dataset/
 *.pdf
 dt_*
+
+# Output written by the scripts in examples/ when run from the repo root
+/out/
+/dt_explanation
+/dt_explanation.pdf
+/pruned_dt_explation
+/pruned_dt_explation.pdf
