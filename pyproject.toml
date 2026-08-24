@@ -56,6 +56,16 @@ pytest = ">=8.3"
 line-length = 120
 target-version = ["py311"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config"
+filterwarnings = [
+    "error::DeprecationWarning",
+    "error::FutureWarning",
+    # TrustReport fits a classifier probe even for regression blackboxes
+    "default:The number of unique classes is greater than:UserWarning",
+]
+
 [build-system]
 requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"

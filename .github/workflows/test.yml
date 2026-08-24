@@ -1,0 +1,142 @@
+name: Test
+
+on:
+    push:
+        branches: [master]
+    pull_request:
+    workflow_dispatch:
+
+concurrency:
+    group: test-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    POETRY_VERSION: "2.1.1"
+
+jobs:
+    lint:
+        name: Lint
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+            - uses: actions/setup-python@v6
+              with:
+                  python-version: "3.12"
+            - name: Install Poetry
+              run: pipx install poetry==${{ env.POETRY_VERSION }}
+            - name: Check pyproject and lock file are consistent
+              run: poetry check --lock
+            - name: Install dev dependencies
+              run: poetry install --only dev --no-root
+            - name: black
+              run: poetry run black --check --diff trustee/ examples/ tests/ docs/conf.py
+            - name: flake8
+              run: poetry run flake8 trustee/ examples/ tests/ docs/conf.py
+
+    test:
+        name: Test (Python ${{ matrix.python-version }}, ${{ matrix.os }})
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest]
+                python-version: ["3.11", "3.12", "3.13", "3.14"]
+                include:
+                    # Spot-check the other platforms on a single interpreter.
+                    - os: macos-latest
+                      python-version: "3.12"
+                    - os: windows-latest
+                      python-version: "3.12"
+        steps:
+            - uses: actions/checkout@v5
+
+            - uses: actions/setup-python@v6
+              with:
+                  python-version: ${{ matrix.python-version }}
+
+            # The TrustReport tests render decision trees through the `dot` binary.
+            # Without it those tests skip themselves rather than fail.
+            - name: Install Graphviz (Linux)
+              if: runner.os == 'Linux'
+              run: sudo apt-get update && sudo apt-get install -y graphviz
+            - name: Install Graphviz (macOS)
+              if: runner.os == 'macOS'
+              run: brew install graphviz
+            - name: Install Graphviz (Windows)
+              if: runner.os == 'Windows'
+              run: choco install graphviz --no-progress -y
+
+            - name: Install Poetry
+              run: pipx install poetry==${{ env.POETRY_VERSION }}
+
+            - name: Install project
+              run: poetry install --with dev
+
+            - name: Run tests
+              run: poetry run pytest -v
+
+    examples:
+        name: Examples
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+            - uses: actions/setup-python@v6
+              with:
+                  python-version: "3.12"
+            - name: Install Graphviz
+              run: sudo apt-get update && sudo apt-get install -y graphviz
+            - name: Install Poetry
+              run: pipx install poetry==${{ env.POETRY_VERSION }}
+            - name: Install project
+              run: poetry install
+            - name: Run the shipped examples
+              # These are rendered into the docs by sphinx-gallery, so a failure here
+              # means the published documentation is broken too.
+              env:
+                  MPLBACKEND: Agg
+              run: |
+                  # Invoke the venv interpreter directly: `poetry run` would reset the
+                  # working directory, and these examples write their output into cwd.
+                  venv_python="$(poetry env info --executable)"
+                  mkdir -p /tmp/examples && cd /tmp/examples
+                  for example in "$GITHUB_WORKSPACE"/examples/*.py; do
+                      echo "::group::$(basename "$example")"
+                      "$venv_python" "$example"
+                      echo "::endgroup::"
+                  done
+
+    build:
+        name: Build distributions
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+            - uses: actions/setup-python@v6
+              with:
+                  python-version: "3.12"
+            - name: Install Poetry
+              run: pipx install poetry==${{ env.POETRY_VERSION }}
+            - name: Verify the version is declared consistently
+              run: |
+                  pyproject_version="$(poetry version --short)"
+                  module_version="$(python -c 'import re,pathlib; print(re.search(r"\"(.+)\"", pathlib.Path("trustee/_version.py").read_text()).group(1))')"
+                  echo "pyproject.toml: $pyproject_version"
+                  echo "_version.py:    $module_version"
+                  if [ "$pyproject_version" != "$module_version" ]; then
+                      echo "::error::pyproject.toml ($pyproject_version) and trustee/_version.py ($module_version) disagree"
+                      exit 1
+                  fi
+            - name: Build
+              run: poetry build
+            - name: Check metadata
+              run: |
+                  pipx install twine
+                  twine check dist/*
+            - name: Verify the wheel imports on its own
+              run: |
+                  python -m venv /tmp/wheeltest
+                  /tmp/wheeltest/bin/pip install --quiet dist/*.whl
+                  /tmp/wheeltest/bin/python -c "import trustee; print('trustee', trustee.__version__)"
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: dist
+                  path: dist/

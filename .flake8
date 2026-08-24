@@ -1,2 +1,22 @@
 [flake8]
 max-line-length = 120
+
+# Black owns formatting. E203/W503 disagree with it outright, and E501 covers the
+# lines it cannot split (long string literals, URLs, embedded markup).
+extend-ignore = E203, E501, W503
+
+per-file-ignores =
+    # re-exports are the point of this module
+    trustee/__init__.py:F401,F403
+    # sys.path has to be patched before `import trustee`
+    docs/conf.py:E402
+    # these bindings pair with deliberately commented-out ax.bar_label() calls
+    trustee/utils/plot.py:F841
+
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    docs/auto_examples,
+    .venv

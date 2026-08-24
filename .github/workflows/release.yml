@@ -1,0 +1,119 @@
+name: Release
+
+on:
+    release:
+        types: [published]
+    workflow_dispatch:
+        inputs:
+            target:
+                description: "Where to publish"
+                required: true
+                default: testpypi
+                type: choice
+                options: [testpypi, pypi]
+
+concurrency:
+    group: release
+    cancel-in-progress: false
+
+env:
+    POETRY_VERSION: "2.1.1"
+
+jobs:
+    build:
+        name: Build and verify
+        runs-on: ubuntu-latest
+        outputs:
+            version: ${{ steps.version.outputs.version }}
+        steps:
+            - uses: actions/checkout@v5
+
+            - uses: actions/setup-python@v6
+              with:
+                  python-version: "3.12"
+
+            - name: Install Graphviz
+              run: sudo apt-get update && sudo apt-get install -y graphviz
+
+            - name: Install Poetry
+              run: pipx install poetry==${{ env.POETRY_VERSION }}
+
+            - name: Resolve and cross-check the version
+              id: version
+              run: |
+                  pyproject_version="$(poetry version --short)"
+                  module_version="$(python -c 'import re,pathlib; print(re.search(r"\"(.+)\"", pathlib.Path("trustee/_version.py").read_text()).group(1))')"
+
+                  if [ "$pyproject_version" != "$module_version" ]; then
+                      echo "::error::pyproject.toml ($pyproject_version) and trustee/_version.py ($module_version) disagree"
+                      exit 1
+                  fi
+
+                  # A tagged release must match the version in the tree, or we would
+                  # publish something other than what the tag claims.
+                  if [ "${{ github.event_name }}" = "release" ]; then
+                      tag_version="${GITHUB_REF_NAME#v}"
+                      if [ "$pyproject_version" != "$tag_version" ]; then
+                          echo "::error::tag $GITHUB_REF_NAME does not match version $pyproject_version"
+                          exit 1
+                      fi
+                  fi
+
+                  echo "version=$pyproject_version" >> "$GITHUB_OUTPUT"
+                  echo "Releasing $pyproject_version"
+
+            - name: Install project
+              run: poetry install --with dev
+
+            # Never publish a build whose tests did not pass.
+            - name: Run tests
+              run: poetry run pytest -q
+
+            - name: Build
+              run: poetry build
+
+            - name: Check metadata
+              run: |
+                  pipx install twine
+                  twine check dist/*
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: dist
+                  path: dist/
+
+    testpypi:
+        name: Publish to TestPyPI
+        needs: build
+        if: github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
+        runs-on: ubuntu-latest
+        environment:
+            name: testpypi
+            url: https://test.pypi.org/p/trustee
+        permissions:
+            id-token: write # required for Trusted Publishing
+        steps:
+            - uses: actions/download-artifact@v5
+              with:
+                  name: dist
+                  path: dist/
+            - uses: pypa/gh-action-pypi-publish@release/v1
+              with:
+                  repository-url: https://test.pypi.org/legacy/
+
+    pypi:
+        name: Publish to PyPI
+        needs: build
+        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.target == 'pypi')
+        runs-on: ubuntu-latest
+        environment:
+            name: pypi
+            url: https://pypi.org/p/trustee
+        permissions:
+            id-token: write # required for Trusted Publishing
+        steps:
+            - uses: actions/download-artifact@v5
+              with:
+                  name: dist
+                  path: dist/
+            - uses: pypa/gh-action-pypi-publish@release/v1

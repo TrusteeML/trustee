@@ -558,7 +558,7 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
         def bin_to_int(num):
             try:
                 return int(num, 2)
-            except:
+            except (ValueError, TypeError):
                 return -1
 
         grouper = [next(p for p in non_opt_prefixes if p in c) for c in non_opt_df.columns]

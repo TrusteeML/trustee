@@ -9,7 +9,6 @@ import copy
 import pickle
 import graphviz
 import numpy as np
-import pandas as pd
 
 from sklearn import tree
 from sklearn.base import clone
@@ -216,11 +215,11 @@ class TrustReport:
         """
             Used for progress bar.
 
-            total_steps = 
-                _prepare_data (1) + 
+            total_steps =
+                _prepare_data (1) +
                 _collect_blackbox (1) +
-                _collect_trustee (1) + 
-                _collect_top_k_prunning (1) + 
+                _collect_trustee (1) +
+                _collect_top_k_prunning (1) +
                 _collect_ccp_prunning (num_pruning_iter) +
                 _collect_max_depth_prunning (num_pruning_iter) +
                 _collect_max_leaves_prunning (num_pruning_iter) +
@@ -237,7 +236,7 @@ class TrustReport:
 
         """
             if analyze_stability:
-                total_steps += _collect_stability_analysis (max_iter) 
+                total_steps += _collect_stability_analysis (max_iter)
         """
         if analyze_stability:
             self.total_steps += max_iter
@@ -278,7 +277,12 @@ class TrustReport:
         state = self.__dict__.copy()
         del state["logger"]
         del state["blackbox"]
-        del state["trustee"].expert
+        # `state` is a shallow copy, so the nested Trustee is still the live object.
+        # Detaching its (unpicklable, potentially large) expert in place would corrupt
+        # this report and make a second save() raise AttributeError, so copy it first.
+        trustee = copy.copy(state["trustee"])
+        trustee.expert = None
+        state["trustee"] = trustee
         return state
 
     def __setstate__(self, state):
