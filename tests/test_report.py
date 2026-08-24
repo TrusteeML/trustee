@@ -142,3 +142,101 @@ class TestRegressionReport:
             **REPORT_KWARGS,
         )
         assert "# Input features:" in str(built)
+
+
+@pytest.fixture(scope="module")
+def analysed(iris_frame, iris_bunch):
+    from sklearn.ensemble import RandomForestClassifier
+
+    X, y = iris_frame
+    return TrustReport(
+        RandomForestClassifier(n_estimators=10, random_state=0),
+        X=X,
+        y=y,
+        class_names=iris_bunch.target_names,
+        feature_names=iris_bunch.feature_names,
+        is_classify=True,
+        analyze_branches=True,
+        analyze_stability=True,
+        **REPORT_KWARGS,
+    )
+
+
+class TestAnalysisPasses:
+    """The optional branch/stability collection passes and the plotting entry point."""
+
+    def test_collects_branch_analysis(self, analysed):
+        assert analysed.branch_iter
+
+    def test_collects_stability_analysis(self, analysed):
+        assert analysed.stability_iter
+        assert all("max_dt" in it and "min_dt" in it for it in analysed.stability_iter)
+
+    def test_renders_with_the_extra_sections(self, analysed):
+        assert "# Input features:" in str(analysed)
+
+    @has_graphviz
+    def test_plot_writes_the_stability_figures(self, analysed, tmp_path):
+        analysed.plot(str(tmp_path))
+        produced = {p.name for p in (tmp_path / "plots").glob("*.pdf")}
+        assert any("stability" in name for name in produced)
+        assert any("branches" in name for name in produced)
+
+    @has_graphviz
+    def test_save_all_dts_writes_every_tree(self, analysed, tmp_path):
+        analysed.save(str(tmp_path), save_all_dts=True)
+        trees = list((tmp_path / "report").glob("**/*.pdf"))
+        assert len(trees) > 2
+
+
+class TestSkipRetrain:
+    def test_skips_the_feature_removal_pass(self, iris_frame, iris_bunch):
+        """skip_retrain reuses the blackbox as-is, so it must already be fitted."""
+        from sklearn.ensemble import RandomForestClassifier
+
+        X, y = iris_frame
+        report = TrustReport(
+            RandomForestClassifier(n_estimators=10, random_state=0).fit(X, y),
+            X=X,
+            y=y,
+            class_names=iris_bunch.target_names,
+            is_classify=True,
+            skip_retrain=True,
+            **REPORT_KWARGS,
+        )
+        assert report.whitebox_iter == []
+        assert str(report)
+
+
+class TestUseFeatures:
+    def test_restricts_the_student_to_the_given_columns(self, iris_frame, iris_bunch):
+        from sklearn.ensemble import RandomForestClassifier
+
+        X, y = iris_frame
+        report = TrustReport(
+            RandomForestClassifier(n_estimators=10, random_state=0),
+            X=X,
+            y=y,
+            class_names=iris_bunch.target_names,
+            is_classify=True,
+            use_features=[0, 1],
+            **REPORT_KWARGS,
+        )
+        assert list(report.use_features) == [0, 1]
+        assert report.max_dt.n_features_in_ == 2
+
+    def test_unfitted_blackbox_is_rejected(self, iris_frame, iris_bunch):
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.exceptions import NotFittedError
+
+        X, y = iris_frame
+        with pytest.raises(NotFittedError):
+            TrustReport(
+                RandomForestClassifier(n_estimators=10, random_state=0),
+                X=X,
+                y=y,
+                class_names=iris_bunch.target_names,
+                is_classify=True,
+                skip_retrain=True,
+                **REPORT_KWARGS,
+            )

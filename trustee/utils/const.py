@@ -190,8 +190,14 @@ BOSTON_DATASET_META = {
 }
 
 
+# uint8 cannot represent -1. NumPy 1 wrapped it silently to 255; NumPy 2 raises
+# OverflowError instead, which would abort the whole read. Keep 255 as the explicit
+# sentinel so unknown labels stay distinguishable and behaviour matches NumPy 1.
+UNKNOWN_LABEL = 255
+
+
 def cic_ids_2017_label_converter(label):
-    value = -1
+    value = UNKNOWN_LABEL
     labels = {
         "BENIGN": 0,
         "Bot": 1,
