@@ -442,11 +442,9 @@ def plot_stacked_bars_split(
             new_locs - (width / 2),
             values_a,
             width,
-            bottom=bottom_by_y[i - 1]
-            if i > 0 and bottom_by_y
-            else bottom_by_y_a[i - 1]
-            if i > 0 and bottom_by_y_a
-            else 0,
+            bottom=(
+                bottom_by_y[i - 1] if i > 0 and bottom_by_y else bottom_by_y_a[i - 1] if i > 0 and bottom_by_y_a else 0
+            ),
             # hatch=hatches[i] if i < len(hatches) else None,
             color=colors[i] if i < len(colors) else None,
             label=labels[i] if labels and i < len(labels) else None,
@@ -455,11 +453,9 @@ def plot_stacked_bars_split(
             new_locs + (width / 2),
             values_b,
             width,
-            bottom=bottom_by_y[i - 1]
-            if i > 0 and bottom_by_y
-            else bottom_by_y_b[i - 1]
-            if i > 0 and bottom_by_y_b
-            else 0,
+            bottom=(
+                bottom_by_y[i - 1] if i > 0 and bottom_by_y else bottom_by_y_b[i - 1] if i > 0 and bottom_by_y_b else 0
+            ),
             # hatch=hatches[i] if i < len(hatches) else None,
             color=colors[i] if i < len(colors) else None,
             # label=labels[i] if labels else "",

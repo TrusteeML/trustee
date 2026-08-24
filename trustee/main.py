@@ -3,6 +3,7 @@ Trustee
 ====================================
 The core module of the Trustee project
 """
+
 import abc
 import functools
 import numpy as np

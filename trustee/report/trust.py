@@ -3,6 +3,7 @@ Trust Report
 ====================================
 The module that implements Trust Reports
 """
+
 import os
 import copy
 import pickle
@@ -18,7 +19,7 @@ from sklearn.metrics import classification_report, f1_score, r2_score
 from prettytable import PrettyTable
 
 from trustee import ClassificationTrustee, RegressionTrustee
-from trustee.utils.tree import get_dt_info
+from trustee.utils.tree import get_dt_info, get_node_counts
 from trustee.utils.dataset import convert_to_df, convert_to_series
 
 from .plot import (
@@ -208,7 +209,8 @@ class TrustReport:
         self.class_names = class_names
         self.feature_names = feature_names
         self.is_classify = is_classify
-        self.use_features = use_features if use_features is not None else np.arange(0, X_train.shape[1])
+        n_features = X.shape[1] if X is not None else X_train.shape[1]
+        self.use_features = use_features if use_features is not None else np.arange(0, n_features)
 
         self.step = 0
         """
@@ -402,7 +404,7 @@ class TrustReport:
         sum_nodes = 0
         sum_nodes_perc = 0
         sum_data_split = 0
-        for (feat, values) in self.max_dt_top_features:
+        for feat, values in self.max_dt_top_features:
             node, node_perc, data_split = (
                 values["count"],
                 (values["count"] / (self.max_dt.tree_.node_count - self.max_dt.tree_.n_leaves)) * 100,
@@ -442,12 +444,13 @@ class TrustReport:
         top_nodes.align = "l"
         top_nodes.valign = "m"
 
+        max_dt_root_counts = get_node_counts(self.max_dt)[0][0]
         for node in self.max_dt_top_nodes:
             samples_by_class = [
                 (
                     self.class_names[idx] if self.class_names is not None and idx < len(self.class_names) else idx,
-                    (count_left / self.max_dt.tree_.value[0][0][idx]) * 100,
-                    (count_right / self.max_dt.tree_.value[0][0][idx]) * 100,
+                    (count_left / max_dt_root_counts[idx]) * 100,
+                    (count_right / max_dt_root_counts[idx]) * 100,
                 )
                 for idx, (count_left, count_right) in enumerate(node["data_split_by_class"])
             ]
@@ -477,7 +480,7 @@ class TrustReport:
             samples, samples_perc, class_samples_perc = (
                 branch["samples"],
                 (branch["samples"] / self.max_dt.tree_.n_node_samples[0]) * 100,
-                (branch["samples"] / self.max_dt.tree_.value[0][0][branch["class"]]) * 100 if self.is_classify else 0,
+                (branch["samples"] / max_dt_root_counts[branch["class"]]) * 100 if self.is_classify else 0,
             )
             sum_samples += samples
             sum_samples_perc += samples_perc
@@ -489,7 +492,7 @@ class TrustReport:
             branch_class = (
                 self.class_names[branch["class"]]
                 if self.class_names is not None and branch["class"] < len(self.class_names)
-                else branch["class"],
+                else branch["class"]
             )
             top_branches.add_row(
                 [
@@ -1032,7 +1035,7 @@ class TrustReport:
             if self.verbose:
                 log(f"Iteration {i}/{self.max_iter}")
 
-            (trustee, y_pred, max_dt, max_dt_y_pred, min_dt, min_dt_y_pred) = self._fit_and_explain(
+            trustee, y_pred, max_dt, max_dt_y_pred, min_dt, min_dt_y_pred = self._fit_and_explain(
                 # prevents trustee`s outer loop from running so we can see how unstable explanations are
                 trustee_num_stability_iter=1
             )
@@ -1380,9 +1383,10 @@ class TrustReport:
             plots_output_dir,
             feature_names=self.feature_names,
         )
+        max_dt_root_counts = get_node_counts(self.max_dt)[0][0]
         plot_top_nodes(
             self.max_dt_top_nodes,
-            self.max_dt.tree_.value[0][0],
+            max_dt_root_counts,
             self.max_dt.tree_.n_node_samples[0],
             plots_output_dir,
             feature_names=self.feature_names,
@@ -1390,7 +1394,7 @@ class TrustReport:
         )
         plot_top_branches(
             self.max_dt_top_branches,
-            self.max_dt.tree_.value[0][0],
+            max_dt_root_counts,
             self.max_dt.tree_.n_node_samples[0],
             plots_output_dir,
             class_names=self.class_names,
@@ -1398,7 +1402,7 @@ class TrustReport:
         )
         plot_all_branches(
             self.max_dt_all_branches,
-            self.max_dt.tree_.value[0][0],
+            max_dt_root_counts,
             self.max_dt.tree_.n_node_samples[0],
             plots_output_dir,
             class_names=self.class_names,

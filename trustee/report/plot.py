@@ -164,9 +164,11 @@ def plot_top_branches(
     # TODO: This only works for classification problems, fix for refression in the future.
     if is_classify:
         plot.plot_stacked_bars(
-            [f"Top {idx + 1}" for idx in range(len(top_branches))]
-            if len(top_branches) < 20
-            else range(len(top_branches)),
+            (
+                [f"Top {idx + 1}" for idx in range(len(top_branches))]
+                if len(top_branches) < 20
+                else range(len(top_branches))
+            ),
             [np.cumsum(samples)],
             y_placeholder=[100],
             ylim=(0, 100),
@@ -176,9 +178,11 @@ def plot_top_branches(
         )
 
         plot.plot_stacked_bars(
-            [f"Top {idx + 1}" for idx in range(len(top_branches))]
-            if len(top_branches) < 20
-            else range(len(top_branches)),
+            (
+                [f"Top {idx + 1}" for idx in range(len(top_branches))]
+                if len(top_branches) < 20
+                else range(len(top_branches))
+            ),
             [
                 np.cumsum(
                     [
@@ -527,7 +531,7 @@ def plot_distribution(X, y, top_branches, output_dir, aggregate=False, feature_n
         df.columns = [str(i) for i in range(len(df.columns))]
 
     if aggregate:
-        col_regex = "([\w_]+)_([0-9]+)"
+        col_regex = r"([\w_]+)_([0-9]+)"
         opt_prefixes = set({})
         non_opt_prefixes = set({})
         field_size = {}
