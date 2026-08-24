@@ -50,7 +50,10 @@ class TestDetect:
         assert rootpath.detect() == str(tmp_path)
 
     def test_expands_user_relative_paths(self, tmp_path, monkeypatch):
+        # expanduser reads HOME on POSIX but USERPROFILE on Windows, so set both
+        # rather than making this test platform-specific.
         monkeypatch.setenv("HOME", str(tmp_path))
+        monkeypatch.setenv("USERPROFILE", str(tmp_path))
         (tmp_path / ".git").mkdir()
         assert rootpath.detect("~") == str(tmp_path)
 
